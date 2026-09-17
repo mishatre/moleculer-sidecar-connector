@@ -1,10 +1,26 @@
 {
-    "gherkin-autocomplete.featureLibraries": [
-        "features"
-    ],
-    "gherkin-autocomplete.srcBslPath": [
-        "features"
-    ],
-    "git.ignoreLimitWarning": true,
+	"gherkin-autocomplete.featureLibraries": ["features"],
+	"gherkin-autocomplete.srcBslPath": ["features"],
+	"git.ignoreLimitWarning": true,
+	"files.associations": {
+		"*.bsl": "bsl",
+		"*.os": "bsl"
+	},
+
+	"files.exclude": {
+		"**/.git": true,
+		"**/oscript_modules": true
+	},
+
+	"search.exclude": {
+		"**/oscript_modules": true,
+		"**/build": true
+	},
+
+	"terminal.integrated.cwd": "${workspaceFolder}",
+
+	"1c-platform-tools.docker.enabled": false,
+	"1c-platform-tools.docker.image": "local/vrunner2:8.3.24.1667",
+	"1c-platform-tools.server.debug": false
 
 }

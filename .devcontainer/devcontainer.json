@@ -1,0 +1,45 @@
+{
+	"name": "1C / Moleculer sidecar",
+
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "dev",
+	"workspaceFolder": "/workspace",
+
+	"features": {
+		"ghcr.io/devcontainers/features/docker-outside-of-docker": {},
+		"ghcr.io/devcontainers-extra/features/uv:1": {}
+	},
+
+	"containerEnv": {
+		"DEVCONTAINER": "TRUE",
+		"DOCKER_DEFAULT_PLATFORM": "linux/amd64",
+		"UV_TOOL_BIN_DIR": "/usr/local/bin"
+	},
+
+	"remoteUser": "root",
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"yellow-hammer.1c-platform-tools",
+				"1c-syntax.language-1c-bsl",
+				"openai.chatgpt",
+				"yellow-hammer.1c-platform-extension-pack"
+			],
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"files.eol": "\n",
+				"files.encoding": "utf8"
+			}
+		}
+	},
+
+	"mounts": [
+		"source=msc-codex-home,target=/root/.codex,type=volume",
+		"source=msc-bsl-language-server,target=/root/.bsl-language-server,type=volume"
+	],
+
+	"postCreateCommand": "command -v serena >/dev/null || uv tool install -p 3.13 serena-agent && oscript --version && opm --version",
+
+	"shutdownAction": "stopCompose"
+}

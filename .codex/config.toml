@@ -1,0 +1,20 @@
+# Merge into a trusted project's .codex/config.toml after checking client support.
+# Defaults for NEW sessions; does not change this already-running conversation.
+# Confirm model IDs in the destination client's catalog.
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 2
+default_subagent_model = "gpt-5.6-terra"
+default_subagent_reasoning_effort = "medium"
+
+[mcp_servers.serena]
+startup_timeout_sec = 15
+command = "serena"
+args = [
+    "start-mcp-server",
+    "--project-from-cwd",
+    "--context=codex"
+]

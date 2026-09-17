@@ -1,8 +1,21 @@
-.env
-build/
-allure-report/
+# OneScript dependencies
+oscript_modules/
 
-ConfigDumpInfo.xml
-build
-out
-.scannerwork
+# Generated 1C files
+build/
+out/
+
+# Temporary files
+*.tmp
+*.log
+
+# VS Code local overrides
+.vscode/*.local.json
+
+# macOS
+.DS_Store
+
+AGENTS.md
+docs/
+
+moleculer-sidecar-next/

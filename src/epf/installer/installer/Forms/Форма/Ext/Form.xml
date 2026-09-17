@@ -1,0 +1,951 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://v8.1c.ru/8.3/xcf/logform" xmlns:app="http://v8.1c.ru/8.2/managed-application/core" xmlns:cfg="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:dcscor="http://v8.1c.ru/8.1/data-composition-system/core" xmlns:dcssch="http://v8.1c.ru/8.1/data-composition-system/schema" xmlns:dcsset="http://v8.1c.ru/8.1/data-composition-system/settings" xmlns:ent="http://v8.1c.ru/8.1/data/enterprise" xmlns:lf="http://v8.1c.ru/8.2/managed-application/logform" xmlns:style="http://v8.1c.ru/8.1/data/ui/style" xmlns:sys="http://v8.1c.ru/8.1/data/ui/fonts/system" xmlns:v8="http://v8.1c.ru/8.1/data/core" xmlns:v8ui="http://v8.1c.ru/8.1/data/ui" xmlns:web="http://v8.1c.ru/8.1/data/ui/colors/web" xmlns:win="http://v8.1c.ru/8.1/data/ui/colors/windows" xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.17">
+	<AutoCommandBar name="ФормаКоманднаяПанель" id="-1">
+		<Autofill>false</Autofill>
+	</AutoCommandBar>
+	<Events>
+		<Event name="OnCreateAtServer">ПриСозданииНаСервере</Event>
+	</Events>
+	<ChildItems>
+		<UsualGroup name="ГруппаОсновнаяПанельФормы" id="1">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Группа основная панель формы</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Группа основная панель формы</v8:content>
+				</v8:item>
+			</ToolTip>
+			<VerticalStretch>true</VerticalStretch>
+			<Group>Vertical</Group>
+			<Representation>None</Representation>
+			<ShowTitle>false</ShowTitle>
+			<ExtendedTooltip name="ГруппаОсновнаяПанельФормыРасширеннаяПодсказка" id="2"/>
+			<ChildItems>
+				<UsualGroup name="ГруппаЛоготипСостояние" id="3">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Группа логотип состояние</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Группа логотип состояние</v8:content>
+						</v8:item>
+					</ToolTip>
+					<HorizontalStretch>true</HorizontalStretch>
+					<Group>Vertical</Group>
+					<Representation>None</Representation>
+					<ShowTitle>false</ShowTitle>
+					<ExtendedTooltip name="ГруппаЛоготипСостояниеРасширеннаяПодсказка" id="4"/>
+					<ChildItems>
+						<UsualGroup name="ГруппаЛоготипЗаголовок" id="30">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа логотип заголовок</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа логотип заголовок</v8:content>
+								</v8:item>
+							</ToolTip>
+							<GroupVerticalAlign>Center</GroupVerticalAlign>
+							<VerticalAlign>Center</VerticalAlign>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаЛоготипЗаголовокРасширеннаяПодсказка" id="31"/>
+							<ChildItems>
+								<PictureDecoration name="ДекорацияЛоготип" id="5">
+									<Title formatted="false">
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Декорация логотип</v8:content>
+										</v8:item>
+									</Title>
+									<Picture>
+										<xr:Abs>Picture.png</xr:Abs>
+										<xr:LoadTransparent>false</xr:LoadTransparent>
+									</Picture>
+									<ContextMenu name="ДекорацияЛоготипКонтекстноеМеню" id="6"/>
+									<ExtendedTooltip name="ДекорацияЛоготипРасширеннаяПодсказка" id="7"/>
+								</PictureDecoration>
+								<UsualGroup name="ГруппаЗаголовокОписание" id="51">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа заголовок описание</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа заголовок описание</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаЗаголовокОписаниеРасширеннаяПодсказка" id="52"/>
+									<ChildItems>
+										<LabelDecoration name="ДекорацияЗаголовок" id="24">
+											<TextColor>#0E83CD</TextColor>
+											<Font ref="style:NormalTextFont" height="24" kind="StyleItem" scale="100"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Moleculer integration for 1C</v8:content>
+												</v8:item>
+												<v8:item>
+													<v8:lang>en</v8:lang>
+													<v8:content>Moleculer integration for 1C</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="ДекорацияЗаголовокКонтекстноеМеню" id="25"/>
+											<ExtendedTooltip name="ДекорацияЗаголовокРасширеннаяПодсказка" id="26"/>
+										</LabelDecoration>
+										<LabelDecoration name="ДекорацияОписание" id="48">
+											<TextColor>style:TableFooterTextColor</TextColor>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Подключение 1С в сеть Moleculer. 
+Пубикация сервисов в конфигурации в сеть Moleculer</v8:content>
+												</v8:item>
+												<v8:item>
+													<v8:lang>en</v8:lang>
+													<v8:content>Connect 1C into Moleculer nework.
+Internal service publication</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="ДекорацияОписаниеКонтекстноеМеню" id="49"/>
+											<ExtendedTooltip name="ДекорацияОписаниеРасширеннаяПодсказка" id="50"/>
+										</LabelDecoration>
+										<LabelDecoration name="ДекорацияПримечание" id="63">
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Подключение к сети Moleculer осуществляется через промежуточный узел - Moleculer Sidecar</v8:content>
+												</v8:item>
+												<v8:item>
+													<v8:lang>en</v8:lang>
+													<v8:content>Connection to Moleculer network is made using intermediate node - Moleculer Sidecar</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="ДекорацияПримечаниеКонтекстноеМеню" id="64"/>
+											<ExtendedTooltip name="ДекорацияПримечаниеРасширеннаяПодсказка" id="65"/>
+										</LabelDecoration>
+									</ChildItems>
+								</UsualGroup>
+							</ChildItems>
+						</UsualGroup>
+						<UsualGroup name="ГруппаСостояние" id="88">
+							<Visible>false</Visible>
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа состояние</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа состояние</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаСостояниеРасширеннаяПодсказка" id="89"/>
+							<ChildItems>
+								<LabelField name="СостояниеРасширения" id="27">
+									<DataPath>СостояниеРасширения</DataPath>
+									<TitleLocation>None</TitleLocation>
+									<ContextMenu name="СостояниеРасширенияКонтекстноеМеню" id="28"/>
+									<ExtendedTooltip name="СостояниеРасширенияРасширеннаяПодсказка" id="29"/>
+								</LabelField>
+							</ChildItems>
+						</UsualGroup>
+						<UsualGroup name="ГруппаВерсияРасширения" id="53">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа версия расширения</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа версия расширения</v8:content>
+								</v8:item>
+							</ToolTip>
+							<VerticalStretch>false</VerticalStretch>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаВерсияРасширенияРасширеннаяПодсказка" id="54"/>
+							<ChildItems>
+								<LabelField name="ВерсияРасширения" id="139">
+									<DataPath>ВерсияРасширения</DataPath>
+									<TitleLocation>None</TitleLocation>
+									<ContextMenu name="ВерсияРасширенияКонтекстноеМеню" id="140"/>
+									<ExtendedTooltip name="ВерсияРасширенияРасширеннаяПодсказка" id="141"/>
+								</LabelField>
+							</ChildItems>
+						</UsualGroup>
+					</ChildItems>
+				</UsualGroup>
+				<Pages name="СтраницыГлавнаяПанель" id="97">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страницы главная панель</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страницы главная панель</v8:content>
+						</v8:item>
+					</ToolTip>
+					<PagesRepresentation>None</PagesRepresentation>
+					<ExtendedTooltip name="СтраницыГлавнаяПанельРасширеннаяПодсказка" id="98"/>
+					<ChildItems>
+						<Page name="СтраницаПанельУстановки" id="14">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Страница панель установки</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Страница панель установки</v8:content>
+								</v8:item>
+							</ToolTip>
+							<ExtendedTooltip name="СтраницаПанельУстановкиРасширеннаяПодсказка" id="15"/>
+							<ChildItems>
+								<UsualGroup name="ГруппаУстановкаЗаголовок" id="16">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Установка</v8:content>
+										</v8:item>
+										<v8:item>
+											<v8:lang>en</v8:lang>
+											<v8:content>Installation
+</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа установка заголовок</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<ExtendedTooltip name="ГруппаУстановкаЗаголовокРасширеннаяПодсказка" id="17"/>
+									<ChildItems>
+										<LabelDecoration name="ДекорацияУказатьФайлУстановкиВручную" id="55">
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Указать файл установки вручную</v8:content>
+												</v8:item>
+												<v8:item>
+													<v8:lang>en</v8:lang>
+													<v8:content>Select file manually</v8:content>
+												</v8:item>
+											</Title>
+											<Hyperlink>true</Hyperlink>
+											<ContextMenu name="ДекорацияУказатьФайлУстановкиВручнуюКонтекстноеМеню" id="56"/>
+											<ExtendedTooltip name="ДекорацияУказатьФайлУстановкиВручнуюРасширеннаяПодсказка" id="57"/>
+										</LabelDecoration>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="ГруппаПанельДействий" id="40">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа панель действий</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа панель действий</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаПанельДействийРасширеннаяПодсказка" id="41"/>
+									<ChildItems>
+										<Button name="УстановитьРасширение" id="42">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.УстановитьРасширение</CommandName>
+											<ExtendedTooltip name="УстановитьРасширениеРасширеннаяПодсказка" id="43"/>
+										</Button>
+										<Button name="Удалить" id="46">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.УдалитьРасширение</CommandName>
+											<ExtendedTooltip name="УдалитьРасширеннаяПодсказка" id="47"/>
+										</Button>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="ГруппаПредварительнаяНастройка" id="58">
+									<Visible>false</Visible>
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Предварительная настройка</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа предварительная настройка</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<ExtendedTooltip name="ГруппаПредварительнаяНастройкаРасширеннаяПодсказка" id="59"/>
+									<ChildItems>
+										<LabelDecoration name="ДекорацияОписаниеПредварительнойНастройки" id="60">
+											<Title formatted="true">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Установить расширение с предустановленными параметрами подключения и авторизации
+</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="ДекорацияОписаниеПредварительнойНастройкиКонтекстноеМеню" id="61"/>
+											<ExtendedTooltip name="ДекорацияОписаниеПредварительнойНастройкиРасширеннаяПодсказка" id="62"/>
+										</LabelDecoration>
+										<UsualGroup name="ГруппаSidecarEndpoint" id="75">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа sidecar endpoint</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа sidecar endpoint</v8:content>
+												</v8:item>
+											</ToolTip>
+											<Representation>None</Representation>
+											<ShowTitle>false</ShowTitle>
+											<ExtendedTooltip name="ГруппаSidecarEndpointРасширеннаяПодсказка" id="76"/>
+											<ChildItems>
+												<InputField name="SidecarEndpoint" id="66">
+													<DataPath>SidecarEndpoint</DataPath>
+													<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+													<ContextMenu name="SidecarEndpointКонтекстноеМеню" id="67"/>
+													<ExtendedTooltip name="SidecarEndpointРасширеннаяПодсказка" id="68"/>
+												</InputField>
+												<InputField name="SidecarPort" id="69">
+													<DataPath>SidecarPort</DataPath>
+													<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+													<EditFormat>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>NG=</v8:content>
+														</v8:item>
+													</EditFormat>
+													<MinValue xsi:type="xs:decimal">1</MinValue>
+													<MaxValue xsi:type="xs:decimal">65536</MaxValue>
+													<ContextMenu name="SidecarPortКонтекстноеМеню" id="70"/>
+													<ExtendedTooltip name="SidecarPortРасширеннаяПодсказка" id="71"/>
+												</InputField>
+												<CheckBoxField name="SidecarUseSSL" id="72">
+													<DataPath>SidecarUseSSL</DataPath>
+													<CheckBoxType>Auto</CheckBoxType>
+													<ContextMenu name="SidecarUseSSLКонтекстноеМеню" id="73"/>
+													<ExtendedTooltip name="SidecarUseSSLРасширеннаяПодсказка" id="74"/>
+												</CheckBoxField>
+											</ChildItems>
+										</UsualGroup>
+										<UsualGroup name="ГруппаПараметрыПубликацииКонфигурации" id="77">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Параметры публикации конфигурации (только для публикации сервисов)</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа параметры публикации конфигурации</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="ГруппаПараметрыПубликацииКонфигурацииРасширеннаяПодсказка" id="78"/>
+											<ChildItems>
+												<InputField name="NodeEndpoint" id="79">
+													<DataPath>NodeEndpoint</DataPath>
+													<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+													<ContextMenu name="NodeEndpointКонтекстноеМеню" id="80"/>
+													<ExtendedTooltip name="NodeEndpointРасширеннаяПодсказка" id="81"/>
+												</InputField>
+												<InputField name="NodePort" id="82">
+													<DataPath>NodePort</DataPath>
+													<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+													<ContextMenu name="NodePortКонтекстноеМеню" id="83"/>
+													<ExtendedTooltip name="NodePortРасширеннаяПодсказка" id="84"/>
+												</InputField>
+												<CheckBoxField name="SidecarUseSSL1" id="85">
+													<DataPath>SidecarUseSSL</DataPath>
+													<CheckBoxType>Auto</CheckBoxType>
+													<ContextMenu name="SidecarUseSSL1КонтекстноеМеню" id="86"/>
+													<ExtendedTooltip name="SidecarUseSSL1РасширеннаяПодсказка" id="87"/>
+												</CheckBoxField>
+											</ChildItems>
+										</UsualGroup>
+									</ChildItems>
+								</UsualGroup>
+							</ChildItems>
+						</Page>
+						<Page name="СтраницаУстановкаНеПоддерживается" id="90">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Страница установка не поддерживается</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Страница установка не поддерживается</v8:content>
+								</v8:item>
+							</ToolTip>
+							<HorizontalSpacing>None</HorizontalSpacing>
+							<HorizontalAlign>Center</HorizontalAlign>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="СтраницаУстановкаНеПоддерживаетсяРасширеннаяПодсказка" id="91"/>
+							<ChildItems>
+								<LabelDecoration name="ДекорацияОтступ" id="99">
+									<Height>4</Height>
+									<ContextMenu name="ДекорацияОтступКонтекстноеМеню" id="100"/>
+									<ExtendedTooltip name="ДекорацияОтступРасширеннаяПодсказка" id="101"/>
+								</LabelDecoration>
+								<UsualGroup name="ГруппаУстановкаВВебКлиенте" id="95">
+									<Visible>false</Visible>
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа установка в веб клиенте</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа установка в веб клиенте</v8:content>
+										</v8:item>
+									</ToolTip>
+									<HorizontalStretch>true</HorizontalStretch>
+									<GroupHorizontalAlign>Center</GroupHorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаУстановкаВВебКлиентеРасширеннаяПодсказка" id="96"/>
+									<ChildItems>
+										<LabelDecoration name="ДекорацияУстановкаВВебКлиентеНеПоддерживается" id="92">
+											<HorizontalStretch>true</HorizontalStretch>
+											<TextColor>style:SpecialTextColor</TextColor>
+											<Font height="14" kind="AutoFont"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Установка расширения в сеансе веб-клиента не поддерживается
+</v8:content>
+												</v8:item>
+											</Title>
+											<HorizontalAlign>Center</HorizontalAlign>
+											<ContextMenu name="ДекорацияУстановкаВВебКлиентеНеПоддерживаетсяКонтекстноеМеню" id="93"/>
+											<ExtendedTooltip name="ДекорацияУстановкаВВебКлиентеНеПоддерживаетсяРасширеннаяПодсказка" id="94"/>
+										</LabelDecoration>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="ГруппаМинимальнаяВерсияПлатформы" id="102">
+									<Visible>false</Visible>
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа установка в веб клиенте</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа установка в веб клиенте</v8:content>
+										</v8:item>
+									</ToolTip>
+									<HorizontalStretch>true</HorizontalStretch>
+									<GroupHorizontalAlign>Center</GroupHorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаМинимальнаяВерсияПлатформыРасширеннаяПодсказка" id="103"/>
+									<ChildItems>
+										<LabelDecoration name="ДекорацияМинимальнаяВерсияПлатформы" id="104">
+											<HorizontalStretch>true</HorizontalStretch>
+											<TextColor>style:SpecialTextColor</TextColor>
+											<Font height="14" kind="AutoFont"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Для установки расширения необходима версия платформы 8.3.10 или выше</v8:content>
+												</v8:item>
+											</Title>
+											<HorizontalAlign>Center</HorizontalAlign>
+											<ContextMenu name="ДекорацияМинимальнаяВерсияПлатформыКонтекстноеМеню" id="105"/>
+											<ExtendedTooltip name="ДекорацияМинимальнаяВерсияПлатформыРасширеннаяПодсказка" id="106"/>
+										</LabelDecoration>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="ГруппаМинВерсияРежимаСовместимости" id="107">
+									<Visible>false</Visible>
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа установка в веб клиенте</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа установка в веб клиенте</v8:content>
+										</v8:item>
+									</ToolTip>
+									<HorizontalStretch>true</HorizontalStretch>
+									<GroupHorizontalAlign>Center</GroupHorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаМинВерсияРежимаСовместимостиРасширеннаяПодсказка" id="108"/>
+									<ChildItems>
+										<LabelDecoration name="ДекорацияМинВерсияРежимаСовместимости" id="109">
+											<HorizontalStretch>true</HorizontalStretch>
+											<TextColor>style:SpecialTextColor</TextColor>
+											<Font height="14" kind="AutoFont"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Для установки расширения необходим режим совместимости конфигурации 8.3.9 или выше</v8:content>
+												</v8:item>
+											</Title>
+											<HorizontalAlign>Center</HorizontalAlign>
+											<ContextMenu name="ДекорацияМинВерсияРежимаСовместимостиКонтекстноеМеню" id="110"/>
+											<ExtendedTooltip name="ДекорацияМинВерсияРежимаСовместимостиРасширеннаяПодсказка" id="111"/>
+										</LabelDecoration>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="ГруппаМодульВстроенВКонфигурацию" id="112">
+									<Visible>false</Visible>
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа установка в веб клиенте</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа установка в веб клиенте</v8:content>
+										</v8:item>
+									</ToolTip>
+									<HorizontalStretch>true</HorizontalStretch>
+									<GroupHorizontalAlign>Center</GroupHorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаМодульВстроенВКонфигурациюРасширеннаяПодсказка" id="113"/>
+									<ChildItems>
+										<LabelDecoration name="ДекорацияМодульВстроенВКонфигурацию" id="114">
+											<HorizontalStretch>true</HorizontalStretch>
+											<TextColor>style:SpecialTextColor</TextColor>
+											<Font height="14" kind="AutoFont"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>В конфигурации уже встроен модуль интеграции с "Moleculer"
+Установка расширения невозможна</v8:content>
+												</v8:item>
+											</Title>
+											<HorizontalAlign>Center</HorizontalAlign>
+											<ContextMenu name="ДекорацияМодульВстроенВКонфигурациюКонтекстноеМеню" id="115"/>
+											<ExtendedTooltip name="ДекорацияМодульВстроенВКонфигурациюРасширеннаяПодсказка" id="116"/>
+										</LabelDecoration>
+									</ChildItems>
+								</UsualGroup>
+							</ChildItems>
+						</Page>
+						<Page name="СтраницаЗапускНовогоСеанса" id="117">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Страница запуск нового сеанса</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Страница запуск нового сеанса</v8:content>
+								</v8:item>
+							</ToolTip>
+							<ExtendedTooltip name="СтраницаЗапускНовогоСеансаРасширеннаяПодсказка" id="118"/>
+							<ChildItems>
+								<LabelDecoration name="ДекорацияОтступ1" id="119">
+									<Height>4</Height>
+									<ContextMenu name="ДекорацияОтступ1КонтекстноеМеню" id="120"/>
+									<ExtendedTooltip name="ДекорацияОтступ1РасширеннаяПодсказка" id="121"/>
+								</LabelDecoration>
+								<LabelDecoration name="ДекорацияЗапускНовогоСеансаПредупреждение" id="127">
+									<TextColor>style:SpecialTextColor</TextColor>
+									<Font height="14" kind="AutoFont"/>
+									<Title formatted="true">
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>&lt;fontsize 16&gt;&lt;colorstyle -14&gt;В конфигурации установлен запрет использования синхронных методов в тонком клиенте. &lt;/&gt;&lt;/&gt;</v8:content>
+										</v8:item>
+									</Title>
+									<HorizontalAlign>Center</HorizontalAlign>
+									<ContextMenu name="ДекорацияЗапускНовогоСеансаПредупреждениеКонтекстноеМеню" id="128"/>
+									<ExtendedTooltip name="ДекорацияЗапускНовогоСеансаПредупреждениеРасширеннаяПодсказка" id="129"/>
+								</LabelDecoration>
+								<LabelDecoration name="ДекорацияЗапускНовогоСеанса" id="124">
+									<TextColor>style:SpecialTextColor</TextColor>
+									<Font height="14" kind="AutoFont"/>
+									<Title formatted="true">
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>&lt;colorstyle -46&gt;Запуск толстого клиента... &lt;/&gt;&lt;link Отменить&gt;&lt;fontsize 12&gt;отменить&lt;/&gt;&lt;/&gt;</v8:content>
+										</v8:item>
+									</Title>
+									<HorizontalAlign>Center</HorizontalAlign>
+									<ContextMenu name="ДекорацияЗапускНовогоСеансаКонтекстноеМеню" id="125"/>
+									<ExtendedTooltip name="ДекорацияЗапускНовогоСеансаРасширеннаяПодсказка" id="126"/>
+									<Events>
+										<Event name="URLProcessing">ДекорацияЗапускНовогоСеансаОбработкаНавигационнойСсылки</Event>
+									</Events>
+								</LabelDecoration>
+								<LabelDecoration name="ДекорацияЗапускНовогоСеансаОтменен" id="130">
+									<TextColor>style:SpecialTextColor</TextColor>
+									<Font height="14" kind="AutoFont"/>
+									<Title formatted="true">
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>&lt;fontsize 14&gt;&lt;colorstyle -14&gt;Запуск отменен &lt;/&gt;&lt;/&gt;&lt;link повторить&gt;&lt;fontsize 12&gt;&lt;color #000000&gt;повторить&lt;/&gt;&lt;/&gt;&lt;/&gt;</v8:content>
+										</v8:item>
+									</Title>
+									<HorizontalAlign>Center</HorizontalAlign>
+									<ContextMenu name="ДекорацияЗапускНовогоСеансаОтмененКонтекстноеМеню" id="131"/>
+									<ExtendedTooltip name="ДекорацияЗапускНовогоСеансаОтмененРасширеннаяПодсказка" id="132"/>
+									<Events>
+										<Event name="URLProcessing">ДекорацияЗапускНовогоСеансаОтменен</Event>
+									</Events>
+								</LabelDecoration>
+							</ChildItems>
+						</Page>
+					</ChildItems>
+				</Pages>
+			</ChildItems>
+		</UsualGroup>
+		<UsualGroup name="ГруппаПодвалФормы" id="32">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Группа подвал формы</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Группа подвал формы</v8:content>
+				</v8:item>
+			</ToolTip>
+			<HorizontalStretch>false</HorizontalStretch>
+			<GroupHorizontalAlign>Left</GroupHorizontalAlign>
+			<HorizontalAlign>Left</HorizontalAlign>
+			<Representation>None</Representation>
+			<ShowTitle>false</ShowTitle>
+			<ExtendedTooltip name="ГруппаПодвалФормыРасширеннаяПодсказка" id="33"/>
+			<ChildItems>
+				<LabelField name="ВерсияУстановщика" id="34">
+					<DataPath>ВерсияУстановщика</DataPath>
+					<TitleLocation>None</TitleLocation>
+					<Font bold="true" kind="AutoFont"/>
+					<ContextMenu name="ВерсияУстановщикаКонтекстноеМеню" id="35"/>
+					<ExtendedTooltip name="ВерсияУстановщикаРасширеннаяПодсказка" id="36"/>
+				</LabelField>
+			</ChildItems>
+		</UsualGroup>
+	</ChildItems>
+	<Attributes>
+		<Attribute name="Объект" id="1">
+			<Type>
+				<v8:Type>cfg:ExternalDataProcessorObject.mol_OneS_УстановщикРасширения</v8:Type>
+			</Type>
+			<MainAttribute>true</MainAttribute>
+		</Attribute>
+		<Attribute name="РасширениеУстановлено" id="2">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Расширение установлено</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="РасширениеАктивно" id="3">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Расширение активно</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="ВерсияРасширения" id="4">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Версия расширения</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8ui:FormattedString</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="АктуальнаяВерсия" id="5">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Актуальная версия</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>13</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="СостояниеРасширения" id="6">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Состояние расширения</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8ui:FormattedString</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="ВерсияУстановщика" id="7">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Версия установщика</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>10</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="Адрес" id="8">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Адрес</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="SidecarEndpoint" id="9">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Sidecar endpoint</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="SidecarPort" id="10">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Port</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>5</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Nonnegative</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="SidecarUseSSL" id="11">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Use SSL</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="NodeEndpoint" id="12">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Node endpoint</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="NodePort" id="13">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Port</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>5</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Nonnegative</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="NodeUseSSL" id="14">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Use SSL</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="УстановкаВозможна" id="15">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Установка возможна</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="ПараметрыУстановщика" id="16">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Параметры установщика</v8:content>
+				</v8:item>
+			</Title>
+			<Type/>
+		</Attribute>
+		<Attribute name="ОписаниеОшибки" id="17">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Описание ошибки</v8:content>
+				</v8:item>
+			</Title>
+			<Type/>
+		</Attribute>
+		<Attribute name="ФайлРасширения" id="18">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Файл расширения</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+	</Attributes>
+	<Commands>
+		<Command name="УстановитьРасширение" id="1">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Установить расширение</v8:content>
+				</v8:item>
+				<v8:item>
+					<v8:lang>en</v8:lang>
+					<v8:content>Install extension</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Установить расширение</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>УстановитьРасширение</Action>
+		</Command>
+		<Command name="УдалитьРасширение" id="3">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Delete extension</v8:content>
+				</v8:item>
+				<v8:item>
+					<v8:lang>en</v8:lang>
+					<v8:content>Удалить</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Удалить расширение</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>УдалитьРасширение</Action>
+		</Command>
+	</Commands>
+</Form>

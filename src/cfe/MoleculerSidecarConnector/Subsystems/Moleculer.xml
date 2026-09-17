@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<MetaDataObject xmlns="http://v8.1c.ru/8.3/MDClasses" xmlns:app="http://v8.1c.ru/8.2/managed-application/core" xmlns:cfg="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:cmi="http://v8.1c.ru/8.2/managed-application/cmi" xmlns:ent="http://v8.1c.ru/8.1/data/enterprise" xmlns:lf="http://v8.1c.ru/8.2/managed-application/logform" xmlns:style="http://v8.1c.ru/8.1/data/ui/style" xmlns:sys="http://v8.1c.ru/8.1/data/ui/fonts/system" xmlns:v8="http://v8.1c.ru/8.1/data/core" xmlns:v8ui="http://v8.1c.ru/8.1/data/ui" xmlns:web="http://v8.1c.ru/8.1/data/ui/colors/web" xmlns:win="http://v8.1c.ru/8.1/data/ui/colors/windows" xmlns:xen="http://v8.1c.ru/8.3/xcf/enums" xmlns:xpr="http://v8.1c.ru/8.3/xcf/predef" xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.17">
+	<Subsystem uuid="a0fc9568-1daa-4ef9-a440-ba6f5ead8414">
+		<Properties>
+			<Name>Moleculer</Name>
+			<Synonym>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Moleculer</v8:content>
+				</v8:item>
+				<v8:item>
+					<v8:lang>en</v8:lang>
+					<v8:content>Moleculer</v8:content>
+				</v8:item>
+			</Synonym>
+			<Comment/>
+			<IncludeHelpInContents>true</IncludeHelpInContents>
+			<IncludeInCommandInterface>true</IncludeInCommandInterface>
+			<UseOneCommand>false</UseOneCommand>
+			<Explanation/>
+			<Picture>
+				<xr:Ref>CommonPicture.mol_Logo</xr:Ref>
+				<xr:LoadTransparent>true</xr:LoadTransparent>
+			</Picture>
+			<Content>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Errors</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.Moleculer</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Logger</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Reuse</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Helpers</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Logo</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">DataProcessor.mol_AdminPanel</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Catalog.mol_Services</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Enum.mol_ConnectionType</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Enum.mol_AuthorizationType</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Enum.mol_LogLevel</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Enum.mol_ElementTypes</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Catalog.mol_Connections</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Catalog.mol_Publications</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Constant.mol_Namespace</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Constant.mol_PublishServices</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Constant.mol_UseDynamicServices</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Constant.mol_UseProxy</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Constant.mol_LogLevel</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Constant.mol_TestConnection</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Style.mol_Стиль1</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">StyleItem.mol_SelectionColor</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">StyleItem.mol_ЦветФона</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">StyleItem.mol_VersionBackColor</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">StyleItem.mol_ActiveBackColor</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">HTTPService.mol_Moleculer</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Code</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Circle</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Cable</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Extension</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Explore</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Chat</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Dns</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Receipt</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Close</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_CircleOrange</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_CircleRed</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_CircleGreen</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_Play</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonPicture.mol_PlayActive</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonTemplate.CodeEditor</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonForm.mol_ErrorViewer</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonForm.mol_SidecarInfo</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonForm.mol_UserSelection</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">FunctionalOption.mol_UseDynamicServices</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">FunctionalOption.mol_UseProxy</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">Role.mol_Administrator</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.MoleculerOverridable</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.MoleculerClientServer</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Broker</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_ContextFactory</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_HelpersClientServer</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_ReuseCalls</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_SchemaFactory</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Transport</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Internal</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.YAML</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.CodeEditor</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.CodeEditorClient</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.CodeEditorClientServer</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Server</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Client</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.YAML1</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.YAML2</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.YAML3</xr:Item>
+			</Content>
+		</Properties>
+		<ChildObjects/>
+	</Subsystem>
+</MetaDataObject>

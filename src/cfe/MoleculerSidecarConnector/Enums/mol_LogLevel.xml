@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<MetaDataObject xmlns="http://v8.1c.ru/8.3/MDClasses" xmlns:app="http://v8.1c.ru/8.2/managed-application/core" xmlns:cfg="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:cmi="http://v8.1c.ru/8.2/managed-application/cmi" xmlns:ent="http://v8.1c.ru/8.1/data/enterprise" xmlns:lf="http://v8.1c.ru/8.2/managed-application/logform" xmlns:style="http://v8.1c.ru/8.1/data/ui/style" xmlns:sys="http://v8.1c.ru/8.1/data/ui/fonts/system" xmlns:v8="http://v8.1c.ru/8.1/data/core" xmlns:v8ui="http://v8.1c.ru/8.1/data/ui" xmlns:web="http://v8.1c.ru/8.1/data/ui/colors/web" xmlns:win="http://v8.1c.ru/8.1/data/ui/colors/windows" xmlns:xen="http://v8.1c.ru/8.3/xcf/enums" xmlns:xpr="http://v8.1c.ru/8.3/xcf/predef" xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.17">
+	<Enum uuid="bb6d1890-da05-4295-9260-a4dfd48a7b7b">
+		<InternalInfo>
+			<xr:GeneratedType name="EnumRef.mol_LogLevel" category="Ref">
+				<xr:TypeId>8c663357-2d15-4e70-aae1-384e68b8df3f</xr:TypeId>
+				<xr:ValueId>326caee7-b768-487e-b93e-6c6e72d80c40</xr:ValueId>
+			</xr:GeneratedType>
+			<xr:GeneratedType name="EnumManager.mol_LogLevel" category="Manager">
+				<xr:TypeId>f689faa8-e949-4262-911f-47e9a7bbf512</xr:TypeId>
+				<xr:ValueId>c5077c88-0383-476a-9b3b-35817b8d45e8</xr:ValueId>
+			</xr:GeneratedType>
+			<xr:GeneratedType name="EnumList.mol_LogLevel" category="List">
+				<xr:TypeId>a1cdb3c1-6f48-4960-979c-19ef46da446a</xr:TypeId>
+				<xr:ValueId>3efa5761-6c31-47bf-94ce-aab1e4e76487</xr:ValueId>
+			</xr:GeneratedType>
+		</InternalInfo>
+		<Properties>
+			<Name>mol_LogLevel</Name>
+			<Synonym>
+				<v8:item>
+					<v8:lang>en</v8:lang>
+					<v8:content>Moleculer log levels</v8:content>
+				</v8:item>
+			</Synonym>
+			<Comment/>
+			<UseStandardCommands>false</UseStandardCommands>
+			<Characteristics/>
+			<QuickChoice>true</QuickChoice>
+			<ChoiceMode>BothWays</ChoiceMode>
+			<DefaultListForm/>
+			<DefaultChoiceForm/>
+			<AuxiliaryListForm/>
+			<AuxiliaryChoiceForm/>
+			<ListPresentation/>
+			<ExtendedListPresentation/>
+			<Explanation/>
+			<ChoiceHistoryOnInput>Auto</ChoiceHistoryOnInput>
+		</Properties>
+		<ChildObjects>
+			<EnumValue uuid="a6bdae9a-07c4-4960-8bec-f6a444f7c1b2">
+				<Properties>
+					<Name>Debug</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>en</v8:lang>
+							<v8:content>Debug</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+				</Properties>
+			</EnumValue>
+			<EnumValue uuid="8f9a44b0-b637-405d-9bee-b9b43d2b6251">
+				<Properties>
+					<Name>Info</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>en</v8:lang>
+							<v8:content>Info</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+				</Properties>
+			</EnumValue>
+			<EnumValue uuid="4070e158-2c36-4fb6-bd5c-b40df1b853c9">
+				<Properties>
+					<Name>Warn</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>en</v8:lang>
+							<v8:content>Warn</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+				</Properties>
+			</EnumValue>
+			<EnumValue uuid="ee9749d8-a08f-4d4e-b6f6-7febd5831722">
+				<Properties>
+					<Name>Error</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>en</v8:lang>
+							<v8:content>Error</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+				</Properties>
+			</EnumValue>
+		</ChildObjects>
+	</Enum>
+</MetaDataObject>

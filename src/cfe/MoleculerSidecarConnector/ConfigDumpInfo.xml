@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ConfigDumpInfo xmlns="http://v8.1c.ru/8.3/xcf/dumpinfo" xmlns:xen="http://v8.1c.ru/8.3/xcf/enums" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" format="Hierarchical" version="2.17">
+	<ConfigVersions>
+		<Metadata name="Catalog.mol_Connections" id="eb21d79a-100d-41c0-93f8-4090551112e9" configVersion="2fda4ffeecba873e36024482b7ac65c94c65e9b5">
+			<Metadata name="Catalog.mol_Connections.Attribute.Port" id="03f2e494-47c5-46d8-8aea-8d3115876f80"/>
+			<Metadata name="Catalog.mol_Connections.Attribute.AccessKey" id="504f4ff4-e8e8-48b5-8ffa-4f783f6653e7"/>
+			<Metadata name="Catalog.mol_Connections.Attribute.SecretKey" id="75a0a505-6a25-4ca3-bc24-93e2767f725f"/>
+			<Metadata name="Catalog.mol_Connections.Attribute.Enabled" id="8259381e-a14e-4800-8a3f-0f2bfcb752ac"/>
+			<Metadata name="Catalog.mol_Connections.Attribute.Timeout" id="846825dc-569b-4746-9ce9-c34333153651"/>
+			<Metadata name="Catalog.mol_Connections.Attribute.UseSSL" id="8e917f2e-1a71-40da-80fe-a98f22fbfab1"/>
+			<Metadata name="Catalog.mol_Connections.Attribute.Endpoint" id="a7db06a4-b08c-49b2-adbb-7ae4d09ea0f7"/>
+		</Metadata>
+		<Metadata name="Catalog.mol_Connections.Form.ItemForm" id="13163cba-82e8-4c2f-9078-71315a0ff3a3" configVersion="33a36c107904f7d8daa5cbc187099584f90d00a6"/>
+		<Metadata name="Catalog.mol_Connections.Form.ItemForm.Form" id="13163cba-82e8-4c2f-9078-71315a0ff3a3.0" configVersion="963088f243758a53f931f738ae48b7e3722a6056"/>
+		<Metadata name="Catalog.mol_Connections.Form.ListForm" id="7a8ac277-1f26-4ff2-bb39-05d42997c22b" configVersion="46a270ebcd74845129aa362f4643979e23eb6d0d"/>
+		<Metadata name="Catalog.mol_Connections.Form.ListForm.Form" id="7a8ac277-1f26-4ff2-bb39-05d42997c22b.0" configVersion="8bbc79d802492f615bb240910308d3f0f0305717"/>
+		<Metadata name="Catalog.mol_Connections.Predefined" id="eb21d79a-100d-41c0-93f8-4090551112e9.1c" configVersion="9873fc71a5a3b5e937fafed96f0f51ba6eee32a8"/>
+		<Metadata name="Catalog.mol_Publications" id="31b475be-617b-49fa-b06f-8a513af224e1" configVersion="53496faf44fbf29a9d12c337ef4daebfb0165437">
+			<Metadata name="Catalog.mol_Publications.Attribute.UseSSL" id="0707ae52-ec7e-4865-984a-275165070655"/>
+			<Metadata name="Catalog.mol_Publications.Attribute.Password" id="132a029e-b038-49c0-a7a0-4b1997b18916"/>
+			<Metadata name="Catalog.mol_Publications.Attribute.User" id="133409e3-4793-451d-b208-83f9565e730c"/>
+			<Metadata name="Catalog.mol_Publications.Attribute.AuthType" id="25238c4c-a759-45ba-9c71-a04ba2a580c5"/>
+			<Metadata name="Catalog.mol_Publications.Attribute.Endpoint" id="25a572e6-9684-4be0-9ab5-06c019c5a0f4"/>
+			<Metadata name="Catalog.mol_Publications.Attribute.Port" id="6fbb8fe4-3aa9-41ff-93f4-376cbbc71c2f"/>
+			<Metadata name="Catalog.mol_Publications.Attribute.Connection" id="bb36ed07-8426-490b-9875-e7cff4b49ab7"/>
+			<Metadata name="Catalog.mol_Publications.Attribute.Path" id="bfa545d1-4fa2-4909-bb5e-f31ce33eb328"/>
+			<Metadata name="Catalog.mol_Publications.Attribute.Enabled" id="fe2a6c7a-ec83-4178-9da0-801a574e6614"/>
+		</Metadata>
+		<Metadata name="Catalog.mol_Publications.Form.ItemForm" id="65ed53d2-9e6f-487d-8b65-5cce7050c1af" configVersion="fb77fb29229b7e40043b512cbf453a8bf2adda9a"/>
+		<Metadata name="Catalog.mol_Publications.Form.ItemForm.Form" id="65ed53d2-9e6f-487d-8b65-5cce7050c1af.0" configVersion="10618e3c16212024f9be995b75aba65b8a744e97"/>
+		<Metadata name="Catalog.mol_Publications.Form.ListForm" id="f457535a-70de-4ca3-a59d-b0e38f0fc91f" configVersion="93f1bffe5097af1eb6427b68726733fe3e24bba0"/>
+		<Metadata name="Catalog.mol_Publications.Form.ListForm.Form" id="f457535a-70de-4ca3-a59d-b0e38f0fc91f.0" configVersion="c18a96649e8a3f372a981b6d92fa2c87c8c829a3"/>
+		<Metadata name="Catalog.mol_Publications.Predefined" id="31b475be-617b-49fa-b06f-8a513af224e1.1c" configVersion="3d980479b6959480ae4a256a66cc7621c80629c1"/>
+		<Metadata name="Catalog.mol_Services" id="0ab584f6-d51d-4027-ba04-197ba9e30efb" configVersion="069c02aecbfd3bb1eec7d9cae9397c4c960b1c7a">
+			<Metadata name="Catalog.mol_Services.TabularSection.Elements.Attribute.Code" id="0b79d575-8aa2-4805-b375-e817d5cfe909"/>
+			<Metadata name="Catalog.mol_Services.TabularSection.Elements.Attribute.Name" id="2d248e58-9b77-43c0-9b48-f601ebff112f"/>
+			<Metadata name="Catalog.mol_Services.TabularSection.Elements" id="3a72dd9d-6007-4948-a06f-13550c029717"/>
+			<Metadata name="Catalog.mol_Services.TabularSection.Elements.Attribute.Id" id="43420722-1f4b-4cee-804f-5e844baa4058"/>
+			<Metadata name="Catalog.mol_Services.TabularSection.Elements.Attribute.Type" id="5dbb0fe5-8a17-4e06-83a7-a4ff2b2fef69"/>
+			<Metadata name="Catalog.mol_Services.TabularSection.Metadata" id="652e6056-8247-4883-b66d-8e1cbfaa35ce"/>
+			<Metadata name="Catalog.mol_Services.Attribute.Enabled" id="a24a4060-3d61-4268-bd9e-b30e29f82b5a"/>
+			<Metadata name="Catalog.mol_Services.Attribute.ServiceConstructor" id="a784ebe8-6824-42a6-9a25-c7557b136025"/>
+			<Metadata name="Catalog.mol_Services.TabularSection.Metadata.Attribute.Key" id="ad22e5e8-aedb-44b1-b05f-89a86baf7d00"/>
+			<Metadata name="Catalog.mol_Services.TabularSection.Metadata.Attribute.Value" id="d11203f5-6ae4-47d8-bb4d-bb5bde711ed0"/>
+			<Metadata name="Catalog.mol_Services.Attribute.Version" id="fbef4d93-3ebb-4713-ab18-7b35fc5bbc16"/>
+		</Metadata>
+		<Metadata name="Catalog.mol_Services.Form.ItemForm" id="702d5847-3bc8-4edc-92a0-269bef0bd9de" configVersion="9b6f4152924ced70991590dd05830619bbda4fd1"/>
+		<Metadata name="Catalog.mol_Services.Form.ItemForm.Form" id="702d5847-3bc8-4edc-92a0-269bef0bd9de.0" configVersion="451c2a0270ee0e272cffd51e1887b7c0d201559b"/>
+		<Metadata name="CommonForm.mol_ErrorViewer" id="26ec88e6-7043-4d48-9da7-d90387af524d" configVersion="61ece7bc7cdafd4a6bec59293ae40054ff232727"/>
+		<Metadata name="CommonForm.mol_ErrorViewer.Form" id="26ec88e6-7043-4d48-9da7-d90387af524d.0" configVersion="a94f7bfefca23e862e42b4fecb54fb6e1a85a9ae"/>
+		<Metadata name="CommonForm.mol_SidecarInfo" id="b6d4ae1d-4286-4a79-b836-28e29627890a" configVersion="2589623b90070dd8a14633f1e046d5ee4e8f6142"/>
+		<Metadata name="CommonForm.mol_SidecarInfo.Form" id="b6d4ae1d-4286-4a79-b836-28e29627890a.0" configVersion="19b8d12800d7a0ff656805ca2b37191a19f16941"/>
+		<Metadata name="CommonForm.mol_UserSelection" id="3db29aeb-7bee-40cd-8c6e-f7712f749257" configVersion="10cbee89f99e082dadce7779ac4836c61995e69f"/>
+		<Metadata name="CommonForm.mol_UserSelection.Form" id="3db29aeb-7bee-40cd-8c6e-f7712f749257.0" configVersion="8939fb98bdb2242e576ebb39c60a57ca97359ced"/>
+		<Metadata name="CommonModule.CodeEditor" id="46d99453-2486-4b73-b005-98dab1982a10" configVersion="96b74708c19a7ef86d40faa23f3c09c4aa8d1696"/>
+		<Metadata name="CommonModule.CodeEditor.Module" id="46d99453-2486-4b73-b005-98dab1982a10.0" configVersion="517eab3825d77b11a1d0fc07bfc195c55af2235c"/>
+		<Metadata name="CommonModule.CodeEditorClient" id="34212691-7d5b-43dc-9b45-2f246c3921e4" configVersion="1f67ea600ab7a348a85e618e428aefe38e6bd20c"/>
+		<Metadata name="CommonModule.CodeEditorClient.Module" id="34212691-7d5b-43dc-9b45-2f246c3921e4.0" configVersion="f7fa01e5b12dfee804af1479758d4ef9635606bb"/>
+		<Metadata name="CommonModule.CodeEditorClientServer" id="f39f863c-b7cb-4bff-9ab8-edb1aa569452" configVersion="bb87591d22339b2225113545faa520ccf2d005bf"/>
+		<Metadata name="CommonModule.CodeEditorClientServer.Module" id="f39f863c-b7cb-4bff-9ab8-edb1aa569452.0" configVersion="3b5fd8e39256f4a45467d76ef605554b764dba0a"/>
+		<Metadata name="CommonModule.Moleculer" id="c55608ce-debf-4a92-9b8f-8ccde9d17114" configVersion="1d61601faf77a3cf2a6d078c1d07051d08093746"/>
+		<Metadata name="CommonModule.Moleculer.Module" id="c55608ce-debf-4a92-9b8f-8ccde9d17114.0" configVersion="0124dd31c2f3f48cf8a6d2c91dd7564d24c3cfd7"/>
+		<Metadata name="CommonModule.MoleculerClientServer" id="33d45997-8db7-4d5b-810c-0ddf79fb8871" configVersion="d576ef4e1bdd00226ffc0f3bb9099ec398b20e93"/>
+		<Metadata name="CommonModule.MoleculerClientServer.Module" id="33d45997-8db7-4d5b-810c-0ddf79fb8871.0" configVersion="6e5996fda7166d3656009498ffc9813b2b2cc6a6"/>
+		<Metadata name="CommonModule.MoleculerOverridable" id="61d9f2cd-4c9d-4dd0-bb97-b0e06619cc02" configVersion="37e6639059e171081894c576ecc5640006156a57"/>
+		<Metadata name="CommonModule.MoleculerOverridable.Module" id="61d9f2cd-4c9d-4dd0-bb97-b0e06619cc02.0" configVersion="57b40841f9d72df2eb3b0216a7c3c36228372a9e"/>
+		<Metadata name="CommonModule.YAML" id="c26b3fd2-1b4d-47d5-8374-55cf1bae36c6" configVersion="50892fb4d3f73ecc3633f72de815d4dd019616a5"/>
+		<Metadata name="CommonModule.YAML.Module" id="c26b3fd2-1b4d-47d5-8374-55cf1bae36c6.0" configVersion="6ac65e3be9454076f8f88aa7fd7a281ba5fcd389"/>
+		<Metadata name="CommonModule.YAML1" id="2d01fac9-4011-4cfd-a03e-74362ccd1851" configVersion="355eae75607bceae54d4d56f1da0549b51b32778"/>
+		<Metadata name="CommonModule.YAML1.Module" id="2d01fac9-4011-4cfd-a03e-74362ccd1851.0" configVersion="e8454fc5965dc233bbe8141e1eedbd7656d56dff"/>
+		<Metadata name="CommonModule.YAML2" id="32099b04-0cfc-4b6d-a7fe-f612980121c2" configVersion="1b28b3726fac713923620f261af7f33964c5c8d9"/>
+		<Metadata name="CommonModule.YAML2.Module" id="32099b04-0cfc-4b6d-a7fe-f612980121c2.0" configVersion="4dde8f8a1e9738204d795bffcbc5ec632d6579c6"/>
+		<Metadata name="CommonModule.YAML3" id="9c2e2179-d65d-41ee-a464-1de8fd28da75" configVersion="1d855e8502711a77be817489b498a783718a0f82"/>
+		<Metadata name="CommonModule.YAML3.Module" id="9c2e2179-d65d-41ee-a464-1de8fd28da75.0" configVersion="d975656d92a0430bebc4a85f46080f936cbfec95"/>
+		<Metadata name="CommonModule.mol_Broker" id="f41e60ad-0f6e-4de3-abe9-300e5a6e385e" configVersion="19c5bafeea45fec0b4c9df7a6729be4c3a757e03"/>
+		<Metadata name="CommonModule.mol_Broker.Module" id="f41e60ad-0f6e-4de3-abe9-300e5a6e385e.0" configVersion="c77459a656a34525b1d54fb4bdbe04ff042b4943"/>
+		<Metadata name="CommonModule.mol_Client" id="06b26ef4-a61a-41a9-b031-aeedcc154c45" configVersion="40bd807159b0bff88d6499ed17000700368bfb27"/>
+		<Metadata name="CommonModule.mol_Client.Module" id="06b26ef4-a61a-41a9-b031-aeedcc154c45.0" configVersion="2b4d68415b847f65831e1f2a99379fe8cc02bd14"/>
+		<Metadata name="CommonModule.mol_ContextFactory" id="4c22be96-faf1-4723-a385-aa3a58208f37" configVersion="567134dd1e928ad4b34269030ea7f4af6793ee98"/>
+		<Metadata name="CommonModule.mol_ContextFactory.Module" id="4c22be96-faf1-4723-a385-aa3a58208f37.0" configVersion="34836513ba6e2f08970d899fc3b1677775ce3bd3"/>
+		<Metadata name="CommonModule.mol_Errors" id="46d3dd1f-681c-4898-b6de-88a5647bf138" configVersion="3472318cd7cc461a6e59a37e1d2a20ca96dedaef"/>
+		<Metadata name="CommonModule.mol_Errors.Module" id="46d3dd1f-681c-4898-b6de-88a5647bf138.0" configVersion="0386b077d812d56f26f2db3d4808e4fc7c951c6b"/>
+		<Metadata name="CommonModule.mol_Helpers" id="9d188e3b-4963-49d3-8d14-7eda01456b16" configVersion="c225de191f6189ca915c995c743140c152fed923"/>
+		<Metadata name="CommonModule.mol_Helpers.Module" id="9d188e3b-4963-49d3-8d14-7eda01456b16.0" configVersion="819ff4bc730f0b4cbb899cbb7dfe0c6a4de2b849"/>
+		<Metadata name="CommonModule.mol_HelpersClientServer" id="2699ca08-9fb4-4a42-a1a5-d6a02b80e8b6" configVersion="5a813fc93adfd2d73bae1ae7926810c581297f0c"/>
+		<Metadata name="CommonModule.mol_HelpersClientServer.Module" id="2699ca08-9fb4-4a42-a1a5-d6a02b80e8b6.0" configVersion="f218d24b98cfb870e7bab888c2a533eff3a963c8"/>
+		<Metadata name="CommonModule.mol_Internal" id="368f891c-d70d-4d45-a761-cb7aab53a292" configVersion="59e36f1114beba77e93e4cc8189d454ad61ae9df"/>
+		<Metadata name="CommonModule.mol_Internal.Module" id="368f891c-d70d-4d45-a761-cb7aab53a292.0" configVersion="24644e83930e7e52fcc46cac2d220d1d32212a93"/>
+		<Metadata name="CommonModule.mol_Logger" id="ae35db20-37e6-4e3d-8e68-70c734f6e7a9" configVersion="542a339502a8a5f7aef4e4743773be1c272ceedb"/>
+		<Metadata name="CommonModule.mol_Logger.Module" id="ae35db20-37e6-4e3d-8e68-70c734f6e7a9.0" configVersion="17b92de90cad3a02f94bcf6d009300e26a564f6b"/>
+		<Metadata name="CommonModule.mol_Reuse" id="16c69bb5-973f-44d9-b7c0-9e7a2c8c8381" configVersion="a21f1a3fd58a203895175f720ee09e7b9ceb55ff"/>
+		<Metadata name="CommonModule.mol_Reuse.Module" id="16c69bb5-973f-44d9-b7c0-9e7a2c8c8381.0" configVersion="77613614992e7a06d9e6d4f44f3d935554c687a4"/>
+		<Metadata name="CommonModule.mol_ReuseCalls" id="c73a14f2-3e2c-4c3a-a1b3-a341571a850f" configVersion="70c8e9226e23919f38293f53eb23bd168cb94f25"/>
+		<Metadata name="CommonModule.mol_ReuseCalls.Module" id="c73a14f2-3e2c-4c3a-a1b3-a341571a850f.0" configVersion="fdf4c6cef2e5119dbe84d7b51b03f16ba526590a"/>
+		<Metadata name="CommonModule.mol_SchemaFactory" id="24f89363-c57a-4d7c-a52b-264b51dcff59" configVersion="2f3bca8606853f57be3cceda9356dc5885ad44b7"/>
+		<Metadata name="CommonModule.mol_SchemaFactory.Module" id="24f89363-c57a-4d7c-a52b-264b51dcff59.0" configVersion="ed84312fa5e60288d3ab2f22a4be74db85a7804d"/>
+		<Metadata name="CommonModule.mol_Server" id="e86a1298-cee3-4327-884c-16b3a13f8d30" configVersion="c7d73bb69668b9c605c00b559a36a4acb016f771"/>
+		<Metadata name="CommonModule.mol_Server.Module" id="e86a1298-cee3-4327-884c-16b3a13f8d30.0" configVersion="b156cddc1976e3f596b5bc2bc077a9e8f8942d47"/>
+		<Metadata name="CommonModule.mol_Transport" id="76b33677-e197-4e6f-895a-00fe9034b656" configVersion="b72d9e2f0bd19aad177462fc496387ffb3f90c2b"/>
+		<Metadata name="CommonModule.mol_Transport.Module" id="76b33677-e197-4e6f-895a-00fe9034b656.0" configVersion="dec5dd3c0875eacf382e76c1417dc6d9a44675f5"/>
+		<Metadata name="CommonPicture.mol_Cable" id="49988ddf-ff48-4050-b2ce-fbcfd9095e3f" configVersion="5b99ad1ec357e21614b6e53a00ed222eeae397e5"/>
+		<Metadata name="CommonPicture.mol_Cable.Picture" id="49988ddf-ff48-4050-b2ce-fbcfd9095e3f.0" configVersion="c558fe4941f6e1d5342d09cc6e11b0e24ef10701"/>
+		<Metadata name="CommonPicture.mol_Chat" id="20e04e0e-3f4a-441c-923b-3decd21bc149" configVersion="5e3a725f32fc1c865f8f8916a4ec4f8297addf6b"/>
+		<Metadata name="CommonPicture.mol_Chat.Picture" id="20e04e0e-3f4a-441c-923b-3decd21bc149.0" configVersion="0a065f9af872fbea35c1abb63b812349d078f503"/>
+		<Metadata name="CommonPicture.mol_Circle" id="825ca8f3-f675-4a70-87ca-a70a049ec1d1" configVersion="b92e087a4da466e0de4ae0d648e7f19538fb5404"/>
+		<Metadata name="CommonPicture.mol_Circle.Picture" id="825ca8f3-f675-4a70-87ca-a70a049ec1d1.0" configVersion="8f28bd8518468136479e9fb77d17d65dbf0356bc"/>
+		<Metadata name="CommonPicture.mol_CircleGreen" id="d8d5c1b6-781f-4fe0-ac2e-c70a49681459" configVersion="2bb437cff02b78f738afc6521980dc4edfa0baaa"/>
+		<Metadata name="CommonPicture.mol_CircleGreen.Picture" id="d8d5c1b6-781f-4fe0-ac2e-c70a49681459.0" configVersion="cf64695a631bcb4122f84f9c339ecb9ba7fc8a8d"/>
+		<Metadata name="CommonPicture.mol_CircleOrange" id="5cf6a490-f8f6-41c0-b626-9589a51e5cf0" configVersion="ff85b39c19f49d27b2fa34d27b8ba7a52363bb2b"/>
+		<Metadata name="CommonPicture.mol_CircleOrange.Picture" id="5cf6a490-f8f6-41c0-b626-9589a51e5cf0.0" configVersion="1c92c397e53d573d3d3b3273c465c4aca9cc361b"/>
+		<Metadata name="CommonPicture.mol_CircleRed" id="30783a3e-a5bf-4a92-927c-4e4ef9d6d93b" configVersion="f850e0607607d8cf8b58526fa4faa7b409a8a9f9"/>
+		<Metadata name="CommonPicture.mol_CircleRed.Picture" id="30783a3e-a5bf-4a92-927c-4e4ef9d6d93b.0" configVersion="39a394aa660f3d69b18195271a190e5139cd58f4"/>
+		<Metadata name="CommonPicture.mol_Close" id="3405f795-f28a-4fbe-8d53-3b552dfed425" configVersion="95385080f369e0b7b7e68f9f1368c1e885d30c71"/>
+		<Metadata name="CommonPicture.mol_Close.Picture" id="3405f795-f28a-4fbe-8d53-3b552dfed425.0" configVersion="15c43899092ddd5f8919a36d45098185de39d900"/>
+		<Metadata name="CommonPicture.mol_Code" id="7ac82892-4509-4f1f-8b6d-8d606cd261dd" configVersion="b0afb0aa8b44aae063ce8654214299149ede9706"/>
+		<Metadata name="CommonPicture.mol_Code.Picture" id="7ac82892-4509-4f1f-8b6d-8d606cd261dd.0" configVersion="3f2eced93101f180aba6492baa2677242d9c8bf2"/>
+		<Metadata name="CommonPicture.mol_Dns" id="ff222440-0ab3-4fde-ab0b-7328aea92e39" configVersion="cccf2d7e6ca47606845d59d9487aef7ef4a140c4"/>
+		<Metadata name="CommonPicture.mol_Dns.Picture" id="ff222440-0ab3-4fde-ab0b-7328aea92e39.0" configVersion="92f52aca160fecc74fd61711b7eb012c510032fb"/>
+		<Metadata name="CommonPicture.mol_Explore" id="a0327aa7-f72d-4cdf-ba3d-432344887766" configVersion="06f0b29926b6928a3ca27593108f255a6762a4df"/>
+		<Metadata name="CommonPicture.mol_Explore.Picture" id="a0327aa7-f72d-4cdf-ba3d-432344887766.0" configVersion="087d90359591d530aa9ed342befae1927b02fa51"/>
+		<Metadata name="CommonPicture.mol_Extension" id="247a160c-1206-4aba-8bdb-108fbcc089bf" configVersion="58f0b40914240ff8fec28a16db570d973bdf4129"/>
+		<Metadata name="CommonPicture.mol_Extension.Picture" id="247a160c-1206-4aba-8bdb-108fbcc089bf.0" configVersion="40e202a056df77f80b03ccdaf5b8998278e573e1"/>
+		<Metadata name="CommonPicture.mol_Logo" id="f4cab0cf-fbb5-4e4a-84b1-7c183b51c10a" configVersion="7605519e2a6d73d14a85e45f9a2a7edfb8864da3"/>
+		<Metadata name="CommonPicture.mol_Logo.Picture" id="f4cab0cf-fbb5-4e4a-84b1-7c183b51c10a.0" configVersion="ce053e62f5def78448a9f1cf22721898335fe48c"/>
+		<Metadata name="CommonPicture.mol_Play" id="22c92e67-1ae8-4b0f-975a-3c026a820bf3" configVersion="deac3cf2c43fccdbc7620376588b022faf67a787"/>
+		<Metadata name="CommonPicture.mol_Play.Picture" id="22c92e67-1ae8-4b0f-975a-3c026a820bf3.0" configVersion="c25d77054d448e60d6e8f085dec61940ee2d1b15"/>
+		<Metadata name="CommonPicture.mol_PlayActive" id="6c21ce9e-b33b-48b8-b5e4-de06cc6bd2d8" configVersion="7ea327bead1402f1a85f0f685e5474f932ac3083"/>
+		<Metadata name="CommonPicture.mol_PlayActive.Picture" id="6c21ce9e-b33b-48b8-b5e4-de06cc6bd2d8.0" configVersion="02040466733baf2567b6094c20a46f2312a8c710"/>
+		<Metadata name="CommonPicture.mol_Receipt" id="6c3141f9-e549-414d-855b-5870694b4e34" configVersion="6b361587931504d51e3d62ecae2cbadea32cfb46"/>
+		<Metadata name="CommonPicture.mol_Receipt.Picture" id="6c3141f9-e549-414d-855b-5870694b4e34.0" configVersion="fe910e4a44b3f637692ab30e65a25e3459b66445"/>
+		<Metadata name="CommonTemplate.CodeEditor" id="7b4b4f9d-ecab-4034-8825-bdad20e03b52" configVersion="dc8638d2c396138eca8c89e5bcc511ca28864614"/>
+		<Metadata name="CommonTemplate.CodeEditor.Template" id="7b4b4f9d-ecab-4034-8825-bdad20e03b52.0" configVersion="c264d7f14cf7ee29fd60d2b7bd7f45246b2edeb2"/>
+		<Metadata name="Configuration.MoleculerSidecarConnector" id="24fa12e9-22b7-4386-97a4-83c0ae9e786a" configVersion="00ab1e0e7de9f26a8a04c22247f857b27529f344"/>
+		<Metadata name="Configuration.MoleculerSidecarConnector.CommandInterface" id="6cc3b203-37d9-4b28-a0c9-2199c03a0a62.a" configVersion="4038e0f5fc9f3f88e16c1418b0896a5f20685f0e"/>
+		<Metadata name="Configuration.MoleculerSidecarConnector.ManagedApplicationModule" id="6cc3b203-37d9-4b28-a0c9-2199c03a0a62.6" configVersion="4e3eebc977ff13d153637fe4310337f19749b4be"/>
+		<Metadata name="Configuration.MoleculerSidecarConnector.OrdinaryApplicationModule" id="6cc3b203-37d9-4b28-a0c9-2199c03a0a62.0" configVersion="8c4484845a814c24144a22064ebb199d3de80260"/>
+		<Metadata name="Constant.mol_LogLevel" id="aba09bb4-e8fd-4c6f-bc6f-86b778debad1" configVersion="58982c4bd8c2ebba9ac9978466804209d8fba1db"/>
+		<Metadata name="Constant.mol_Namespace" id="bfad3310-ee58-4f79-a487-06f696e6d62c" configVersion="efe5a0ae8b34ecd06a78afde6f9b01e1e70df66b"/>
+		<Metadata name="Constant.mol_PublishServices" id="1c6e0352-6635-42b3-a4a8-168b55ed4fd0" configVersion="3391128585e3e989c8a1125b5d83eed6bd7566d4"/>
+		<Metadata name="Constant.mol_TestConnection" id="cbe78bce-ceb6-47c1-9fa9-80d75edc3eb8" configVersion="ef3bfb81c96090cdd2eac5bab9fc8fe30256f1d7"/>
+		<Metadata name="Constant.mol_UseDynamicServices" id="b4f50eb1-aec1-4cc1-84f1-a1c5cd044bab" configVersion="dff6291b4a27f6f15e0c5056691f4e0fd0970cfd"/>
+		<Metadata name="Constant.mol_UseProxy" id="00527223-38b5-449a-a731-ab63bd3fd62d" configVersion="b913d40efb08f84051f4c7567dcffae785a98d96"/>
+		<Metadata name="DataProcessor.mol_AdminPanel" id="7acc33ac-4bc1-4aa3-9eb1-b5aaac589cee" configVersion="e61be124d298221f5a977391d7ed3e02bb14157e">
+			<Metadata name="DataProcessor.mol_AdminPanel.Command.Services" id="34ac245e-032f-404a-90a7-bfef14dc10f5"/>
+			<Metadata name="DataProcessor.mol_AdminPanel.Command.Configuration" id="b4b66340-a6d2-48fd-8707-4f1663cc652a"/>
+		</Metadata>
+		<Metadata name="DataProcessor.mol_AdminPanel.Command.Configuration.CommandModule" id="b4b66340-a6d2-48fd-8707-4f1663cc652a.2" configVersion="3203bb58a0f15ea077fe18ecd5ab845a48035bb8"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Command.Services.CommandModule" id="34ac245e-032f-404a-90a7-bfef14dc10f5.2" configVersion="b59565b5406f51f6fa239e9a9c2590eae5f8a739"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.ActionCallForm" id="24643ab7-af7e-47b0-be4c-75a9978c988f" configVersion="abd8d6d731f318653ad9e47478a872ffc4ca74d1"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.ActionCallForm.Form" id="24643ab7-af7e-47b0-be4c-75a9978c988f.0" configVersion="b836db8169bd6a704ca606114b8d86952416add9"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.Configuration" id="6267565d-2f85-412c-a4a3-40c15e2ef284" configVersion="08d0db7f3c5872f02f9229235b50e603539f1f92"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.Configuration.Form" id="6267565d-2f85-412c-a4a3-40c15e2ef284.0" configVersion="759c0b2a4c1f84b3f828322ec5bebcc46179ee72"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.Form" id="aa8e5cf7-9912-46cf-9468-120798620c60" configVersion="cb1bcb0df02592331cf01fb8dca20e7b2c8e3b34"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.Form.Form" id="aa8e5cf7-9912-46cf-9468-120798620c60.0" configVersion="a8e9d49f4fe96f79e430d559c9233acb157286d3"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.ServiceInfo" id="eadc3d7e-a2d9-46a6-be3f-0dbab60d3e50" configVersion="20aae193c27faf42b16c80e70378d2da760c83c9"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.ServiceInfo.Form" id="eadc3d7e-a2d9-46a6-be3f-0dbab60d3e50.0" configVersion="da712d19e724bba2e4a1cf6d335eedd33b7f2d3d"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.ServiceItemForm" id="b755b5be-785b-4e65-bd39-bfd1aa31d11c" configVersion="58ad4f37e70e0f4ae59f4566f5a6d36076bad838"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.ServiceItemForm.Form" id="b755b5be-785b-4e65-bd39-bfd1aa31d11c.0" configVersion="8b2e10aaf0a4d6dfe2186eac53ac1fb816c625a0"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.ServiceListForm" id="9b6da31b-4d0d-4fd2-91b9-cb78cf07a3d7" configVersion="abb4531edd995c98d14cd53612167d24b7d92006"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.ServiceListForm.Form" id="9b6da31b-4d0d-4fd2-91b9-cb78cf07a3d7.0" configVersion="2b58496f3a75a369a7af9e59c32996f1e306909f"/>
+		<Metadata name="DataProcessor.mol_Laboratory" id="dff8d6c9-a32b-4e3d-84d2-466354d7ef2a" configVersion="32a69dd768f8d9025f8385f291a8603bf03c29a9"/>
+		<Metadata name="DataProcessor.mol_Laboratory.Form.Form" id="b9dd1f5a-31de-4321-a66a-922b048b4a3b" configVersion="e4d30685956dee3135e57bde18117de7a3a5a73e"/>
+		<Metadata name="DataProcessor.mol_Laboratory.Form.Form.Form" id="b9dd1f5a-31de-4321-a66a-922b048b4a3b.0" configVersion="b6dc30e041f65260fb599079a259341cca1604ec"/>
+		<Metadata name="Enum.mol_AuthorizationType" id="a0781725-eebb-4382-a3e8-3d462c1fb3c9" configVersion="b15930f4688fe34df9c5271c9a9d2f81b00d82e3">
+			<Metadata name="Enum.mol_AuthorizationType.EnumValue.UsingPassword" id="097fa0bb-c6d8-437d-9959-cd440068fbbe"/>
+			<Metadata name="Enum.mol_AuthorizationType.EnumValue.NoAuth" id="870f6f5e-bcd8-425c-a80e-72ff6f7c71a2"/>
+			<Metadata name="Enum.mol_AuthorizationType.EnumValue.UsingAccessToken" id="bf33b043-1d4d-46f9-9ca3-731b8b80eddf"/>
+		</Metadata>
+		<Metadata name="Enum.mol_ConnectionType" id="5feaa3d0-dc9f-48c5-8beb-996696019965" configVersion="e885862a91fa28b2d8f701aacc77cc128a215f50">
+			<Metadata name="Enum.mol_ConnectionType.EnumValue.NativeAPI" id="194e7d37-ceaf-4fcf-aa83-ff8336c0f63b"/>
+			<Metadata name="Enum.mol_ConnectionType.EnumValue.Sidecar" id="209c141b-b5c1-467e-adb2-e078e04eea02"/>
+		</Metadata>
+		<Metadata name="Enum.mol_ElementTypes" id="8b58b559-3956-4e28-aaa0-3b17ea3987f2" configVersion="28f258cb258217ce0d0ac059615e60c54544bdbe">
+			<Metadata name="Enum.mol_ElementTypes.EnumValue.Channel" id="3f21b715-8ab2-41f0-9f5b-8c3f07d833f2"/>
+			<Metadata name="Enum.mol_ElementTypes.EnumValue.Action" id="80ae13ce-bbd3-4fde-aacc-fa0bbbbd1bd5"/>
+			<Metadata name="Enum.mol_ElementTypes.EnumValue.Event" id="a5e57aed-89d4-47f6-a083-8197596ef207"/>
+			<Metadata name="Enum.mol_ElementTypes.EnumValue.Method" id="d8da5195-4803-48f9-bc9e-3e894dc51a60"/>
+			<Metadata name="Enum.mol_ElementTypes.EnumValue.LifecycleEvent" id="dd7d953f-00b5-4969-af86-69279a08efa7"/>
+		</Metadata>
+		<Metadata name="Enum.mol_LogLevel" id="bb6d1890-da05-4295-9260-a4dfd48a7b7b" configVersion="535bcc1cfa769c04211cc64bbfa40a98e5376a3a">
+			<Metadata name="Enum.mol_LogLevel.EnumValue.Warn" id="4070e158-2c36-4fb6-bd5c-b40df1b853c9"/>
+			<Metadata name="Enum.mol_LogLevel.EnumValue.Info" id="8f9a44b0-b637-405d-9bee-b9b43d2b6251"/>
+			<Metadata name="Enum.mol_LogLevel.EnumValue.Debug" id="a6bdae9a-07c4-4960-8bec-f6a444f7c1b2"/>
+			<Metadata name="Enum.mol_LogLevel.EnumValue.Error" id="ee9749d8-a08f-4d4e-b6f6-7febd5831722"/>
+		</Metadata>
+		<Metadata name="FunctionalOption.mol_UseDynamicServices" id="a1604849-80d1-421e-b603-4263dcfb879d" configVersion="950f339ae8eb92d18ef702d8c9e1dda9e2b7647a"/>
+		<Metadata name="FunctionalOption.mol_UseProxy" id="9b263e40-e924-4993-95b8-f12fabdc62f3" configVersion="e47c1899357b5d3d3aaa00ab7ef74873fe896e5d"/>
+		<Metadata name="HTTPService.mol_Moleculer" id="75819eae-bacd-43b9-958c-f0b7d9160432" configVersion="0e4c61a4ff414b8f549a049deb6571478a27f5a7">
+			<Metadata name="HTTPService.mol_Moleculer.URLTemplate.DefaultGateway.Method.POST" id="296bd0c5-5e29-4445-aecc-acf1dce60acf"/>
+			<Metadata name="HTTPService.mol_Moleculer.URLTemplate.DefaultGateway" id="49eb36f7-333c-4af1-a355-3fa3db3fc90a"/>
+		</Metadata>
+		<Metadata name="HTTPService.mol_Moleculer.Module" id="75819eae-bacd-43b9-958c-f0b7d9160432.0" configVersion="f99cb70f7f2fb9c7441faeccde12151698d89926"/>
+		<Metadata name="Language.Русский" id="ca37c78e-3b83-4ca4-8caa-56ae07762211" configVersion="fd53a3098ebdac567512d8f9aff967d5aa363fa0"/>
+		<Metadata name="Role.mol_Administrator" id="fe716069-0935-4c65-b8ab-0251b461a191" configVersion="cb97a15893703c9258fb6054a5a25a0cccb4e6b9"/>
+		<Metadata name="Role.mol_Administrator.Rights" id="fe716069-0935-4c65-b8ab-0251b461a191.0" configVersion="538c25a8f7eadb8f0e9f928d76458bfedb4b4639"/>
+		<Metadata name="Style.mol_Стиль1" id="216f7246-1f6a-48bb-a4fe-7a739ea20c24" configVersion="00670b298fac046093aa428df812730d0de1e384"/>
+		<Metadata name="Style.mol_Стиль1.Style" id="216f7246-1f6a-48bb-a4fe-7a739ea20c24.0" configVersion="6f8e2830cd2d88de08d9ccc0b1727d9b2992b761"/>
+		<Metadata name="StyleItem.mol_ActiveBackColor" id="df062bb3-43bc-4a29-90c7-4f411f78bd05" configVersion="86b2e96b6dc64f32192722b40c4acd13172cb737"/>
+		<Metadata name="StyleItem.mol_SelectionColor" id="428fdab9-ab09-4a23-9189-6c4b5254466f" configVersion="11a1e393395139a56164f9cc4f70d44d6409e02a"/>
+		<Metadata name="StyleItem.mol_VersionBackColor" id="ad6f962c-b2eb-4c9c-bef3-ef9fa5b0f715" configVersion="dc7e3459291df7d3246b8fac7d0b651721c9d07c"/>
+		<Metadata name="StyleItem.mol_ЦветФона" id="4222411c-8835-48f5-a321-ab43f23cff8d" configVersion="b68b8996871ed0d13afa63a5157339d97ce645e2"/>
+		<Metadata name="Subsystem.Moleculer" id="a0fc9568-1daa-4ef9-a440-ba6f5ead8414" configVersion="0f9f469df1d3f84fdc084ded36ed154d565fc374"/>
+		<Metadata name="Subsystem.Moleculer.CommandInterface" id="a0fc9568-1daa-4ef9-a440-ba6f5ead8414.1" configVersion="b0147289796b4ec95de491a41f837f2ed5ac4e28"/>
+	</ConfigVersions>
+</ConfigDumpInfo>

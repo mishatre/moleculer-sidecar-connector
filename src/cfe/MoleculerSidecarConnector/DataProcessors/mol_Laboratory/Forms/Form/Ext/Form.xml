@@ -1,0 +1,1428 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://v8.1c.ru/8.3/xcf/logform" xmlns:app="http://v8.1c.ru/8.2/managed-application/core" xmlns:cfg="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:dcscor="http://v8.1c.ru/8.1/data-composition-system/core" xmlns:dcssch="http://v8.1c.ru/8.1/data-composition-system/schema" xmlns:dcsset="http://v8.1c.ru/8.1/data-composition-system/settings" xmlns:ent="http://v8.1c.ru/8.1/data/enterprise" xmlns:lf="http://v8.1c.ru/8.2/managed-application/logform" xmlns:style="http://v8.1c.ru/8.1/data/ui/style" xmlns:sys="http://v8.1c.ru/8.1/data/ui/fonts/system" xmlns:v8="http://v8.1c.ru/8.1/data/core" xmlns:v8ui="http://v8.1c.ru/8.1/data/ui" xmlns:web="http://v8.1c.ru/8.1/data/ui/colors/web" xmlns:win="http://v8.1c.ru/8.1/data/ui/colors/windows" xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.17">
+	<CommandBarLocation>None</CommandBarLocation>
+	<ScalingMode>Compact</ScalingMode>
+	<AutoCommandBar name="FormCommandBar" id="-1"/>
+	<Events>
+		<Event name="OnCreateAtServer">OnCreateAtServer</Event>
+	</Events>
+	<ChildItems>
+		<Pages name="GroupPages" id="1">
+			<TitleFont ref="style:TextFont" faceName="Calibri" height="11" kind="StyleItem" scale="100"/>
+			<ToolTipRepresentation>None</ToolTipRepresentation>
+			<PagesRepresentation>TabsOnLeftHorizontal</PagesRepresentation>
+			<ExtendedTooltip name="GroupPagesExtendedTooltip" id="2"/>
+			<ChildItems>
+				<Page name="GroupOverviewPage" id="3">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Overview</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Group overview page</v8:content>
+						</v8:item>
+					</ToolTip>
+					<Picture>
+						<xr:Ref>CommonPicture.mol_Logo</xr:Ref>
+						<xr:LoadTransparent>true</xr:LoadTransparent>
+					</Picture>
+					<ExtendedTooltip name="GroupOverviewPageExtendedTooltip" id="4"/>
+					<ChildItems>
+						<UsualGroup name="GroupOverviewHeader" id="5">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group overview header</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group overview header</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Group>AlwaysHorizontal</Group>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="GroupOverviewHeaderExtendedTooltip" id="6"/>
+							<ChildItems>
+								<UsualGroup name="GroupOverviewNodes" id="15">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview nodes</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview nodes</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<HorizontalAlign>Center</HorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="GroupOverviewNodesExtendedTooltip" id="16"/>
+									<ChildItems>
+										<LabelDecoration name="DecorationNodes" id="17">
+											<TextColor>#1AB0CC</TextColor>
+											<Font ref="style:TextFont" faceName="Calibri" height="14" bold="true" kind="StyleItem" scale="100"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>NODES</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="DecorationNodesContextMenu" id="18"/>
+											<ExtendedTooltip name="DecorationNodesExtendedTooltip" id="19"/>
+										</LabelDecoration>
+										<LabelField name="NodesCount" id="9">
+											<DataPath>NodesCount</DataPath>
+											<TitleLocation>None</TitleLocation>
+											<Width>10</Width>
+											<Font ref="style:TextFont" faceName="Calibri" height="20" bold="true" italic="false" underline="false" strikeout="false" kind="StyleItem" scale="100"/>
+											<ContextMenu name="NodesCountContextMenu" id="10"/>
+											<ExtendedTooltip name="NodesCountExtendedTooltip" id="11"/>
+										</LabelField>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="GroupOverviewServices" id="20">
+									<Group>Vertical</Group>
+									<HorizontalAlign>Center</HorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="GroupOverviewServicesExtendedTooltip" id="21"/>
+									<ChildItems>
+										<LabelDecoration name="DecorationServices" id="22">
+											<TextColor>#1AB0CC</TextColor>
+											<Font ref="style:TextFont" faceName="Calibri" height="14" bold="true" kind="StyleItem" scale="100"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>SERVICES</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="DecorationServicesContextMenu" id="23"/>
+											<ExtendedTooltip name="DecorationServicesExtendedTooltip" id="24"/>
+										</LabelDecoration>
+										<LabelField name="ServicesCount" id="12">
+											<DataPath>ServicesCount</DataPath>
+											<TitleLocation>None</TitleLocation>
+											<Width>10</Width>
+											<Font height="20" kind="AutoFont"/>
+											<ContextMenu name="ServicesCountContextMenu" id="13"/>
+											<ExtendedTooltip name="ServicesCountExtendedTooltip" id="14"/>
+										</LabelField>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="GroupOverviewActions" id="25">
+									<Group>Vertical</Group>
+									<HorizontalAlign>Center</HorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="GroupOverviewActionsExtendedTooltip" id="26"/>
+									<ChildItems>
+										<LabelDecoration name="DecorationActions" id="27">
+											<TextColor>#1AB0CC</TextColor>
+											<Font ref="style:TextFont" faceName="Calibri" height="14" bold="true" kind="StyleItem" scale="100"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>ACTIONS</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="DecorationActionsContextMenu" id="28"/>
+											<ExtendedTooltip name="DecorationActionsExtendedTooltip" id="29"/>
+										</LabelDecoration>
+										<LabelField name="ActionsCount" id="30">
+											<DataPath>ActionsCount</DataPath>
+											<TitleLocation>None</TitleLocation>
+											<Width>10</Width>
+											<Font height="20" kind="AutoFont"/>
+											<ContextMenu name="ActionsCountContextMenu" id="31"/>
+											<ExtendedTooltip name="ActionsCountExtendedTooltip" id="32"/>
+										</LabelField>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="GroupOverviewEvents" id="33">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview events</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview events</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<HorizontalAlign>Center</HorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="GroupOverviewEventsExtendedTooltip" id="34"/>
+									<ChildItems>
+										<LabelDecoration name="DecorationEvents" id="35">
+											<TextColor>#1AB0CC</TextColor>
+											<Font ref="style:TextFont" faceName="Calibri" height="14" bold="true" kind="StyleItem" scale="100"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>EVENTS</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="DecorationEventsContextMenu" id="36"/>
+											<ExtendedTooltip name="DecorationEventsExtendedTooltip" id="37"/>
+										</LabelDecoration>
+										<LabelField name="EventsCount" id="38">
+											<DataPath>EventsCount</DataPath>
+											<TitleLocation>None</TitleLocation>
+											<Width>10</Width>
+											<Font height="20" kind="AutoFont"/>
+											<ContextMenu name="EventsCountContextMenu" id="39"/>
+											<ExtendedTooltip name="EventsCountExtendedTooltip" id="40"/>
+										</LabelField>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="GroupOverviewReqMin" id="41">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview req min</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview req min</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<HorizontalAlign>Center</HorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="GroupOverviewReqMinExtendedTooltip" id="42"/>
+									<ChildItems>
+										<LabelDecoration name="DecorationReqMin" id="43">
+											<TextColor>#1AB0CC</TextColor>
+											<Font ref="style:TextFont" faceName="Calibri" height="14" bold="true" kind="StyleItem" scale="100"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>REQ/MIN</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="DecorationReqMinContextMenu" id="44"/>
+											<ExtendedTooltip name="DecorationReqMinExtendedTooltip" id="45"/>
+										</LabelDecoration>
+										<LabelField name="RequestsPerMinute" id="46">
+											<DataPath>RequestsPerMinute</DataPath>
+											<TitleLocation>None</TitleLocation>
+											<Width>10</Width>
+											<Font height="20" kind="AutoFont"/>
+											<ContextMenu name="RequestsPerMinuteContextMenu" id="47"/>
+											<ExtendedTooltip name="RequestsPerMinuteExtendedTooltip" id="48"/>
+										</LabelField>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="GroupOverviewResponse90" id="49">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview response90</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview response90</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<HorizontalAlign>Center</HorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="GroupOverviewResponse90ExtendedTooltip" id="50"/>
+									<ChildItems>
+										<LabelDecoration name="DecorationResponse90" id="51">
+											<Width>16</Width>
+											<TextColor>#1AB0CC</TextColor>
+											<Font ref="style:TextFont" faceName="Calibri" height="14" bold="true" kind="StyleItem" scale="100"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>RESPONSE 90%</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="DecorationResponse90ContextMenu" id="52"/>
+											<ExtendedTooltip name="DecorationResponse90ExtendedTooltip" id="53"/>
+										</LabelDecoration>
+										<LabelField name="Response90" id="54">
+											<DataPath>Response90</DataPath>
+											<TitleLocation>None</TitleLocation>
+											<Width>10</Width>
+											<Font height="20" kind="AutoFont"/>
+											<ContextMenu name="Response90ContextMenu" id="55"/>
+											<ExtendedTooltip name="Response90ExtendedTooltip" id="56"/>
+										</LabelField>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="GroupOverviewErrors" id="57">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview errors</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview errors</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<HorizontalAlign>Center</HorizontalAlign>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="GroupOverviewErrorsExtendedTooltip" id="58"/>
+									<ChildItems>
+										<LabelDecoration name="DecorationErrors" id="59">
+											<TextColor>#1AB0CC</TextColor>
+											<Font ref="style:TextFont" faceName="Calibri" height="14" bold="true" kind="StyleItem" scale="100"/>
+											<Title formatted="false">
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>ERRORS</v8:content>
+												</v8:item>
+											</Title>
+											<ContextMenu name="DecorationErrorsContextMenu" id="60"/>
+											<ExtendedTooltip name="DecorationErrorsExtendedTooltip" id="61"/>
+										</LabelDecoration>
+										<LabelField name="ErrorsCount" id="62">
+											<DataPath>Errors</DataPath>
+											<TitleLocation>None</TitleLocation>
+											<Width>10</Width>
+											<Font height="20" kind="AutoFont"/>
+											<ContextMenu name="ErrorsCountContextMenu" id="63"/>
+											<ExtendedTooltip name="ErrorsCountExtendedTooltip" id="64"/>
+										</LabelField>
+									</ChildItems>
+								</UsualGroup>
+							</ChildItems>
+						</UsualGroup>
+						<UsualGroup name="GroupOverviewStatus" id="65">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Status</v8:content>
+								</v8:item>
+							</Title>
+							<TitleTextColor>style:ButtonBorderColor</TitleTextColor>
+							<TitleFont ref="style:TextFont" faceName="Calibri" height="14" bold="true" italic="false" underline="false" strikeout="false" kind="StyleItem" scale="100"/>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group overview status</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Group>Vertical</Group>
+							<HorizontalSpacing>Half</HorizontalSpacing>
+							<VerticalSpacing>OneAndHalf</VerticalSpacing>
+							<Representation>NormalSeparation</Representation>
+							<ExtendedTooltip name="GroupOverviewStatusExtendedTooltip" id="66"/>
+							<ChildItems>
+								<UsualGroup name="GroupOverviewStatusNodesServices" id="67">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview status nodes services</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview status nodes services</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>AlwaysHorizontal</Group>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="GroupOverviewStatusNodesServicesExtendedTooltip" id="68"/>
+									<ChildItems>
+										<UsualGroup name="GroupOverviewStatusNodes" id="71">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Nodes</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Group overview status nodes</v8:content>
+												</v8:item>
+											</ToolTip>
+											<HorizontalStretch>true</HorizontalStretch>
+											<ExtendedTooltip name="GroupOverviewStatusNodesExtendedTooltip" id="72"/>
+											<ChildItems>
+												<LabelDecoration name="Decoration28" id="162">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration28ContextMenu" id="163"/>
+													<ExtendedTooltip name="Decoration28ExtendedTooltip" id="164"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration29" id="165">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration29ContextMenu" id="166"/>
+													<ExtendedTooltip name="Decoration29ExtendedTooltip" id="167"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration26" id="156">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration26ContextMenu" id="157"/>
+													<ExtendedTooltip name="Decoration26ExtendedTooltip" id="158"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration8" id="102">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration8ContextMenu" id="103"/>
+													<ExtendedTooltip name="Decoration8ExtendedTooltip" id="104"/>
+												</LabelDecoration>
+											</ChildItems>
+										</UsualGroup>
+										<UsualGroup name="GroupOverviewStatusServices" id="73">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Services</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Group overview status services</v8:content>
+												</v8:item>
+											</ToolTip>
+											<HorizontalStretch>true</HorizontalStretch>
+											<ExtendedTooltip name="GroupOverviewStatusServicesExtendedTooltip" id="74"/>
+											<ChildItems>
+												<LabelDecoration name="Decoration9" id="105">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration9ContextMenu" id="106"/>
+													<ExtendedTooltip name="Decoration9ExtendedTooltip" id="107"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration10" id="108">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration10ContextMenu" id="109"/>
+													<ExtendedTooltip name="Decoration10ExtendedTooltip" id="110"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration11" id="111">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration11ContextMenu" id="112"/>
+													<ExtendedTooltip name="Decoration11ExtendedTooltip" id="113"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration12" id="114">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration12ContextMenu" id="115"/>
+													<ExtendedTooltip name="Decoration12ExtendedTooltip" id="116"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration13" id="117">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration13ContextMenu" id="118"/>
+													<ExtendedTooltip name="Decoration13ExtendedTooltip" id="119"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration14" id="120">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration14ContextMenu" id="121"/>
+													<ExtendedTooltip name="Decoration14ExtendedTooltip" id="122"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration15" id="123">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration15ContextMenu" id="124"/>
+													<ExtendedTooltip name="Decoration15ExtendedTooltip" id="125"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration16" id="126">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration16ContextMenu" id="127"/>
+													<ExtendedTooltip name="Decoration16ExtendedTooltip" id="128"/>
+												</LabelDecoration>
+											</ChildItems>
+										</UsualGroup>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="GroupOverviewStatusActionsEvents" id="69">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview status actions events</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Group overview status actions events</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="GroupOverviewStatusActionsEventsExtendedTooltip" id="70"/>
+									<ChildItems>
+										<UsualGroup name="GroupOverviewStatusActions" id="75">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Actions</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Group overview status actions</v8:content>
+												</v8:item>
+											</ToolTip>
+											<HorizontalStretch>true</HorizontalStretch>
+											<ExtendedTooltip name="GroupOverviewStatusActionsExtendedTooltip" id="76"/>
+											<ChildItems>
+												<LabelDecoration name="Decoration17" id="129">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration17ContextMenu" id="130"/>
+													<ExtendedTooltip name="Decoration17ExtendedTooltip" id="131"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration18" id="132">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration18ContextMenu" id="133"/>
+													<ExtendedTooltip name="Decoration18ExtendedTooltip" id="134"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration19" id="135">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration19ContextMenu" id="136"/>
+													<ExtendedTooltip name="Decoration19ExtendedTooltip" id="137"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration20" id="138">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration20ContextMenu" id="139"/>
+													<ExtendedTooltip name="Decoration20ExtendedTooltip" id="140"/>
+												</LabelDecoration>
+											</ChildItems>
+										</UsualGroup>
+										<UsualGroup name="GroupOverviewStatusEvents" id="77">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Events</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Group overview status events</v8:content>
+												</v8:item>
+											</ToolTip>
+											<HorizontalStretch>true</HorizontalStretch>
+											<ExtendedTooltip name="GroupOverviewStatusEventsExtendedTooltip" id="78"/>
+											<ChildItems>
+												<LabelDecoration name="Decoration21" id="141">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration21ContextMenu" id="142"/>
+													<ExtendedTooltip name="Decoration21ExtendedTooltip" id="143"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration22" id="144">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration22ContextMenu" id="145"/>
+													<ExtendedTooltip name="Decoration22ExtendedTooltip" id="146"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration23" id="147">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration23ContextMenu" id="148"/>
+													<ExtendedTooltip name="Decoration23ExtendedTooltip" id="149"/>
+												</LabelDecoration>
+												<LabelDecoration name="Decoration24" id="150">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>ㅤ</v8:content>
+														</v8:item>
+													</Title>
+													<BackColor>#00FF00</BackColor>
+													<Border width="1">
+														<v8ui:style xsi:type="v8ui:ControlBorderType">Single</v8ui:style>
+													</Border>
+													<ContextMenu name="Decoration24ContextMenu" id="151"/>
+													<ExtendedTooltip name="Decoration24ExtendedTooltip" id="152"/>
+												</LabelDecoration>
+											</ChildItems>
+										</UsualGroup>
+									</ChildItems>
+								</UsualGroup>
+							</ChildItems>
+						</UsualGroup>
+						<UsualGroup name="GroupOverviewMetrics" id="79">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group overview metrics</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group overview metrics</v8:content>
+								</v8:item>
+							</ToolTip>
+							<ExtendedTooltip name="GroupOverviewMetricsExtendedTooltip" id="80"/>
+						</UsualGroup>
+					</ChildItems>
+				</Page>
+				<Page name="GroupNodesPage" id="168">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Nodes</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Group nodes page</v8:content>
+						</v8:item>
+					</ToolTip>
+					<Picture>
+						<xr:Ref>CommonPicture.mol_Dns</xr:Ref>
+						<xr:LoadTransparent>true</xr:LoadTransparent>
+					</Picture>
+					<BackColor>#BDBDBD</BackColor>
+					<ExtendedTooltip name="GroupNodesPageExtendedTooltip" id="169"/>
+					<ChildItems>
+						<UsualGroup name="GroupNodesHeader" id="180">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group nodes header</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group nodes header</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="GroupNodesHeaderExtendedTooltip" id="181"/>
+							<ChildItems>
+								<LabelDecoration name="DecorationNodesHeader" id="182">
+									<Title formatted="false">
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Nodes (29)</v8:content>
+										</v8:item>
+									</Title>
+									<ContextMenu name="DecorationNodesHeaderContextMenu" id="183"/>
+									<ExtendedTooltip name="DecorationNodesHeaderExtendedTooltip" id="184"/>
+								</LabelDecoration>
+								<SearchStringAddition name="Addition1" id="185">
+									<AdditionSource>
+										<Item>Nodes</Item>
+										<Type>SearchStringRepresentation</Type>
+									</AdditionSource>
+									<ContextMenu name="Addition1ContextMenu" id="186"/>
+									<ExtendedTooltip name="Addition1ExtendedTooltip" id="187"/>
+								</SearchStringAddition>
+							</ChildItems>
+						</UsualGroup>
+						<Table name="Nodes" id="188">
+							<Representation>List</Representation>
+							<CommandBarLocation>None</CommandBarLocation>
+							<AutoInsertNewRow>true</AutoInsertNewRow>
+							<EnableStartDrag>true</EnableStartDrag>
+							<EnableDrag>true</EnableDrag>
+							<DataPath>Nodes</DataPath>
+							<RowFilter xsi:nil="true"/>
+							<ContextMenu name="NodesContextMenu" id="189"/>
+							<AutoCommandBar name="NodesCommandBar" id="190"/>
+							<ExtendedTooltip name="NodesExtendedTooltip" id="191"/>
+							<SearchStringAddition name="NodesSearchString" id="192">
+								<AdditionSource>
+									<Item>Nodes</Item>
+									<Type>SearchStringRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="NodesSearchStringContextMenu" id="193"/>
+								<ExtendedTooltip name="NodesSearchStringExtendedTooltip" id="194"/>
+							</SearchStringAddition>
+							<ViewStatusAddition name="NodesViewStatus" id="195">
+								<AdditionSource>
+									<Item>Nodes</Item>
+									<Type>ViewStatusRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="NodesViewStatusContextMenu" id="196"/>
+								<ExtendedTooltip name="NodesViewStatusExtendedTooltip" id="197"/>
+							</ViewStatusAddition>
+							<SearchControlAddition name="NodesSearchControl" id="198">
+								<AdditionSource>
+									<Item>Nodes</Item>
+									<Type>SearchControl</Type>
+								</AdditionSource>
+								<ContextMenu name="NodesSearchControlContextMenu" id="199"/>
+								<ExtendedTooltip name="NodesSearchControlExtendedTooltip" id="200"/>
+							</SearchControlAddition>
+							<ChildItems>
+								<InputField name="NodesFullName" id="201">
+									<DataPath>Nodes.FullName</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+									<ContextMenu name="NodesFullNameContextMenu" id="202"/>
+									<ExtendedTooltip name="NodesFullNameExtendedTooltip" id="203"/>
+								</InputField>
+							</ChildItems>
+						</Table>
+					</ChildItems>
+				</Page>
+				<Page name="GroupServicesPage" id="170">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Services</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Group services page</v8:content>
+						</v8:item>
+					</ToolTip>
+					<Picture>
+						<xr:Ref>CommonPicture.mol_Explore</xr:Ref>
+						<xr:LoadTransparent>true</xr:LoadTransparent>
+					</Picture>
+					<BackColor>#BDBDBD</BackColor>
+					<ExtendedTooltip name="GroupServicesPageExtendedTooltip" id="171"/>
+					<ChildItems>
+						<UsualGroup name="GroupServicesHeader" id="220">
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="GroupServicesHeaderExtendedTooltip" id="221"/>
+							<ChildItems>
+								<LabelDecoration name="DecorationServicesHeader" id="222">
+									<Title formatted="false">
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Services (29)</v8:content>
+										</v8:item>
+									</Title>
+									<ContextMenu name="DecorationServicesHeaderContextMenu" id="223"/>
+									<ExtendedTooltip name="DecorationServicesHeaderExtendedTooltip" id="224"/>
+								</LabelDecoration>
+								<SearchStringAddition name="AdditionServices" id="225">
+									<AdditionSource>
+										<Item>Services</Item>
+										<Type>SearchStringRepresentation</Type>
+									</AdditionSource>
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Addition services</v8:content>
+										</v8:item>
+									</Title>
+									<ContextMenu name="AdditionServicesContextMenu" id="226"/>
+									<ExtendedTooltip name="AdditionServicesExtendedTooltip" id="227"/>
+								</SearchStringAddition>
+							</ChildItems>
+						</UsualGroup>
+						<Table name="Services" id="228">
+							<Representation>List</Representation>
+							<CommandBarLocation>None</CommandBarLocation>
+							<AutoInsertNewRow>true</AutoInsertNewRow>
+							<EnableStartDrag>true</EnableStartDrag>
+							<EnableDrag>true</EnableDrag>
+							<DataPath>Services</DataPath>
+							<RowFilter xsi:nil="true"/>
+							<ContextMenu name="ServicesContextMenu" id="229"/>
+							<AutoCommandBar name="ServicesCommandBar" id="230"/>
+							<ExtendedTooltip name="ServicesExtendedTooltip" id="231"/>
+							<SearchStringAddition name="ServicesSearchString" id="232">
+								<AdditionSource>
+									<Item>Services</Item>
+									<Type>SearchStringRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="ServicesSearchStringContextMenu" id="233"/>
+								<ExtendedTooltip name="ServicesSearchStringExtendedTooltip" id="234"/>
+							</SearchStringAddition>
+							<ViewStatusAddition name="ServicesViewStatus" id="235">
+								<AdditionSource>
+									<Item>Services</Item>
+									<Type>ViewStatusRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="ServicesViewStatusContextMenu" id="236"/>
+								<ExtendedTooltip name="ServicesViewStatusExtendedTooltip" id="237"/>
+							</ViewStatusAddition>
+							<SearchControlAddition name="ServicesSearchControl" id="238">
+								<AdditionSource>
+									<Item>Services</Item>
+									<Type>SearchControl</Type>
+								</AdditionSource>
+								<ContextMenu name="ServicesSearchControlContextMenu" id="239"/>
+								<ExtendedTooltip name="ServicesSearchControlExtendedTooltip" id="240"/>
+							</SearchControlAddition>
+							<ChildItems>
+								<InputField name="ServicesFullName" id="241">
+									<DataPath>Services.FullName</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+									<ContextMenu name="ServicesFullNameContextMenu" id="242"/>
+									<ExtendedTooltip name="ServicesFullNameExtendedTooltip" id="243"/>
+								</InputField>
+							</ChildItems>
+						</Table>
+					</ChildItems>
+				</Page>
+				<Page name="GroupActionsPage" id="172">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Actions</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Group actions page</v8:content>
+						</v8:item>
+					</ToolTip>
+					<Picture>
+						<xr:Ref>CommonPicture.mol_Extension</xr:Ref>
+						<xr:LoadTransparent>true</xr:LoadTransparent>
+					</Picture>
+					<BackColor>#BDBDBD</BackColor>
+					<ExtendedTooltip name="GroupActionsPageExtendedTooltip" id="173"/>
+					<ChildItems>
+						<UsualGroup name="GroupActionsHeader" id="244">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group actions header</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group actions header</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="GroupActionsHeaderExtendedTooltip" id="245"/>
+							<ChildItems>
+								<LabelDecoration name="DecorationActionsHeader" id="246">
+									<Title formatted="false">
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Actions (29)</v8:content>
+										</v8:item>
+									</Title>
+									<ContextMenu name="DecorationActionsHeaderContextMenu" id="247"/>
+									<ExtendedTooltip name="DecorationActionsHeaderExtendedTooltip" id="248"/>
+								</LabelDecoration>
+								<SearchStringAddition name="AdditionActions" id="249">
+									<AdditionSource>
+										<Item>Actions</Item>
+										<Type>SearchStringRepresentation</Type>
+									</AdditionSource>
+									<ContextMenu name="AdditionActionsContextMenu" id="250"/>
+									<ExtendedTooltip name="AdditionActionsExtendedTooltip" id="251"/>
+								</SearchStringAddition>
+							</ChildItems>
+						</UsualGroup>
+						<Table name="Actions" id="260">
+							<Representation>List</Representation>
+							<CommandBarLocation>None</CommandBarLocation>
+							<AutoInsertNewRow>true</AutoInsertNewRow>
+							<EnableStartDrag>true</EnableStartDrag>
+							<EnableDrag>true</EnableDrag>
+							<DataPath>Actions</DataPath>
+							<RowFilter xsi:nil="true"/>
+							<ContextMenu name="ActionsContextMenu" id="261"/>
+							<AutoCommandBar name="ActionsCommandBar" id="262"/>
+							<ExtendedTooltip name="ActionsExtendedTooltip" id="263"/>
+							<SearchStringAddition name="ActionsSearchString" id="264">
+								<AdditionSource>
+									<Item>Actions</Item>
+									<Type>SearchStringRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="ActionsSearchStringContextMenu" id="265"/>
+								<ExtendedTooltip name="ActionsSearchStringExtendedTooltip" id="266"/>
+							</SearchStringAddition>
+							<ViewStatusAddition name="ActionsViewStatus" id="267">
+								<AdditionSource>
+									<Item>Actions</Item>
+									<Type>ViewStatusRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="ActionsViewStatusContextMenu" id="268"/>
+								<ExtendedTooltip name="ActionsViewStatusExtendedTooltip" id="269"/>
+							</ViewStatusAddition>
+							<SearchControlAddition name="ActionsSearchControl" id="270">
+								<AdditionSource>
+									<Item>Actions</Item>
+									<Type>SearchControl</Type>
+								</AdditionSource>
+								<ContextMenu name="ActionsSearchControlContextMenu" id="271"/>
+								<ExtendedTooltip name="ActionsSearchControlExtendedTooltip" id="272"/>
+							</SearchControlAddition>
+							<ChildItems>
+								<InputField name="ActionsFullName" id="273">
+									<DataPath>Actions.FullName</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+									<ContextMenu name="ActionsFullNameContextMenu" id="274"/>
+									<ExtendedTooltip name="ActionsFullNameExtendedTooltip" id="275"/>
+								</InputField>
+							</ChildItems>
+						</Table>
+					</ChildItems>
+				</Page>
+				<Page name="GroupEventsPage" id="174">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Events</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Group events page</v8:content>
+						</v8:item>
+					</ToolTip>
+					<Picture>
+						<xr:Ref>CommonPicture.mol_Chat</xr:Ref>
+						<xr:LoadTransparent>true</xr:LoadTransparent>
+					</Picture>
+					<BackColor>#BDBDBD</BackColor>
+					<ExtendedTooltip name="GroupEventsPageExtendedTooltip" id="175"/>
+					<ChildItems>
+						<UsualGroup name="GroupEventsHeader" id="252">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group events header</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Group events header</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="GroupEventsHeaderExtendedTooltip" id="253"/>
+							<ChildItems>
+								<LabelDecoration name="DecorationEventsHeader" id="254">
+									<Title formatted="false">
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Events (29)</v8:content>
+										</v8:item>
+									</Title>
+									<ContextMenu name="DecorationEventsHeaderContextMenu" id="255"/>
+									<ExtendedTooltip name="DecorationEventsHeaderExtendedTooltip" id="256"/>
+								</LabelDecoration>
+								<SearchStringAddition name="AdditionEvents" id="257">
+									<AdditionSource>
+										<Item>Events</Item>
+										<Type>SearchStringRepresentation</Type>
+									</AdditionSource>
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Addition events</v8:content>
+										</v8:item>
+									</Title>
+									<ContextMenu name="AdditionEventsContextMenu" id="258"/>
+									<ExtendedTooltip name="AdditionEventsExtendedTooltip" id="259"/>
+								</SearchStringAddition>
+							</ChildItems>
+						</UsualGroup>
+						<Table name="Events" id="276">
+							<Representation>List</Representation>
+							<CommandBarLocation>None</CommandBarLocation>
+							<AutoInsertNewRow>true</AutoInsertNewRow>
+							<EnableStartDrag>true</EnableStartDrag>
+							<EnableDrag>true</EnableDrag>
+							<DataPath>Events</DataPath>
+							<RowFilter xsi:nil="true"/>
+							<ContextMenu name="EventsContextMenu" id="277"/>
+							<AutoCommandBar name="EventsCommandBar" id="278"/>
+							<ExtendedTooltip name="EventsExtendedTooltip" id="279"/>
+							<SearchStringAddition name="EventsSearchString" id="280">
+								<AdditionSource>
+									<Item>Events</Item>
+									<Type>SearchStringRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="EventsSearchStringContextMenu" id="281"/>
+								<ExtendedTooltip name="EventsSearchStringExtendedTooltip" id="282"/>
+							</SearchStringAddition>
+							<ViewStatusAddition name="EventsViewStatus" id="283">
+								<AdditionSource>
+									<Item>Events</Item>
+									<Type>ViewStatusRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="EventsViewStatusContextMenu" id="284"/>
+								<ExtendedTooltip name="EventsViewStatusExtendedTooltip" id="285"/>
+							</ViewStatusAddition>
+							<SearchControlAddition name="EventsSearchControl" id="286">
+								<AdditionSource>
+									<Item>Events</Item>
+									<Type>SearchControl</Type>
+								</AdditionSource>
+								<ContextMenu name="EventsSearchControlContextMenu" id="287"/>
+								<ExtendedTooltip name="EventsSearchControlExtendedTooltip" id="288"/>
+							</SearchControlAddition>
+							<ChildItems>
+								<InputField name="EventsFullName" id="289">
+									<DataPath>Events.FullName</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+									<ContextMenu name="EventsFullNameContextMenu" id="290"/>
+									<ExtendedTooltip name="EventsFullNameExtendedTooltip" id="291"/>
+								</InputField>
+							</ChildItems>
+						</Table>
+					</ChildItems>
+				</Page>
+				<Page name="GroupTracingPage" id="176">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Group tracing page</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Group tracing page</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="GroupTracingPageExtendedTooltip" id="177"/>
+				</Page>
+				<Page name="GroupLogsPage" id="178">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Group logs page</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Group logs page</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="GroupLogsPageExtendedTooltip" id="179"/>
+				</Page>
+			</ChildItems>
+		</Pages>
+	</ChildItems>
+	<Attributes>
+		<Attribute name="Object" id="1">
+			<Type>
+				<v8:Type>cfg:DataProcessorObject.mol_Laboratory</v8:Type>
+			</Type>
+			<MainAttribute>true</MainAttribute>
+		</Attribute>
+		<Attribute name="NodesCount" id="2">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Nodes</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>10</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Nonnegative</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ServicesCount" id="3">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Services</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>10</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Nonnegative</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ActionsCount" id="4">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Actions count</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>10</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Nonnegative</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="EventsCount" id="5">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Events count</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>10</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Nonnegative</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="RequestsPerMinute" id="6">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Requests per minute</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="Response90" id="7">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Response90</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="Errors" id="8">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Errors</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="Nodes" id="9">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Nodes</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8:ValueTable</v8:Type>
+			</Type>
+			<Columns>
+				<Column name="FullName" id="1">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Full name</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+			</Columns>
+		</Attribute>
+		<Attribute name="Services" id="10">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Services</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8:ValueTable</v8:Type>
+			</Type>
+			<Columns>
+				<Column name="FullName" id="1">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Full name</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+			</Columns>
+		</Attribute>
+		<Attribute name="Actions" id="11">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Actions</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8:ValueTable</v8:Type>
+			</Type>
+			<Columns>
+				<Column name="FullName" id="1">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Full name</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+			</Columns>
+		</Attribute>
+		<Attribute name="Events" id="12">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Events</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8:ValueTable</v8:Type>
+			</Type>
+			<Columns>
+				<Column name="FullName" id="1">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Full name</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+			</Columns>
+		</Attribute>
+	</Attributes>
+</Form>

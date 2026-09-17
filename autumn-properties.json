@@ -1,0 +1,43 @@
+{
+    "vrunner": {
+        "ibcmd": true,
+        "ibconnection": "/F./build/ib",
+        "db-user": "",
+        "db-pwd": "",
+        "root": ".",
+        "workspace": ".",
+        "v8version": "8.3",
+        "locale": "ru",
+        "language": "ru",
+        "additional": "/DisplayAllFunctions /L ru",
+        "ordinaryapp": "-1",
+        "test": {
+            "vanessa": {
+                "vanessasettings": "./tools/VAParams.json",
+                "bddrunner-path": "./oscript_modules/vanessa-automation-single/vanessa-automation-single.epf",
+                "additional": "/DisplayAllFunctions /L ru"
+            },
+            "xunit": {
+                "xddConfig": "./tools/xUnitParams.json",
+                "reportsxunit": "jUnit{build/out/smoke/junit/junit.xml};allure{build/out/smoke/allure/allure.xml}",
+                "xddExitCodePath": "./build/xddExitCodePath.txt"
+            }
+        },
+        "validate": {
+            "syntax-check": {
+                "groupbymetadata": true,
+                "exception-file": "tools/syntax-check-excludes.txt",
+                "junitpath": "build/out/syntax-check/junit/junit.xml",
+                "allure-results2": "build/out/syntax-check/allure",
+                "mode": [
+                    "ExtendedModulesCheck",
+                    "ThinClient",
+                    "WebClient",
+                    "Server",
+                    "ExternalConnection",
+                    "ThickClientOrdinaryApplication"
+                ]
+            }
+        }
+    }
+}

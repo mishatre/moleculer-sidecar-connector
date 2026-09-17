@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://v8.1c.ru/8.3/xcf/logform" xmlns:app="http://v8.1c.ru/8.2/managed-application/core" xmlns:cfg="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:dcscor="http://v8.1c.ru/8.1/data-composition-system/core" xmlns:dcssch="http://v8.1c.ru/8.1/data-composition-system/schema" xmlns:dcsset="http://v8.1c.ru/8.1/data-composition-system/settings" xmlns:ent="http://v8.1c.ru/8.1/data/enterprise" xmlns:lf="http://v8.1c.ru/8.2/managed-application/logform" xmlns:style="http://v8.1c.ru/8.1/data/ui/style" xmlns:sys="http://v8.1c.ru/8.1/data/ui/fonts/system" xmlns:v8="http://v8.1c.ru/8.1/data/core" xmlns:v8ui="http://v8.1c.ru/8.1/data/ui" xmlns:web="http://v8.1c.ru/8.1/data/ui/colors/web" xmlns:win="http://v8.1c.ru/8.1/data/ui/colors/windows" xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.17">
+	<WindowOpeningMode>LockOwnerWindow</WindowOpeningMode>
+	<AutoTitle>false</AutoTitle>
+	<AutoURL>false</AutoURL>
+	<AutoFillCheck>false</AutoFillCheck>
+	<Customizable>false</Customizable>
+	<CommandBarLocation>None</CommandBarLocation>
+	<ShowTitle>false</ShowTitle>
+	<AutoCommandBar name="FormCommandBar" id="-1">
+		<Autofill>false</Autofill>
+	</AutoCommandBar>
+	<Events>
+		<Event name="OnCreateAtServer">OnCreateAtServer</Event>
+	</Events>
+	<ChildItems>
+		<UsualGroup name="GroupNameAvailable" id="38">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Group name available</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Group name available</v8:content>
+				</v8:item>
+			</ToolTip>
+			<GroupVerticalAlign>Top</GroupVerticalAlign>
+			<VerticalAlign>Top</VerticalAlign>
+			<Representation>None</Representation>
+			<ShowTitle>false</ShowTitle>
+			<ExtendedTooltip name="GroupNameAvailableExtendedTooltip" id="39"/>
+			<ChildItems>
+				<LabelField name="SidecarName" id="30">
+					<DataPath>SidecarName</DataPath>
+					<TitleLocation>Top</TitleLocation>
+					<Font height="10" bold="true" kind="AutoFont"/>
+					<ContextMenu name="SidecarNameContextMenu" id="31"/>
+					<ExtendedTooltip name="SidecarNameExtendedTooltip" id="32"/>
+				</LabelField>
+				<CheckBoxField name="SidecarAvailable" id="40">
+					<DataPath>SidecarAvailable</DataPath>
+					<ReadOnly>true</ReadOnly>
+					<VerticalAlign>Top</VerticalAlign>
+					<GroupVerticalAlign>Top</GroupVerticalAlign>
+					<CheckBoxType>Auto</CheckBoxType>
+					<ContextMenu name="SidecarAvailableContextMenu" id="41"/>
+					<ExtendedTooltip name="SidecarAvailableExtendedTooltip" id="42"/>
+				</CheckBoxField>
+			</ChildItems>
+		</UsualGroup>
+		<LabelField name="SidecarVersion" id="33">
+			<DataPath>SidecarVersion</DataPath>
+			<TitleLocation>Top</TitleLocation>
+			<ContextMenu name="SidecarVersionContextMenu" id="34"/>
+			<ExtendedTooltip name="SidecarVersionExtendedTooltip" id="35"/>
+		</LabelField>
+		<UsualGroup name="GroupSidecarMetadata" id="36">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Metadata</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Group sidecar metadata</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Group>Vertical</Group>
+			<Behavior>Collapsible</Behavior>
+			<ControlRepresentation>Picture</ControlRepresentation>
+			<ExtendedTooltip name="GroupSidecarMetadataExtendedTooltip" id="37"/>
+			<ChildItems>
+				<LabelField name="SidecarMetadataCategory" id="46">
+					<DataPath>SidecarMetadataCategory</DataPath>
+					<TitleLocation>Left</TitleLocation>
+					<ContextMenu name="SidecarMetadataCategoryContextMenu" id="47"/>
+					<ExtendedTooltip name="SidecarMetadataCategoryExtendedTooltip" id="48"/>
+				</LabelField>
+				<LabelField name="SidecarMetadataDescription" id="43">
+					<DataPath>SidecarMetadataDescription</DataPath>
+					<ContextMenu name="SidecarMetadataDescriptionContextMenu" id="44"/>
+					<ExtendedTooltip name="SidecarMetadataDescriptionExtendedTooltip" id="45"/>
+				</LabelField>
+				<LabelField name="SidecarMetadataOfficial" id="49">
+					<DataPath>SidecarMetadataOfficial</DataPath>
+					<ContextMenu name="SidecarMetadataOfficialContextMenu" id="50"/>
+					<ExtendedTooltip name="SidecarMetadataOfficialExtendedTooltip" id="51"/>
+				</LabelField>
+			</ChildItems>
+		</UsualGroup>
+	</ChildItems>
+	<Attributes>
+		<Attribute name="SidecarInfo" id="1">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Sidecar info</v8:content>
+				</v8:item>
+			</Title>
+			<Type/>
+		</Attribute>
+		<Attribute name="SidecarName" id="2">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Name</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="SidecarVersion" id="3">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Version</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="SidecarAvailable" id="4">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Active</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="SidecarMetadataDescription" id="5">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Description</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="SidecarMetadataCategory" id="6">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Category</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="SidecarMetadataOfficial" id="7">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Official</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+	</Attributes>
+</Form>

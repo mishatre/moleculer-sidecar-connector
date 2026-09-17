@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "Отладка 1С (запуск)",
+            "type": "1c-platform-tools",
+            "request": "launch",
+            "platformPath": "/opt/1C/v8.3/x86_64",
+            "rootProject": "${workspaceFolder}/src/cf",
+            "debugServerHost": "localhost",
+            "autoAttachTypes": [
+                "ManagedClient",
+                "Server"
+            ],
+            "extensions": [
+                "${workspaceFolder}/src/cfe/MoleculerSidecarConnector"
+            ],
+            "externalFilesSrc": [
+                "${workspaceFolder}/src/epf",
+                "${workspaceFolder}/src/erf"
+            ],
+            "externalFilesBuilds": [
+                "${workspaceFolder}/build/out/epf",
+                "${workspaceFolder}/build/out/erf"
+            ]
+        },
+        {
+            "name": "Отладка 1Script",
+            "type": "oscript",
+            "request": "launch",
+            "cwd": "/workspace/oscript_modules/vanessa-runner/",
+            "program": "oscript_modules/bin/vrunner",
+            "args": ["compileext", "src/cfe/MoleculerSidecarConnector", "MoleculerSidecarConnector", "--updatedb"],
+            "env": {
+                "OSCRIPT_CONFIG": "lib.system=D:/myOsLibraries",
+                "JAVA_HOME": "D:/MyJava/JDK_29_Full"
+            },
+            "debugPort": 5051
+        }
+    ]
+}
