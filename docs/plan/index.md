@@ -56,7 +56,11 @@ for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
   one CFE can carry the binary. Safe mode forbids loading and connecting, not using,
   an already-connected component, and does not restrict local computation. A BSL
   parser is the lower-risk route; a Native component cannot be built in this container
-  today.
+  today. **Update:** the Native component was supplied and measured — it works on this
+  platform (canonical suite 68/68), parses a service definition in well under a tenth of a
+  millisecond when a connection is held, and its only blocker is that
+  `CompileServiceSchema` holds safe mode across the service constructor, which forbids
+  connecting it there.
 
 ### Resolved: the 1C client starts and a licence is present
 

@@ -29,6 +29,12 @@ EXTENSION_NAME="MoleculerTests"
 WORK_DIR="build/test/bsl-src"
 YAXUNIT_CFE="build/vendor/yaxunit/YAxUnit.cfe"
 YAXUNIT_NAME="YAXUNIT"
+# Vendor artifact: a Native API YAML component wrapped as an extension that carries its own
+# binary template. It is loaded like any other extension, and it needs safe mode off for the
+# same reason everything else does — the platform will not connect an external component while
+# safe mode is on.
+YAML_CFE="vendor/YamlParserNative/YamlParser.cfe"
+YAML_NAME="YamlParser"
 # The YAxUnit release file name contains a hyphen, which vrunner rejects as an
 # extension name, hence the hyphen-free copy above.
 MD_SPARROW_JAR="build/vendor/md-sparrow/md-sparrow-0.6.3-all.jar"
@@ -179,7 +185,18 @@ echo "==> loading extensions with safe mode off"
 # Passing --active makes vrunner take the ibcmd property path, which also sets safe mode
 # and unsafe-action protection to false. Without it vrunner leaves the platform defaults
 # untouched and YAxUnit fails with "Расширение подключено в безопасном режиме".
-for spec in "$CONNECTOR_CFE:$CONNECTOR_NAME" "$YAXUNIT_CFE:$YAXUNIT_NAME"; do
+extensions=("$CONNECTOR_CFE:$CONNECTOR_NAME" "$YAXUNIT_CFE:$YAXUNIT_NAME")
+# The vendored YAML component is only exercised by the canonical suites, so standalone mode
+# does not pay for loading it.
+if [ "$MODE" = "canonical" ]; then
+	if [ ! -e "$YAML_CFE" ]; then
+		echo "missing vendored component: $YAML_CFE" >&2
+		exit 1
+	fi
+	extensions+=("$YAML_CFE:$YAML_NAME")
+fi
+
+for spec in "${extensions[@]}"; do
 	cfe_path="${spec%%:*}"
 	extension_name="${spec##*:}"
 	vrunner cfe load --extension-name "$extension_name" --ibcmd --active \

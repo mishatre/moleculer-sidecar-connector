@@ -32,6 +32,7 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("QualifiesHandlerNamesWithTheModule")
 		.ДобавитьСерверныйТест("PrefixesTheServiceNameWhenAsked")
 		.ДобавитьСерверныйТест("CarriesActionParamsFromTheConstructor")
+		.ДобавитьСерверныйТест("TheBuildingContextStackRoundTrips")
 		.ДобавитьСерверныйТест("TheBuilderRefusesToRunOutsideACompilingService")
 		.ДобавитьСерверныйТест("CompileServiceSchemaRaisesForAnUnknownModule")
 		.ДобавитьСерверныйТест("CompileServiceSchemaRaisesForANonModuleValue")
@@ -145,6 +146,31 @@ Procedure CarriesActionParamsFromTheConstructor() Export
 	ЮТест.ОжидаетЧто(Params.onlyLocal.type, "declared params reach the compiled schema").Равно("boolean");
 	ЮТест.ОжидаетЧто(Params.grouping.default,
 			"Builder.TypeBoolean(True) passes its default through to the schema").Равно(Истина);
+	
+EndProcedure
+
+Procedure TheBuildingContextStackRoundTrips() Export
+	
+	// CompileServiceSchema pushes a context that the service constructor reads back through
+	// GetServiceBuildingContext, so this stack has to survive across calls. It is served by
+	// mol_ReuseCalls.GetCacheStack(), whose source returns New Structure() — a fresh object per
+	// call, which would make the stack useless. The raw values are printed because comparing
+	// against a possibly-Undefined value may not be a real assertion.
+	Кэш = mol_ReuseCalls.GetCacheStack();
+	Кэш.Insert("probe", 1);
+	Второй = mol_ReuseCalls.GetCacheStack();
+	ДержитКэш = Второй.Property("probe");
+	
+	mol_Helpers.PushToStack("probeStack", 42);
+	Найденное = mol_Helpers.LastFromStack("probeStack");
+	
+	Сообщить("stack probe: GetCacheStack persists = " + Строка(ДержитКэш)
+		+ "; pushed 42, read back [" + Строка(Найденное) + "]"
+		+ " type " + Строка(ТипЗнч(Найденное)));
+	
+	ЮТест.ОжидаетЧто(Строка(Найденное),
+			"compared as text, so a skipped Undefined comparison cannot pass this")
+		.Равно("42");
 	
 EndProcedure
 

@@ -179,6 +179,77 @@ did not exist when it was made: constructors must compile with no sidecar connec
 and a constructor written in YAML currently cannot. This document exists to price the
 reversal rather than to defend the earlier note.
 
+## Measured: the vendored Native component (2026-09-29)
+
+`vendor/YamlParserNative/` holds it: `YamlParserNative.zip` (`manifest.xml`,
+`YamlParser_linux_x86_64.so`, `YamlParser_win_x86_64.dll`), a ready-made extension
+`YamlParser.cfe` carrying the module and the archive as a binary template, and the module
+source `yp_YAML.bsl`. The archive is a **ZIP**, which matters: `ПодключитьВнешнююКомпоненту`
+reads the manifest out of a template that holds a ZIP and picks the library for the OS and
+architecture, so the shipped form is the one the platform expects rather than an accident.
+
+### It works on this platform
+
+`tests/bsl/run-tests.sh` now loads the vendored extension in canonical mode, and
+`tests/bsl/canonical/CommonModules/yp_YAMLTests` calls it across extensions the way a
+consumer would. Canonical suite: **68/68**. The Linux library loads, `ВерсияКомпоненты()`
+reports `0.1.0`, mappings/sequences/scalars/booleans arrive as platform values, an
+unparsable document raises naming the line, and `duplicateKeys=error` rejects a duplicate
+instead of silently letting the last one win.
+
+### Timing
+
+30 iterations of a 247-byte document — the size and shape a real service definition has:
+
+| Measurement | Total | Per call |
+|---|---|---|
+| First call of a session (library load) | 3–6 ms | 3–6 ms |
+| Reused instance: `РазобратьYAML(Текст, "")` | 1–3 ms | **≈ 0.03–0.1 ms** |
+| `ПодключитьКомпоненту().РазобратьYAML(...)` | 70–126 ms | ≈ 2.3–4.2 ms |
+| `yp_YAML.РазобратьYAML(Текст)` — what a caller uses | 81–132 ms | ≈ 2.7–4.4 ms |
+| Platform JSON read of the same answer | ~1 ms | ≈ 0.03 ms |
+
+The parse is not the cost. Holding one connected instance, the component parses a service
+definition in **under a tenth of a millisecond**. Reconnecting on every call costs
+2.3–4.2 ms, and that is what the module's design pays, because an extension common module
+cannot declare module variables and so cannot cache the component. The platform JSON read
+that turns the answer into Map/Structure/Array is negligible.
+
+Read plainly: the component is **fast enough held, and fast enough not held**, because
+parsing happens once per service at construction rather than per request. What the numbers
+rule out is the *per-call reconnect* if a parser is ever put on a hot path.
+
+### The blocker, demonstrated in this project's own terms
+
+The component refuses to connect while safe mode is on, and `CompileServiceSchema` wraps the
+service constructor in `SetSafeMode(True)`. So `FromString` cannot reach the component as the
+connector stands. `yp_YAMLTests.ItRefusesToRunInsideASafeModeWindow` builds that exact window
+and pins the refusal, and the module's own guidance names the fix: connect before entering the
+window and hand the connected instance to the code running inside it.
+
+That fix is small but it is not free, because the module's public functions connect for
+themselves. A connector that wants the component must either call the component directly with
+an instance it holds, or arrange for `CompileServiceSchema` not to hold safe mode across the
+constructor. The second option changes the sandboxing of every service constructor, so it is
+an owner decision rather than a detail.
+
+## Recipe to integrate it
+
+1. Add a common module `yp_YAML` to the connector extension and a binary template holding
+   `YamlParserNative.zip` verbatim (the archive is not unpacked by hand; the platform reads
+   the manifest inside it).
+2. Connect once per session outside any safe-mode window, and pass the instance to whatever
+   parses text; do not call the public functions from inside a safe-mode window.
+3. Route `mol_SchemaFactory.ParseServiceDefinition` through the local parser first, with the
+   sidecar as the fallback, so the capability no longer depends on connectivity.
+4. Keep the guard mechanisms: `MoleculerOverridable` for the runtime choice, the builder
+   profile's `patches` for the build-config choice.
+
+Limits to carry into the delivery notes: platform 8.3.24+, x86_64, Linux and Windows only,
+**no macOS**; server-side only (web and mobile clients cannot load a Native API component);
+the Windows library has never been executed, only checked for exported entry points; merging
+keys (`<<`) are not expanded; and reading is supported, not writing.
+
 ## Recommendation
 
 Two implementations satisfy the requirement. Choose on toolchain cost rather than on
