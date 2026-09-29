@@ -46,23 +46,19 @@ for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
 | T026 | Module surface and naming are consistent | draft | T023, T025 | [Plan](refactor-backlog.md) |
 | T027 | The form layer is rebuilt | draft | owner decision | [Plan](refactor-backlog.md) |
 
-### Blocker: the 1C client has no licence
+### Resolved: the 1C client starts and a licence is present
 
 The client libraries were fixed on 2026-09-29 — `tools/1c-platform/install-client-runtime.sh`
 installs the WebKitGTK 4.0 runtime from Ubuntu 22.04 and redirects the platform's
 older bundled `libstdc++`, and it is wired into `.devcontainer/Dockerfile`. `ldd`
 on `1cv8c` is now clean and the designer starts.
 
-The remaining blocker is a 1C licence: `1cv8`/`1cv8c` report
-"Не найдена лицензия". There is no command-line activation in the platform and the
-1C portal is a JavaScript application, so a `1Cv8Licence` file (in `~/.1cv8/1C/` or
-`/var/1C/licenses/`) or a HASP key must be supplied out of band. Everything that
-launches a client stays blocked: `vrunner run enterprise`,
-`vrunner validate syntax-check`, and `vrunner test yaxunit|xunit|vanessa`.
-
-Unblocking alternatives: supply a licence file, or install a headless JRE and use
-the `bsl-language-server` jar that is already on disk to get real BSL diagnostics
-without any 1C licence (see [toolkit research](toolkit-research.md)).
+The licence was supplied out of band the same day:
+`/var/1C/licenses/20260929101630.lic` is present, and `vrunner test yaxunit` now
+launches the client and executes the BSL suites (54/54 in canonical mode). Client
+launches are therefore no longer licence-blocked, so `vrunner run enterprise`,
+`vrunner validate syntax-check` and `vrunner test xunit|vanessa` are untried
+rather than blocked — none of them has been run yet.
 
 Still available without a client: `vrunner cfe compile --ibcmd`,
 `vrunner infobase init --ibcmd`, `ibcmd config check`, and the container-only
