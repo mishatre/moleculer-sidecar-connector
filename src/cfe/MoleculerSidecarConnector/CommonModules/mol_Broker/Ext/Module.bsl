@@ -143,6 +143,7 @@ Procedure Broadcast(EventName, Payload = Undefined, Val Opts = Undefined) Export
 		Opts.Insert("groups", _Opts);
 	ElsIf Opts = Undefined Then
 		Opts = New Structure();
+		Opts.Insert("groups", New Array);
 	EndIf;
 	
 	If Opts.Property("Groups") And Not mol_Helpers.IsArray(Opts.Groups) Then
@@ -171,7 +172,7 @@ Procedure Broadcast(EventName, Payload = Undefined, Val Opts = Undefined) Export
 	
 	Context.EventName   = EventName;
 	Context.EventType   = "broadcast";
-	Context.EventGroups = Opts.groups; 
+	Context.EventGroups = Opts.Groups; 
 	
 	Connection = Moleculer.AdaptConnectionParams(mol_Helpers.Get(Opts, "Connection"));
 	Response   = mol_Transport.ExecuteRequest(Context, Connection);

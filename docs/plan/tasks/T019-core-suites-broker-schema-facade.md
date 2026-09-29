@@ -1,8 +1,8 @@
 # T019 — Core unit suites B: broker, schema factory, facade, provider
 
-Status: in_progress — the schema factory and the facade are covered and the canonical suite is 94/94.
-Two acceptance items remain, and both are larger than the suite counts suggest: `mol_Broker` has only
-its two `GenerateUid` tests, and `MoleculerOverridable` is not exercised at all. Details below.
+Status: in_progress — the schema factory, the facade and the reachable part of `mol_Broker` are covered,
+and the canonical suite is 101/101. One acceptance item remains: `MoleculerOverridable` is not exercised
+at all. What `mol_Broker` cannot prove without a sidecar is recorded below rather than faked.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -107,13 +107,26 @@ Added in the same pass:
   first run: `BinaryData` cannot be built from base64 through its constructor, which expects a path.
 - canonical suite now **94/94** in 43 s.
 
-Still open, in the acceptance's own words:
+Progress on those two:
 
-- `mol_Broker` — only `GenerateUid` is covered. The payload field set for each direction, the fact that
-  event payloads omit `meta` and do not carry `sender`, the `$node.services` query shape, and
-  `GetPublicationValidationCode` deleting `Connection` from its argument are all unasserted.
-- `MoleculerOverridable` — no test invokes it. The acceptance wants every procedure invoked and
-  honoured, the mutation semantics and required fields pinned, and `GetServices` reached.
+- `mol_Broker` — seven tests added, taking its suite from 2 to 9: the node identifier, `Call`'s refusal
+  when no sidecar is reachable, `Emit` and `Broadcast` each with and without a group, and
+  `GetPublicationValidationCode` deleting `Connection` from the caller's argument.
+  Two acceptance items cannot be asserted from here, and are recorded rather than faked: the payload
+  field set for each direction is built in `mol_Transport` and belongs to the transport suite, and the
+  `$node.services` parameter shape is private to `GetSidecarNodeServices`, which ends in a sidecar call.
+- `MoleculerOverridable` — still not started. The acceptance wants every procedure invoked and honoured,
+  the mutation semantics and required fields pinned, and `GetServices` reached.
+
+A defect came out of the broker tests, and is fixed. `Broadcast` never inserted a `groups` key when its
+options were absent, so `Moleculer.Broadcast("event", payload)` — the plainest form of the documented
+API — failed with `Поле объекта не обнаружено (groups)` at `mol_Broker.Модуль(174)` before reaching the
+transport, while `Emit` handled the identical case. `Broadcast` now normalises its options exactly as
+`Emit` does, and its `EventGroups` assignment uses the same capitalisation.
+
+The first version of that test hid the cause behind a boolean. Returning the failure text instead is
+what made the diagnosis immediate, so the suite now uses `TransportRefusal`, which hands the actual
+error back to the assertion message.
 
 ## Optional pilot metrics
 

@@ -70,10 +70,10 @@ Verified 2026-09-29:
   `8f826b30c5e832d6ad42b9c40a818173340f3ea165df0210e7830357d2322376`;
 - standalone suite green against `build/ib-tests`: **14/14**, exit 0
   (`tests/bsl/run-tests.sh --mode standalone`).
-- Both numbers were taken before the T023 `NStr` fix. Regenerated afterwards the same artifact is
-  39 145 bytes with sha256 `f58dd9184f5e9c9c7af2a23a04393788b2d52173d1ecdd86f4e9578fb1ee7dde`, and the
-  suite is 18/18. The earlier values are kept so a rebuild can be checked against this record instead
-  of the numbers drifting silently.
+- These numbers describe the state at the moment of verification and are not maintained afterwards:
+  the artifact has been regenerated more than once since, after the T023 `NStr` fix and after the
+  `mol_Broker.Broadcast` fix, and the standalone suite stayed green through those rebuilds. Treat the
+  hash above as the record of what was verified, not as a value to keep in sync with every rebuild.
 
 Covered since, by `tests/bsl/standalone/CommonModules/StandaloneRuntimeTests` (4 tests), taking
 standalone mode to **18/18** in 41 s:
