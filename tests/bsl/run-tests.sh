@@ -8,6 +8,7 @@
 #   tests/bsl/run-tests.sh --mode standalone                # standalone variant, shared + standalone suites
 #   tests/bsl/run-tests.sh --rebuild-base                   # recreate the infobase first
 #   tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
+#   tests/bsl/run-tests.sh --force                          # ignore the reuse cache
 #
 # Suites are collected from tests/bsl/common/CommonModules (valid in both modes) plus
 # tests/bsl/<mode>/CommonModules. The split exists because the builder merges ten
@@ -17,6 +18,12 @@
 # In canonical mode the connector extension is compiled from src on every run, so the
 # suites always exercise current code. In standalone mode the artifact comes from
 # tools/standalone-builder, which must be run first.
+#
+# Steps are reused when their inputs have not changed: the connector compile, the test
+# extension compile, and each extension load are keyed on a content hash of what they were
+# built from. Reuse also requires the artifact to still be on disk, and a load additionally
+# requires that this run did not recreate the infobase. --force bypasses all of it;
+# --rebuild-base on its own still reuses the compiled artifacts and only forces the loads.
 #
 # Requires: java (JDK 21), vrunner, and the vendored YAxUnit and md-sparrow artifacts.
 set -euo pipefail
@@ -45,6 +52,7 @@ SCHEMA_VERSION="V2_17"
 MODE="canonical"
 REBUILD_BASE=0
 TESTS_FILTER=""
+USE_CACHE=1
 
 while [ $# -gt 0 ]; do
 	case "$1" in
@@ -54,6 +62,9 @@ while [ $# -gt 0 ]; do
 			;;
 		--rebuild-base)
 			REBUILD_BASE=1
+			;;
+		--force)
+			USE_CACHE=0
 			;;
 		--tests)
 			TESTS_FILTER="${2:?--tests needs a value}"
@@ -88,6 +99,36 @@ case "$MODE" in
 		exit 2
 		;;
 esac
+
+# Reuse cache. Every step records the inputs it was built from in a marker file, and it is
+# skipped only when that marker still matches and the artifact it produced is still on disk.
+# Markers are written after a step succeeds, so a failure is never cached.
+CACHE_DIR="build/test/.cache"
+
+# Content hash of a directory tree: file names and bytes, so an edit and a rename both count.
+hash_tree() {
+	find "$1" -type f -print0 2>/dev/null \
+		| sort -z \
+		| xargs -0 sha256sum 2>/dev/null \
+		| sha256sum \
+		| cut -d' ' -f1
+}
+
+hash_file() {
+	sha256sum "$1" 2>/dev/null | cut -d' ' -f1
+}
+
+# An empty expected value never counts as a hit: it would mean the inputs could not be read.
+cache_hit() {
+	local marker="$CACHE_DIR/$1"
+
+	[ -n "$2" ] && [ "$USE_CACHE" = "1" ] && [ -e "$marker" ] && [ "$(cat "$marker")" = "$2" ]
+}
+
+cache_store() {
+	mkdir -p "$CACHE_DIR"
+	printf '%s' "$2" >"$CACHE_DIR/$1"
+}
 
 SUITE_ROOTS=("tests/bsl/common/CommonModules" "tests/bsl/$MODE/CommonModules")
 base_connection="/F$REPO_ROOT/$BASE"
@@ -172,22 +213,42 @@ done
 neutral_dir="$(mktemp -d)"
 
 if [ -n "$CONNECTOR_SRC" ]; then
-	echo "==> compiling the connector extension from $CONNECTOR_SRC"
-	(
-		cd "$neutral_dir"
-		vrunner cfe compile --src "$REPO_ROOT/$CONNECTOR_SRC" \
-			--extension-name "$CONNECTOR_NAME" --ibcmd --v8version "$V8VERSION" \
-			"$REPO_ROOT/$CONNECTOR_CFE"
-	) >/dev/null
+	connector_inputs="$(hash_tree "$REPO_ROOT/$CONNECTOR_SRC")|$V8VERSION"
+
+	if cache_hit "connector-build" "$connector_inputs" && [ -e "$CONNECTOR_CFE" ]; then
+		echo "==> reusing $CONNECTOR_CFE (connector sources unchanged)"
+	else
+		echo "==> compiling the connector extension from $CONNECTOR_SRC"
+		(
+			cd "$neutral_dir"
+			vrunner cfe compile --src "$REPO_ROOT/$CONNECTOR_SRC" \
+				--extension-name "$CONNECTOR_NAME" --ibcmd --v8version "$V8VERSION" \
+				"$REPO_ROOT/$CONNECTOR_CFE"
+		) >/dev/null
+		cache_store "connector-build" "$connector_inputs"
+	fi
 fi
 
-echo "==> compiling $TESTS_CFE"
-(
-	cd "$neutral_dir"
-	vrunner cfe compile --src "$REPO_ROOT/$WORK_DIR" \
-		--extension-name "$EXTENSION_NAME" --ibcmd --v8version "$V8VERSION" \
-		"$REPO_ROOT/$TESTS_CFE"
-) >/dev/null
+# The mode belongs in the key because both modes write the same artifact path from different
+# suite sets, so the file on disk means different things depending on the mode.
+tests_inputs="$(hash_tree "$REPO_ROOT/tests/bsl")|$(hash_file "$MD_SPARROW_JAR")|$MODE|$SCHEMA_VERSION|$EXTENSION_NAME|$V8VERSION"
+
+if cache_hit "tests-build" "$tests_inputs" && [ -e "$TESTS_CFE" ]; then
+	echo "==> reusing $TESTS_CFE (suites unchanged)"
+else
+	echo "==> compiling $TESTS_CFE"
+	(
+		cd "$neutral_dir"
+		vrunner cfe compile --src "$REPO_ROOT/$WORK_DIR" \
+			--extension-name "$EXTENSION_NAME" --ibcmd --v8version "$V8VERSION" \
+			"$REPO_ROOT/$TESTS_CFE"
+	) >/dev/null
+	cache_store "tests-build" "$tests_inputs"
+fi
+
+# A base created by this run holds the extensions with the platform's default properties, so
+# safe mode is still on in it: the loads below have to run whatever the cache says.
+base_recreated=0
 
 if [ ! -d "$BASE" ] || [ "$REBUILD_BASE" = "1" ]; then
 	echo "==> creating the disposable infobase $BASE"
@@ -195,6 +256,7 @@ if [ ! -d "$BASE" ] || [ "$REBUILD_BASE" = "1" ]; then
 	vrunner infobase init --src src/cf \
 		--ext "$CONNECTOR_CFE" --ext "$YAXUNIT_CFE" \
 		--ibconnection "$base_connection" --ibcmd --v8version "$V8VERSION" >/dev/null
+	base_recreated=1
 fi
 
 echo "==> loading extensions with safe mode off"
@@ -221,18 +283,24 @@ if [ "$MODE" = "canonical" ]; then
 	fi
 	extensions+=("$YAML_CFE:$YAML_NAME")
 fi
+# The test extension goes through the same call as the rest: cfe load registers it when it is not
+# present yet and refreshes its safe-mode properties when it is, which is all any of these need.
+extensions+=("$TESTS_CFE:$EXTENSION_NAME")
 
 for spec in "${extensions[@]}"; do
 	cfe_path="${spec%%:*}"
 	extension_name="${spec##*:}"
+	artifact_hash="$(hash_file "$cfe_path")"
+
+	if [ "$base_recreated" = "0" ] && cache_hit "loaded-$extension_name" "$artifact_hash"; then
+		echo "    reusing $extension_name (this artifact is already loaded)"
+		continue
+	fi
+
 	vrunner cfe load --extension-name "$extension_name" --ibcmd --active \
 		--ibconnection "$base_connection" --v8version "$V8VERSION" "$cfe_path" >/dev/null
+	cache_store "loaded-$extension_name" "$artifact_hash"
 done
-
-# The test extension is created or updated through cfe load, which registers it when it
-# is not present yet and refreshes its safe-mode properties when it is.
-vrunner cfe load --extension-name "$EXTENSION_NAME" --ibcmd --active \
-	--ibconnection "$base_connection" --v8version "$V8VERSION" "$TESTS_CFE" >/dev/null
 
 echo "==> running tests"
 mkdir -p "$REPORT_DIR"
