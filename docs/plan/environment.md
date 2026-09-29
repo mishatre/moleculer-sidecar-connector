@@ -220,5 +220,73 @@ to apply.
 
 `build/ib` remains the extension-mode disposable base. Standalone-mode tests need
 a second disposable base, creatable with the `infobase init` command above once
-T015 produces the variant; a spike base was created and verified and has been
+T015 produces the product; a spike base was created and verified and has been
 removed.
+
+Current state: `build/ib` is the canonical harness base (base configuration plus
+the connector and YAxUnit), `build/ib-tests` is the standalone one.
+`tests/bsl/run-tests.sh` recreates either with `--rebuild-base`. Hard-killing
+`1cv8` can leave a file infobase corrupted; both are disposable.
+
+### Where to look up 1C platform syntax
+
+**Use this before guessing a platform API name.** The language extension
+`1c-syntax.language-1c-bsl` ships a syntax dictionary that the language server
+itself does not:
+
+```
+/root/.vscode-server/extensions/1c-syntax.language-1c-bsl-*/lib/bslGlobals.json
+```
+
+Contents, verified 2026-09-29 on extension 2.1.1:
+
+| Key | Entries | Carries |
+|---|---|---|
+| `globalfunctions` | 443 | Russian and English name, description, return type, signature with parameter types |
+| `globalvariables` | 84 | global properties such as `Metadata`, `БиблиотекаКартинок` |
+| `systemEnum` | 616 | enumerations and their values |
+| `classes` | 59 | constructible classes, each with `methods`, `properties` and `constructors` |
+| `keywords` | 2 | keyword spellings per script variant |
+
+Wrapper: `tools/1c-platform/bsl-syntax.py`.
+
+```bash
+tools/1c-platform/bsl-syntax.py AdjustValue          # by English name
+tools/1c-platform/bsl-syntax.py ПривестиЗначение     # by Russian name
+tools/1c-platform/bsl-syntax.py TypeDescription      # a class, with its members
+tools/1c-platform/bsl-syntax.py --list classes
+tools/1c-platform/bsl-syntax.py --search версия
+```
+
+Paths may be overridden with `--dict` or `BSL_GLOBALS_JSON`.
+
+**Coverage is partial.** It holds the constructible classes, not the whole
+platform API: `Metadata.*`, metadata objects, form elements, events and most
+object properties are absent, so `--search РегистрСведений` finds nothing. It is
+a lookup aid, not a reference for everything.
+
+**Why it matters.** The platform accepts the Russian and the English spelling of
+the same member regardless of the configuration's `ScriptVariant`, so either
+compiles, but a wrong name is expensive to find: `vrunner cfe compile` and the
+designer's `/CheckModules` both load metadata without compiling module bodies, so
+the mistake surfaces only when code actually runs, as `Метод объекта не обнаружен
+(X)`. This is how `CastValue` was ruled out for `ПривестиЗначение`: the real
+English name is `AdjustValue`.
+
+Other sources checked, and why they are not the answer:
+
+- `/opt/1cv8/current/1cv8_ru.hbk` — the platform's own syntax assistant. It is a
+  packed help file; `strings` yields nothing usable.
+- The BSL language server jar ships **no** syntax resources. The dictionary above
+  belongs to the VS Code extension.
+- `1c-syntax/bsl-help-toc-parser` parses the platform help table of contents and
+  is the route to broader coverage if this dictionary ever proves too thin.
+
+Two syntax traps worth remembering:
+
+- A `New <Type>(...)` expression cannot be chained with a member call:
+  `New TypeDescription("Number").AdjustValue("1")` fails with `Неопознанный
+  оператор`. Assign to a variable first.
+- Because module bodies are not compiled at load time, neither the builder nor the
+  harness can catch these statically. A platform call is only proven by executing
+  it, which is what the YAxUnit suites do.

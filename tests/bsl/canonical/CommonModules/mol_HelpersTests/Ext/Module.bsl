@@ -17,6 +17,11 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("IsStringRejectsNumber")
 		.ДобавитьСерверныйТест("IsNumberAcceptsNumber")
 		.ДобавитьСерверныйТест("IsNumberRejectsNumericString")
+		.ДобавитьСерверныйТест("CanBeNumberAcceptsNumbers")
+		.ДобавитьСерверныйТест("CanBeNumberAcceptsNumericStrings")
+		.ДобавитьСерверныйТест("CanBeNumberRejectsText")
+		.ДобавитьСерверныйТест("TypeDescriptionCastsNumericStrings")
+		.ДобавитьСерверныйТест("TypeDescriptionCastsNumericStringsInRussian")
 		.ДобавитьСерверныйТест("IsStructureAcceptsStructure")
 		.ДобавитьСерверныйТест("IsStructureRejectsMap")
 		.ДобавитьСерверныйТест("IsMapAcceptsMap")
@@ -56,6 +61,47 @@ Procedure IsNumberRejectsNumericString() Export
 
 	ЮТест.ОжидаетЧто(mol_Helpers.IsNumber("1"), "a numeric string is not a Number")
 		.ЭтоЛожь();
+
+EndProcedure
+
+// CanBeNumber is the lenient half of the pair: it answers whether a value can be read as a
+// number, which is what the transport needs when the sidecar sends numbers as strings.
+Procedure CanBeNumberAcceptsNumbers() Export
+
+	ЮТест.ОжидаетЧто(mol_Helpers.CanBeNumber(1)).ЭтоИстина();
+
+EndProcedure
+
+Procedure CanBeNumberAcceptsNumericStrings() Export
+
+	ЮТест.ОжидаетЧто(mol_Helpers.CanBeNumber("1")).ЭтоИстина();
+
+EndProcedure
+
+Procedure CanBeNumberRejectsText() Export
+
+	ЮТест.ОжидаетЧто(mol_Helpers.CanBeNumber("not a number")).ЭтоЛожь();
+
+EndProcedure
+
+// Pins the platform call used to convert a number-like value, and verifies the method name.
+// ПривестиЗначение is AdjustValue in the English spelling, not CastValue. Both names are
+// exercised so a rename on either side shows up here.
+Procedure TypeDescriptionCastsNumericStrings() Export
+
+	NumberType = New TypeDescription("Number");
+	Casted = NumberType.AdjustValue("1");
+
+	ЮТест.ОжидаетЧто(Casted, "a numeric string must cast to a Number").Равно(1);
+
+EndProcedure
+
+Procedure TypeDescriptionCastsNumericStringsInRussian() Export
+
+	NumberType = New TypeDescription("Number");
+	Casted = NumberType.ПривестиЗначение("2");
+
+	ЮТест.ОжидаетЧто(Casted, "the Russian spelling must name the same method").Равно(2);
 
 EndProcedure
 
