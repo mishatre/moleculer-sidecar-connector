@@ -10,8 +10,8 @@
 //  Params     - Array, Structure, Map, Any, Undefined - params of action
 //  Opts       - Object, Undefined                     - options of call  
 //
-// Returns:
-// - Any - service action response
+// Returns - Any - service action response
+//
 Function Call(ActionName, Val Params = Undefined, Opts = Undefined) Export
 	If mol_Helpers.IsObject(Opts) And mol_Helpers.Has(Opts, "Connection") Then
 		Message = NStr("
@@ -241,6 +241,7 @@ Function GetConfig(ForceUpdate = False) Export
 		Result.LogLevel     = Constants["mol_LogLevel"].Get();
 		Result.ExtAdminRole = "mol_Administrator";
 		Result.ExtVersion   = mol_Helpers.GetExtensionVersion(Result.Name);
+		SetPrivilegedMode(False);
 	EndIf;
 	
 	MoleculerOverridable.GetConfig(Result);
@@ -505,7 +506,7 @@ EndFunction
 #EndRegion
 
 #Region Private
-// BSLLS:UnusedLocalMethod-off
+
 Function This()
 	Return Moleculer;	
 EndFunction
@@ -544,26 +545,25 @@ Function GetPublicSettings(Val Settings)
 		For Each SecureSetting In SecureSettings Do
 			Parts = StrSplit(SecureSetting, ".");
 			If Parts.Count = 1 Then
-				Settings.Delete(Parts[0]);
-				Continue;
-			EndIf;
-			CurrentLeaf = Settings;
-			Index = -1;
-			For Each Part In Parts Do
-				Index = Index + 1;
-				LeafType = TypeOf(CurrentLeaf);
-				IsLast = Index = Parts.UBound();
-				HasValue = False
-					OR (LeafType = Type("Structure") AND CurrentLeaf.Property(Part))
-					OR (LeafType = Type("Map") AND CurrentLeaf.Get(Part) <> Undefined);
-				If HasValue Then
-					If IsLast Then
-						CurrentLeaf.Delete(Part);
-					Else
-						CurrentLeaf = CurrentLeaf[Part];
+				Settings.Delete(Parts[0]);				
+			Else      
+				CurrentLeaf = Settings;
+				Index = -1;
+				For Each Part In Parts Do
+					Index = Index + 1;
+					LeafType = TypeOf(CurrentLeaf);
+					IsLast = Index = Parts.UBound();
+					If False
+						OR (LeafType = Type("Structure") AND CurrentLeaf.Property(Part))
+						OR (LeafType = Type("Map") And CurrentLeaf.Get(Part) <> Undefined) Then
+						If IsLast Then
+							CurrentLeaf.Delete(Part);
+						Else
+							CurrentLeaf = CurrentLeaf[Part];
+						EndIf;
 					EndIf;
-				EndIf;
-			EndDo;
+				EndDo;
+			EndIf;
 		EndDo;
 	EndIf;                                
 	

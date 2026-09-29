@@ -8,6 +8,7 @@ Function CustomError(Type, Message = "", Data = Undefined, ErrorInfo = Undefined
 	Error = Undefined;
 	
 	If False Then
+		
 	ElsIf Type = "TypeError" Then
 		Error = TypeError(Message, Data, ErrorInfo);
 	ElsIf Type = "ServiceNotFound" Then
@@ -251,8 +252,6 @@ Function FromErrorInfo(ErrorInfo) Export
 		Name = "SpeechProcessingError";
 	ElsIf Category = ErrorCategory.SessionError Then                                                 
 		Name = "SessionError";
-	ElsIf Category = ErrorCategory.NetworkError Then                                                 
-		Name = "NetworkError";
 	ElsIf Category = ErrorCategory.CollaborationSystemError Then                                     
 		Name = "CollaborationSystemError";
 	ElsIf Category = ErrorCategory.MultimediaToolsError Then                                         
@@ -278,8 +277,6 @@ Function ToString(Error) Export
 	|%2:%3
 	|
 	|%4", Error.Message, Error.Type, Error.Code, Error.Stack);
-	
-	// Return mol_Helpers.ToJSONString(Error, True);
 	
 EndFunction
 
@@ -307,7 +304,6 @@ Function GenerateStackTrace(OffsetIndex = Undefined, OffsetModule = Undefined) E
 	Index = 0;
 	If OffsetModule <> Undefined Then
 		Skip = True;
-		Found = False;
 		While Skip Or StackTrace.Stack[Index].Object = OffsetModule Do
 			If StackTrace.Stack[Index].Object = OffsetModule Then
 				Skip = False;
@@ -563,7 +559,7 @@ Function NoExceptionError(Data = Undefined)
 	Return ClientError("NO_EXCEPTION_ERROR", 400, "Function called outside except block", Data);
 EndFunction
 
-Function AppendErrorInfo(Error, StackOrErrorInfo)
+Procedure AppendErrorInfo(Error, StackOrErrorInfo)
 	
 	If mol_Helpers.IsString(StackOrErrorInfo) Then
 		Error.Stack = StackOrErrorInfo;	
@@ -572,6 +568,6 @@ Function AppendErrorInfo(Error, StackOrErrorInfo)
 		Error.Stack     = GenerateErrorStack(StackOrErrorInfo, Error.Name, Error.Message);
 	EndIf;
 	
-EndFunction
+EndProcedure
 
 #EndRegion

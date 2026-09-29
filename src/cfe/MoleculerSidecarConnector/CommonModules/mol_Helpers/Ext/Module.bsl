@@ -172,8 +172,7 @@ EndFunction
 // Sha256sum   - String - Sha256sum
 // ServiceName - String - Service name (optional, default = "")
 // 
-// Returns:
-// - String - Authorization header value
+// Returns - String - Authorization header value
 Function SignV4(Request, AccessKey, SecretKey, Region, RequestDate, Sha256sum, ServiceName = "") Export
 	
 	If Not IsObject(Request) Then
@@ -243,15 +242,16 @@ EndFunction
 // Returns a presigned URL string
 //
 // Parameters: 
-// Request      - HTTPQuery         - HTTP Request
-// AccessKey    - String            - Access key
-// SecretKey    - String            - Secret key
-// SessionToken - String, Undefined - Session token
-// Region       - String            - Region
-// RequestDate  - Date              - Request date    
-// Expires      - Undefined         - URL expiration in seconds
+//  Request      - HTTPQuery         - HTTP Request
+//  AccessKey    - String            - Access key
+//  SecretKey    - String            - Secret key
+//  SessionToken - String, Undefined - Session token
+//  Region       - String            - Region
+//  RequestDate  - Date              - Request date    
+//  Expires      - Undefined         - URL expiration in seconds
 // 
-// Returns - String - URL string
+// Returns:
+//  - String - URL string
 Function PresignSignatureV4(Request, AccessKey, SecretKey, SessionToken = Undefined, Region, RequestDate, Expires) Export
 	
 	If Not IsObject(Request) Then   
@@ -352,7 +352,8 @@ EndFunction
 // SecretKey    - String - Secret key
 // PolicyBase64 - String - Policy encoded as base64 string
 // 
-// Returns - String - String signature
+// Returns:
+//  - String - String signature
 Function PostPresignSignatureV4(Region, Date, SecretKey, PolicyBase64) Export
 	
 	If Not IsString(Region) Then
@@ -474,7 +475,8 @@ Function FromJSONString(String) Export
 	Except       
 		JSONReader.Close();
 		LastErrorInfo = ErrorInfo();
-		mol_Logger.Debug("FromJSONString", "Couldn't parse JSON string using basic parser. Trying custom parser...", LastErrorInfo, Metadata.CommonModules.mol_Helpers);				
+		ErrorMessage = "Couldn't parse JSON string using basic parser. Trying custom parser...";
+		mol_Logger.Debug("FromJSONString", ErrorMessage, LastErrorInfo, Metadata.CommonModules.mol_Helpers);				
 	EndTry;
 	
 	JSONReader = New JSONReader();
@@ -490,7 +492,8 @@ Function FromJSONString(String) Export
 		
 	Except
 		LastErrorInfo = ErrorInfo();
-		mol_Logger.Info("FromJSONString", "Couldn't parse JSON string using custom parser. Bailing...", LastErrorInfo, Metadata.CommonModules.mol_Helpers);	
+		ErrorMessage = "Couldn't parse JSON string using custom parser. Bailing...";
+		mol_Logger.Info("FromJSONString", ErrorMessage, LastErrorInfo, Metadata.CommonModules.mol_Helpers);	
 		Raise;	
 	EndTry;
 	
@@ -511,7 +514,8 @@ Function FromJSONStream(Stream) Export
 	Except       
 		JSONReader.Close();
 		ErrorInfo = ErrorInfo();
-		mol_Logger.Info("FromJSONString", "Couldn't parse JSON string using basic parser. Trying custom parser...", ErrorInfo, Metadata.CommonModules.mol_Helpers);				
+		ErrorMessage = "Couldn't parse JSON string using basic parser. Trying custom parser...";
+		mol_Logger.Info("FromJSONString", ErrorMessage, ErrorInfo, Metadata.CommonModules.mol_Helpers);				
 	EndTry;
 	
 EndFunction
@@ -741,7 +745,7 @@ EndFunction
 
 #EndRegion
 
-Function SetRequestResponseBody(HTTPRequestResponse, Body) Export
+Procedure SetRequestResponseBody(HTTPRequestResponse, Body) Export
 
 	If IsString(Body) Then
 		HTTPRequestResponse.SetBodyFromString(Body, "UTF-8", ByteOrderMarkUse.DontUse);	
@@ -749,19 +753,19 @@ Function SetRequestResponseBody(HTTPRequestResponse, Body) Export
 		HTTPRequestResponse.SetBodyFromBinaryData(Body);	
 	EndIf;
 	
-EndFunction
+EndProcedure
 
 #EndRegion
 
 #Region DynamicEvaluation
 
-Function ExecuteModuleProcedure(Val _ModuleName, Val _ProcedureName, Val _Parameters = Undefined) Export
+Procedure ExecuteModuleProcedure(Val _ModuleName, Val _ProcedureName, Val _Parameters = Undefined) Export
 	
 	_Args = BuildArgsString(_Parameters, "_Parameters");
 	
 	Execute StrTemplate("%1.%2(%3)", _ModuleName, _ProcedureName, _Args);
 		
-EndFunction
+EndProcedure
 
 Function ExecuteModuleFunction(Val _ModuleName, Val _FunctionName, Val _Parameters = Undefined) Export
 	
@@ -783,9 +787,9 @@ Function GetOsPlatform(SystemInfo) Export
 		Return "darwin";
 	ElsIf SystemInfo.PlatformType = PlatformType.Linux_x86 Or SystemInfo.PlatformType = PlatformType.Linux_x86_64 Then
 		Return "linux";
-	EndIf;
-	
-	Return "Unknown";	
+	Else
+		Return "Unknown";
+	EndIf;	
 	
 EndFunction
 	
@@ -803,9 +807,9 @@ Function GetOsArch(SystemInfo) Export
 		Return "i386"; 
 	ElsIf SystemInfo.PlatformType = PlatformType.Linux_x86_64 Then
 		Return "x64";
+	Else
+		Return "Unknown";
 	EndIf;
-		
-	Return "Unknown";
 	
 EndFunction
 
@@ -977,7 +981,7 @@ Function Has(Object, Property, IgnoreCase = False, _Key = Undefined) Export
 	
 EndFunction
 
-Function RemoveEmptyProperties(Object, Exclude = Undefined) Export
+Procedure RemoveEmptyProperties(Object, Exclude = Undefined) Export
 	
 	If Not IsStructure(Object) And Not IsMap(Object) Then
 		mol_Errors.RaiseTypeError("Object", Object, Type("Structure"), Type("Map"));
@@ -1009,7 +1013,7 @@ Function RemoveEmptyProperties(Object, Exclude = Undefined) Export
 		EndIf;
 	EndDo;
 	
-EndFunction
+EndProcedure
 
 Function NormalizePath(Path) Export
 
@@ -1126,7 +1130,8 @@ Function EnsureArray(Value) Export
 EndFunction
 
 Function ToUnixDateTime(Date) Export
-	Return Date - '19700101';	
+	InitialUnixDate = '19700101';
+	Return Date - InitialUnixDate;	
 EndFunction
 
 #EndRegion
@@ -1223,10 +1228,8 @@ Function JSONTransfromUnsupportedTypes(Property, Value, AdditionalParameters, Ca
 	ElsIf Type = Type("ErrorInfo") Then 
 		Return ErrorProcessing.DetailErrorDescription(Value); 
 	Else
-		Return StrTemplate("<incorrect value>[%2:%3]", TypeOf(Value), String(Value))
+		Return StrTemplate("<incorrect value>[%1:%2]", TypeOf(Value), String(Value));
 	EndIf;
-	
-	Return Value;
 	
 EndFunction
 

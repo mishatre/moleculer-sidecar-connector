@@ -70,6 +70,7 @@
 					<ExtendedTooltip name="GroupUseProxyExtendedTooltip" id="155"/>
 					<ChildItems>
 						<RadioButtonField name="mol_ProxyProtocol" id="156">
+							<DataPath>2/0:852fc49f-e324-4053-bd5c-bcf04135f517</DataPath>
 							<RadioButtonType>Auto</RadioButtonType>
 							<ChoiceList>
 								<xr:Item>
@@ -123,6 +124,7 @@
 							<ExtendedTooltip name="SubgroupSidecarUseProxyConnectionExtendedTooltip" id="166"/>
 							<ChildItems>
 								<InputField name="mol_ProxyServer" id="159">
+									<DataPath>2/0:a9796354-ef3a-45bb-8244-a9ecb97920c3</DataPath>
 									<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
 									<ContextMenu name="mol_ProxyServerContextMenu" id="160"/>
 									<ExtendedTooltip name="mol_ProxyServerExtendedTooltip" id="161"/>
@@ -131,6 +133,7 @@
 									</Events>
 								</InputField>
 								<InputField name="mol_ProxyPort" id="162">
+									<DataPath>2/0:d9d8b398-8b90-4d68-a57f-b62394db95b8</DataPath>
 									<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
 									<EditFormat>
 										<v8:item>
@@ -174,6 +177,7 @@
 							<ExtendedTooltip name="SubgroupSidecarUseProxyAuthExtendedTooltip" id="168"/>
 							<ChildItems>
 								<InputField name="mol_ProxyUser" id="175">
+									<DataPath>2/0:64507625-f7c0-4f6a-bfdd-8a577d6fc775</DataPath>
 									<Width>20</Width>
 									<HorizontalStretch>false</HorizontalStretch>
 									<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
@@ -184,6 +188,7 @@
 									</Events>
 								</InputField>
 								<InputField name="mol_ProxyPassword" id="178">
+									<DataPath>2/0:f4b6f71f-ba96-4bf3-a28c-1ea2484b6a4b</DataPath>
 									<Width>20</Width>
 									<HorizontalStretch>false</HorizontalStretch>
 									<PasswordMode>true</PasswordMode>

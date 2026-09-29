@@ -1,4 +1,4 @@
-FROM local/vrunner2:8.3.24.1667 
+FROM local/vrunner:8.3.24.1667 
 # local/onescript-dev-base:2.1.0
 
 USER root

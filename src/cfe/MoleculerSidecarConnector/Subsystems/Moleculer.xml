@@ -69,6 +69,7 @@
 				<xr:Item xsi:type="xr:MDObjectRef">CommonForm.mol_UserSelection</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">FunctionalOption.mol_UseDynamicServices</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">FunctionalOption.mol_UseProxy</xr:Item>
+				<xr:Item xsi:type="xr:MDObjectRef">48928ed7-ac45-4a85-82aa-d7c406daed53</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">Role.mol_Administrator</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.MoleculerOverridable</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.MoleculerClientServer</xr:Item>

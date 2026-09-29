@@ -24,7 +24,8 @@
 				"yellow-hammer.1c-platform-tools",
 				"1c-syntax.language-1c-bsl",
 				"openai.chatgpt",
-				"yellow-hammer.1c-platform-extension-pack"
+				"yellow-hammer.1c-platform-extension-pack",
+				"Vizards.deepseek-v4-for-copilot"
 			],
 			"settings": {
 				"terminal.integrated.defaultProfile.linux": "bash",

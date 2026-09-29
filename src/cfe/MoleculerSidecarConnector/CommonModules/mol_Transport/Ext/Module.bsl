@@ -121,6 +121,7 @@ Function Send(Packet, Val Connections = Undefined)
 				mol_Errors.RaiseCustomError("ValidationError", Message);
 			EndIf;
 		Except   
+			SetSafeModeDisabled(False);
 			LastErrorInfo = mol_Errors.GetCurrentError();
 			If LastErrorInfo = Undefined Then
 				// Unhandled error
@@ -165,7 +166,7 @@ EndFunction
 
 #Region HTTP
 
-Function Transporter_HTTP_Send(Connection, Packet, Headers = Undefined) 
+Function Transporter_HTTP_Send(Connection, Packet, Val Headers = Undefined) 
 	
 	HTTPRequest = New HTTPRequest();	
 	PackingResult = SetPacketAsRequestResponseBody(HTTPRequest, Packet);
@@ -289,7 +290,8 @@ EndFunction
 Function GetPacketFromRequestResponseBody(HTTPRequestResponse)
 	
 	Packet = Undefined;
-	
+
+	// TODO: Parse media types independently of parameters such as charset and boundary.
 	ContentType = mol_Helpers.ParseHeader(HTTPRequestResponse.Headers, "Content-Type");
 	If ContentType.Value = "application/json" Then
 		Body = HTTPRequestResponse.GetBodyAsString();

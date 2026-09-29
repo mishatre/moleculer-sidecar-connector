@@ -10,8 +10,7 @@
 //  Params     - Any, Undefined    - params of action
 //  Opts       - Object, Undefined - options of call  
 //
-// Returns:
-// - Any - service action response
+// Returns - Any - service action response
 //
 Function Call(ActionName, Val Params = Undefined, Opts = Undefined) Export
 	
