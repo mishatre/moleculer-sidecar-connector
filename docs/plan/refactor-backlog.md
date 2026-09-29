@@ -51,6 +51,7 @@ Undecided, needs the owner:
 | T025 | The inbound transport boundary is covered by an integration test | draft | none |
 | T026 | Module surface and naming are consistent | draft | T023, T025 |
 | T027 | The form layer is rebuilt | draft | owner decision |
+| T028 | Service definitions parse locally instead of through the sidecar | draft | owner decision on safe mode; T025 |
 
 T024 is elaborated below. The rest stay outlines until the cycle is authorised.
 
@@ -109,6 +110,36 @@ that affects anything shared.
 
 Note the server holds a lock on `build/ib`, so stop it before any harness run
 that recreates that base.
+
+## T028 — parse service definitions locally
+
+Outcome: a service constructor written in YAML compiles with **no sidecar node connected**, so the
+capability stops depending on connectivity.
+
+Why: `mol_SchemaFactory.ParseServiceDefinition` sends anything that is not JSON to
+`$sidecar.utils.parseYAML`. A YAML constructor therefore works only while a sidecar happens to be up,
+and a dynamic-service constructor stored in `Catalog.mol_Services.ServiceConstructor` cannot use YAML
+for anything at all — not even to convert it. The component's own speed is not the obstacle: parsing
+costs ~0.07 ms against ~2.5 ms for connecting it.
+
+What it involves:
+
+- a local parser behind the seams this project already has (`providerModule:
+  MoleculerOverridable` at runtime, profile `patches` at build time), reading
+  `vendor/YamlParserNative/`;
+- connecting the component once and holding the instance. That also removes the per-call reconnect,
+  and it is the same change that clears the safe-mode constraint: `CompileServiceSchema` wraps the
+  service constructor in `SetSafeMode(True)`, and the platform forbids connecting an external
+  component while safe mode is on;
+- the conversions the requirement names, not just parsing: YAML to object, YAML to JSON, object to
+  YAML;
+- a bounded YAML subset — mappings, sequences and scalars. Anchors, tags, multiple documents and
+  complex keys are needed by nothing in `src/`.
+
+Full assessment and measurements: [yaml-native-parser-viability.md](yaml-native-parser-viability.md).
+
+Low priority: nothing in `src/` reads YAML today, so this restores a capability rather than
+unblocking existing code.
 
 ## Open decisions
 

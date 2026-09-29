@@ -1,7 +1,10 @@
 # T021 — Standalone variant runtime verification
 
-Status: blocked — requires a runnable 1C client for the HTTP round-trip; loading
-the artifact itself is already proven possible via ibcmd
+Status: in_progress — one acceptance item is open. The client blocker is gone (a licence is present
+and the canonical suite runs the client on every run), the artifact is regenerated from current
+sources, and standalone mode is 18/18, covering `IsStandalone()`, the provider-sourced config,
+connections and publications, and the controlled outbound failure. The inbound `POST` round-trip
+remains; it needs the standalone base published on its own port.
 Depends on: T015, T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -22,16 +25,18 @@ Next: T022 quality gate and delivery documentation.
 
 ## Acceptance and consumer example
 
-- [ ] The generated `.cfe` loads into the standalone-mode infobase without errors.
-- [ ] `Moleculer.IsStandalone()` returns `True` and `Moleculer.GetConfig()` returns
+- [x] The generated `.cfe` loads into the standalone-mode infobase without errors. Verified in
+      `build/ib-tests`, the base this path actually uses; `build/ib-standalone` is named by the
+      original wording but is not that base.
+- [x] `Moleculer.IsStandalone()` returns `True` and `Moleculer.GetConfig()` returns
       the settings injected by the profile.
-- [ ] `Moleculer.GetConnections()` and `GetPublications()` return the provider's
+- [x] `Moleculer.GetConnections()` and `GetPublications()` return the provider's
       data, not the stub sample rows.
 - [ ] An inbound `POST /moleculer/sidecar` request reaches the transport handler
       and produces the expected response shape for a fixture request.
-- [ ] An outbound action call fails in a controlled, documented way when no sidecar
+- [x] An outbound action call fails in a controlled, documented way when no sidecar
       is reachable, rather than leaking safe-mode state or an unhandled error.
-- [ ] The suite runs against `build/ib-standalone`, created by T017.
+- [x] The suite runs against the standalone base the harness uses (`build/ib-tests`, created by T017).
 
 ## Implementation context
 
@@ -60,8 +65,39 @@ T015 rather than editing the generated tree by hand.
 
 ## Completion evidence / resume point
 
-Record: artifact hash, load command and result, suite output, fixture request and
-response, and the exact behaviour of the outbound failure path.
+Verified 2026-09-29:
+
+- artifact regenerated from current sources by `tools/standalone-builder/build-standalone.py`:
+  `build/standalone/MoleculerSidecarConnectorStandalone.cfe`, 38 587 bytes, sha256
+  `8f826b30c5e832d6ad42b9c40a818173340f3ea165df0210e7830357d2322376`;
+- standalone suite green against `build/ib-tests`: **14/14**, exit 0
+  (`tests/bsl/run-tests.sh --mode standalone`).
+
+Covered since, by `tests/bsl/standalone/CommonModules/StandaloneRuntimeTests` (4 tests), taking
+standalone mode to **18/18** in 41 s:
+
+- `TheVariantKnowsItIsStandalone` — `IsStandalone()` is
+  `Metadata.FindByFullName("Catalog.mol_Services") = Undefined`, so this asserts the builder dropped
+  the catalog rather than that a flag is set;
+- `ConfigurationComesFromTheProvider` — `ExtVersion = "0.2.0 beta 4"`, `Namespace = ""`,
+  `ExtAdminRole = ""`, `ModulePrefix = "Service"`. The first three are assigned **only** by
+  `MoleculerOverridable`, so they show the provider seam is wired up;
+- `TheProviderDeclaresNoConnectionsOrPublications` — empty through both the provider
+  (`GetConnections(Истина)`) and the reuse-cached entry point the runtime actually calls;
+- `AnOutboundCallWithoutASidecarFailsControlled` — the call raises, the session is not left in safe
+  mode, and the message is `MoleculerServerError: Нет доступных подключений к sidecar. Невозможно
+  отправить запрос` raised from `ОбщийМодуль.Moleculer.Модуль(654)`. That is the controlled,
+  documented failure the acceptance asks for.
+
+Still open — the inbound `POST /moleculer/sidecar` round-trip in standalone mode. It needs a second
+publication, because `build/ibsrv/publication.yaml` points at `build/ib`, which carries the canonical
+extension; the standalone base would have to be published on its own port.
+
+Generator facts the assertions should use: the builder emits `MoleculerOverridable` with
+`ModulePrefix = "Service"`, `LogLevel = "Info"`, `ExtVersion = "0.2.0 beta 4"` and no connections or
+publications; `Moleculer.IsStandalone()` is
+`Metadata.FindByFullName("Catalog.mol_Services") = Undefined`, so asserting it also asserts that the
+builder dropped the catalog. `Moleculer.Call(ActionName, Params, Opts)` is the outbound entry point.
 
 ## Optional pilot metrics
 
