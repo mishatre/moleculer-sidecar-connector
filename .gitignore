@@ -1,21 +1,39 @@
-# OneScript dependencies
-oscript_modules/
-
-# Generated 1C files
+# ---------------------------------------------------------------------------
+# Generated 1C artifacts
+# ---------------------------------------------------------------------------
+# build/ holds compiled *.cf/*.cfe, disposable infobases and vendored tool
+# downloads (YAxUnit, md-sparrow); out/ holds exported configurations.
+# Both are rebuildable.
 build/
 out/
 
+# ---------------------------------------------------------------------------
+# Vendored dependencies
+# ---------------------------------------------------------------------------
+# OneScript packages, restored from packagedef via opm.
+oscript_modules/
+
+# ---------------------------------------------------------------------------
+# Reference material — not part of the product
+# ---------------------------------------------------------------------------
+# Upstream Moleculer sidecar, kept as a read-only code example for comparison.
+# Third-party reference code, not our own work: keep it out of the repository.
+moleculer-sidecar-next/
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.pyc
+
+# ---------------------------------------------------------------------------
 # Temporary files
+# ---------------------------------------------------------------------------
 *.tmp
 *.log
 
-# VS Code local overrides
+# ---------------------------------------------------------------------------
+# Local overrides
+# ---------------------------------------------------------------------------
 .vscode/*.local.json
-
-# macOS
 .DS_Store
-
-AGENTS.md
-docs/
-
-moleculer-sidecar-next/

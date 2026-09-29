@@ -28,7 +28,7 @@ Function Call(ActionName, Params = Undefined, Opts = Undefined) Export
 	
 EndFunction 
 
-Function Emit(EventName, Data = Undefined, Opts = Undefined) Export
+Procedure Emit(EventName, Data = Undefined, Opts = Undefined) Export
 
 	Context = mol_Helpers.LastFromStack(ThisMetadata().Name);
 	
@@ -37,12 +37,9 @@ Function Emit(EventName, Data = Undefined, Opts = Undefined) Export
 	EndIf;
 	Opts.Insert("parentCtx", Context);
 		
-	Response = mol_Broker.Emit(EventName, Data, Opts);
-		
-	Return Response;
+	mol_Broker.Emit(EventName, Data, Opts);
 
-	
-EndFunction
+EndProcedure
 
 #EndRegion
 
