@@ -108,6 +108,47 @@ the fix.
 - Reuse caching — session-scoped `mol_Reuse` and request-scoped `mol_ReuseCalls`, including
   invalidation through `RefreshReusableValues`.
 
+### Logger level mapping — verified 2026-09-29
+
+`tests/bsl/canonical/CommonModules/mol_LoggerTests`, three tests. The canonical suite is **124/124**.
+
+Mechanism asserted: `LogLevels()` is a mapping, not a stored level. It declares four keys and resolves
+them to the `mol_LogLevel` enum in extension mode, or to the platform's `EventLogLevel` values in
+standalone, where the enum does not exist. `WriteLogEventSystem` compares the configured level against
+those values with `=`, so a mapping that resolves to `Undefined` does not merely lose a label: no
+comparison can match.
+
+One assertion was wrong on the first run, and the reason is worth recording because it was wrong about
+the *implementation* rather than about the test's subject. The configured level does not come from the
+mapping in extension mode: `GetConfig` writes `LogLevels().Info` and then overwrites it from the
+`mol_LogLevel` constant, so the constant is the source and the mapping is the fallback. The test now
+asserts that provenance directly, which stays valid whether or not the base has a value.
+
+### A builder defect the standalone half exposed
+
+The variant's half of the mapping cannot be asserted as intended, because the mapping is not there: in
+the generated `Moleculer`, `LogLevels()` returns all four levels as `Undefined`, and `AuthTypes()` does
+the same for all three auth types.
+
+Cause: `strip_dead_standalone_branches` in `tools/standalone-builder/build-standalone.py` deletes
+everything from a dead `If` to its matching `EndIf`. That is right when the statement has no `Else` —
+`GetConfig`'s `If Not IsStandalone() Then … EndIf` around the constants is correctly removed — but when
+a live `Else` is present, that body is the surviving branch and is deleted along with the dead half.
+
+Consequences in the variant, both reachable from a deployment profile:
+
+- the level comparisons in `WriteLogEventSystem` can never match, so the configured level no longer
+  selects a log branch;
+- `NewPublicationAuthParams` refuses a correctly declared type — a profile's `"UsingPassword"` fails as
+  "Unknown auth type" — while an absent type matches `Undefined = Undefined` and is answered with token
+  auth.
+
+Why it stayed hidden: the builder's own verification step checks only that dead branches do not
+*survive*, and nothing checks that the live branch does. The standalone suite never asserted either
+mapping, and the one assertion that would have caught it was skipped here for an unrelated reason — the
+type of `LogLevel`. Both mappings are now pinned in `StandaloneRuntimeTests`, written to be rewritten
+when the builder is fixed rather than deleted. The fix is T031.
+
 ## Optional pilot metrics
 
 Actual models/efforts:

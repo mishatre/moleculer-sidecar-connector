@@ -161,6 +161,26 @@ Shape, to confirm during refinement: either a pop around the transport call in t
 or a scoped helper on `mol_ContextFactory` that pushes and pops around a passed block. The second is
 harder in BSL, which has no closures, so the first is the likely answer.
 
+## T031 — keep the live branch when stripping a standalone guard
+
+Outcome: the generated variant contains the surviving branch of every
+`If Not IsStandalone() … Else … EndIf`, instead of losing the mapping that branch holds.
+
+Why: `strip_dead_standalone_branches` walks from a dead `If` to its matching `EndIf` and deletes the
+whole statement. That is correct when there is no `Else`: `GetConfig`'s constant block is dead in the
+variant and should go. When a live `Else` is present it is the branch the variant depends on, and it is
+discarded together with the dead half. Two mappings are lost that way — `LogLevels()` and `AuthTypes()`
+— leaving every key `Undefined`.
+
+Evidence: the generated `Moleculer` shows both functions with an empty gap where the `If` was, and
+`tests/bsl/standalone/CommonModules/StandaloneRuntimeTests` pins the consequences: the log level can no
+longer select a branch, a declared auth type is refused, and an absent one is answered with token auth.
+
+Shape, to confirm during refinement: keep the statement when a live `Else` or `ElsIf` survives, emitting
+that branch's body at the original indentation, and keep deleting it outright when every branch is dead.
+The existing verification step should also assert that a live branch survives, since today it only
+checks that dead ones do not.
+
 ## Open decisions
 
 1. Delivery target for this cycle: smaller/simpler, or more testable? The two pull

@@ -18,7 +18,9 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("TheVariantKnowsItIsStandalone")
 		.ДобавитьСерверныйТест("ConfigurationComesFromTheProvider")
 		.ДобавитьСерверныйТест("TheProviderDeclaresNoConnectionsOrPublications")
-		.ДобавитьСерверныйТест("AnOutboundCallWithoutASidecarFailsControlled");
+		.ДобавитьСерверныйТест("AnOutboundCallWithoutASidecarFailsControlled")
+		.ДобавитьСерверныйТест("TheLevelMappingIsStrippedByTheBuilder")
+		.ДобавитьСерверныйТест("TheAuthTypeMappingIsStrippedByTheBuilder");
 
 EndProcedure
 
@@ -80,6 +82,50 @@ Procedure AnOutboundCallWithoutASidecarFailsControlled() Export
 	ЮТест.ОжидаетЧто(БезопасныйРежим(), "the failed call must not leave safe mode on").ЭтоЛожь();
 
 	Сообщить("outbound failure: " + Failure);
+
+EndProcedure
+
+Procedure TheLevelMappingIsStrippedByTheBuilder() Export
+
+	// CURRENT BEHAVIOUR, pinned deliberately. The builder's strip step deletes the whole
+	// `If Not IsStandalone() ... Else ... EndIf` statement when the condition is dead, instead of
+	// keeping the live Else body. So the platform-enum mapping this variant needs never reaches the
+	// output and every level is undefined. The consequence is not a lost label: the logger compares the
+	// configured level with `=`, so no comparison can match and the level no longer selects a branch.
+	//
+	// When the builder keeps the Else body, this test must be rewritten to assert EventLogLevel values,
+	// not deleted.
+	Levels = Moleculer.LogLevels();
+
+	ЮТест.ОжидаетЧто(Levels.Info = Неопределено, "CURRENT BEHAVIOUR: the level mapping is stripped").ЭтоИстина();
+	ЮТест.ОжидаетЧто(Levels.Error = Неопределено, "CURRENT BEHAVIOUR: no level is mapped").ЭтоИстина();
+
+EndProcedure
+
+Procedure TheAuthTypeMappingIsStrippedByTheBuilder() Export
+
+	// A second casualty of the same strip step, with a sharper consequence: the variant's deployment
+	// profile names auth types as strings, but no comparison in NewPublicationAuthParams can match an
+	// undefined mapping, so a correctly declared type is refused. An absent type fares worse still: it
+	// matches the first comparison, `Undefined = Undefined`, and is answered with token auth.
+	AuthTypes = Moleculer.AuthTypes();
+
+	ЮТест.ОжидаетЧто(AuthTypes.UsingAccessToken = Неопределено, "CURRENT BEHAVIOUR: the auth types are stripped").ЭтоИстина();
+
+	Raised  = Ложь;
+	Failure = "";
+
+	Попытка
+		Moleculer.NewPublicationAuthParams("UsingPassword");
+	Исключение
+		Raised  = Истина;
+		Failure = ОписаниеОшибки();
+	КонецПопытки;
+
+	ЮТест.ОжидаетЧто(Raised, "CURRENT BEHAVIOUR: a declared type is refused: " + Failure).ЭтоИстина();
+
+	NoTypeParams = Moleculer.NewPublicationAuthParams(Неопределено);
+	ЮТест.ОжидаетЧто(NoTypeParams.Property("token"), "CURRENT BEHAVIOUR: an absent type is answered with token auth").ЭтоИстина();
 
 EndProcedure
 
