@@ -1,8 +1,8 @@
 # T020 — Core unit suites C: helpers, logger, reuse caching, context cleanup
 
-Status: in_progress — the ambient-context lifecycle is covered and the canonical suite is 120/120. The
-logger, `SignV4` and the reuse-caching semantics are still open. The leak's fix is raised as T030, which
-this task's delivery note requires.
+Status: in_progress — the ambient-context lifecycle, the logger mapping and the reuse-caching mechanism are
+covered, in both modes. Remaining: `SignV4` determinism and the serialization round-trips. The context
+leak's fix is T030 and the builder defect's is T031.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -100,13 +100,35 @@ Not reachable here: the broker publishes its context only *after* the transport 
 push-without-pop cannot be triggered without a sidecar. All four sites are recorded in T030, which owns
 the fix.
 
+### Reuse caching — verified 2026-09-29
+
+`tests/bsl/common/CommonModules/mol_ReuseCachingTests`, four tests, in the shared tree so they run in
+both modes. Canonical **128/128**, standalone **24/24**.
+
+Mechanism asserted, which the acceptance requires be stated explicitly: the platform's return-value
+reuse, declared as `ReturnValuesReuse = DuringSession` on `mol_Reuse` and `DuringRequest` on
+`mol_ReuseCalls`. Every other common module in the extension is `DontUse`, so `mol_Reuse` is the only
+place where a returned value is shared between calls — and the reason it forwards to the
+forced-recompute entry points.
+
+How it is observed: a reused value is the *same object* on the next call, not merely an equal one. The
+HTTP connection cache returns a Map, so writing a marker into it and reading it back through a second
+call shows the platform handed the same value over; `RefreshReusableValues()` then drops it. Both are
+asserted, so the invalidation path callers are told to use is covered rather than assumed.
+
+A finding from the other mode: the variant has no BSP integration at all. The builder's
+`remove_definitions` step removes `BSPVersion` and `BSPVersionAsNumber`, leaving the `BSPIntegration`
+region empty, so the mapping exists only in extension mode. The test branches on `IsStandalone()` and
+pins the variant's shape — the call fails rather than answering a version it cannot know — instead of
+assuming the extension's behaviour.
+
 ### Still open in this task
 
-- `mol_Logger` — level mapping for the enum path and the standalone path, plus the fallback when the
-  enum is unavailable.
 - `mol_Helpers` — `SignV4` determinism for fixed inputs, and the serialization round-trips.
-- Reuse caching — session-scoped `mol_Reuse` and request-scoped `mol_ReuseCalls`, including
-  invalidation through `RefreshReusableValues`.
+- The validator family is already covered, which is worth recording because the acceptance places it
+  here: `mol_HelpersClientServerTests` asserts the provider's ten predicates and that `mol_Helpers`
+  forwards to it, so the duplication the acceptance cares about is pinned, and only `SignV4` and the
+  round-trips remain.
 
 ### Logger level mapping — verified 2026-09-29
 
