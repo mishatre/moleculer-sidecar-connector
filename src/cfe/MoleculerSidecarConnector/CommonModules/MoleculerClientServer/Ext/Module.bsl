@@ -30,7 +30,8 @@ Function NewOpts() Export
 	Result.Insert("fallbackResponse", null);     
 	// nodeID - String, null - Target nodeID. If set, it will make a direct call to the specified node.
 	Result.Insert("nodeID"          , null);                    
-	// meta - Object {} - Metadata of request. Access it via ctx.meta in actions handlers. It will be transferred & merged at nested calls, as well.
+	// meta - Object {} - Metadata of request. Access it via ctx.meta in actions handlers.
+	// It will be transferred & merged at nested calls, as well.
 	Result.Insert("meta"            , New Map);   
 	// parentCtx - Context, null - Parent Context instance. Use it to chain the calls.
 	Result.Insert("parentCtx"       , null);

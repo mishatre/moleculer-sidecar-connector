@@ -130,7 +130,7 @@ Function Create(Broker, Params = Undefined, Opts = Undefined) Export
 	
 EndFunction
 
-Function SetEndpoint(Context, Endpoint) Export
+Procedure SetEndpoint(Context, Endpoint) Export
 
 	Context.Endpoint = Endpoint;
 	If mol_Helpers.IsStructure(Endpoint) Then
@@ -146,9 +146,9 @@ Function SetEndpoint(Context, Endpoint) Export
 		EndIf;
 	EndIf;
 	
-EndFunction 
+EndProcedure 
                                                        
-Function SetParams(Context, Params) Export
+Procedure SetParams(Context, Params) Export
 	
 	If Params <> Undefined Then      
 		// WHY?
@@ -159,7 +159,7 @@ Function SetParams(Context, Params) Export
 		Context.Params = Params;
 	EndIf;
 	
-EndFunction
+EndProcedure
 
 #Region Payload
 
@@ -275,11 +275,11 @@ Function GetCurrentContext() Export
 	Return mol_Helpers.LastFromStack(ThisMetadata().Name);	
 EndFunction
 
-Function SetCurrentContext(Context) Export
+Procedure SetCurrentContext(Context) Export
 	
 	mol_Helpers.PushToStack(ThisMetadata().Name, Context);	
 	
-EndFunction
+EndProcedure
 
 #EndRegion
 

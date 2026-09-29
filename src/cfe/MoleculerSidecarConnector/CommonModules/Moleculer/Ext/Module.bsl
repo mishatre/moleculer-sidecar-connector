@@ -10,7 +10,8 @@
 //  Params     - Array, Structure, Map, Any, Undefined - params of action
 //  Opts       - Object, Undefined                     - options of call  
 //
-// Returns - Any - service action response
+// Returns:
+//  Any - service action response
 //
 Function Call(ActionName, Val Params = Undefined, Opts = Undefined) Export
 	If mol_Helpers.IsObject(Opts) And mol_Helpers.Has(Opts, "Connection") Then
@@ -507,6 +508,12 @@ EndFunction
 
 #Region Private
 
+// Returns the current Moleculer common module instance
+//
+// Returns:
+//  CommonModule.Moleculer - current Moleculer common module instance
+//
+// BSLLS:UnusedLocalMethod-off
 Function This()
 	Return Moleculer;	
 EndFunction
@@ -553,9 +560,10 @@ Function GetPublicSettings(Val Settings)
 					Index = Index + 1;
 					LeafType = TypeOf(CurrentLeaf);
 					IsLast = Index = Parts.UBound();
-					If False
+					LeafExists = False
 						OR (LeafType = Type("Structure") AND CurrentLeaf.Property(Part))
-						OR (LeafType = Type("Map") And CurrentLeaf.Get(Part) <> Undefined) Then
+						OR (LeafType = Type("Map") And CurrentLeaf.Get(Part) <> Undefined);
+					If LeafExists Then
 						If IsLast Then
 							CurrentLeaf.Delete(Part);
 						Else
