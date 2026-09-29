@@ -8,13 +8,19 @@
 # cannot observe the HTTP status line or the response content type.
 #
 # Usage:
-#   tests/bsl/http/test-inbound-transport.sh
+#   tests/bsl/http/test-inbound-transport.sh                     both variants
+#   tests/bsl/http/test-inbound-transport.sh --mode standalone   one variant
 #
-# Prerequisite: the connector extension must already be installed in the test base, which
-# tests/bsl/run-tests.sh --mode canonical does. This script owns the stand-alone server
-# while it runs: it stops any running server, writes the publication, starts the server,
-# asserts, and stops the server again. The base file is therefore free afterwards, which
-# is what the YAxUnit harness needs.
+# Both variants are driven through the same assertions, because the transport boundary is the
+# same code either way and only the packaging differs: the canonical extension is installed in
+# build/ib by `tests/bsl/run-tests.sh --mode canonical`, and the standalone variant in
+# build/ib-tests by `tests/bsl/run-tests.sh --mode standalone`. Each mode runs as a child
+# invocation, because each base needs its own stand-alone server lifecycle and its own counters.
+#
+# Prerequisite: the variant under test must already be installed in its base. This script owns
+# the stand-alone server while it runs: it stops any running server, writes the publication,
+# starts the server, asserts, and stops the server again. The base file is therefore free
+# afterwards, which is what the YAxUnit harness needs.
 #
 # Two findings from the platform are encoded here, because both are easy to get wrong:
 #
@@ -27,7 +33,46 @@ set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
-BASE_DIR="build/ib"
+MODE=""
+while [ $# -gt 0 ]; do
+	case "$1" in
+		--mode)
+			MODE="${2:?--mode needs a value}"
+			shift 2
+			;;
+		*)
+			echo "unknown argument: $1" >&2
+			exit 2
+			;;
+	esac
+done
+
+# The parent only dispatches. Each requested mode is verified by a child process so that a
+# failure in one base cannot leave the other with a half-written publication or a running
+# server, and so that the pass/fail counters stay per mode.
+if [ -z "${INBOUND_MODE:-}" ]; then
+	MODES="${MODE:-canonical standalone}"
+	STATUS=0
+
+	for CHILD_MODE in $MODES; do
+		echo
+		echo "==> inbound transport on the $CHILD_MODE base"
+
+		if ! INBOUND_MODE="$CHILD_MODE" "$0"; then
+			STATUS=1
+		fi
+	done
+
+	echo
+	if [ "$STATUS" -eq 0 ]; then
+		echo "inbound transport: every requested mode passed"
+	else
+		echo "inbound transport: at least one mode failed" >&2
+	fi
+
+	exit "$STATUS"
+fi
+
 SERVER_DATA_DIR="build/ibsrv"
 PUBLICATION="build/ibsrv/publication.yaml"
 SERVER_LOG="build/ibsrv/server.log"
@@ -36,9 +81,27 @@ HTTP_ADDRESS="localhost"
 HTTP_PORT="8314"
 HTTP_BASE="/ib"
 
-# Metadata name and root URL of the HTTP service in the connector extension.
+# The HTTP service keeps the same metadata name and root in both variants: the standalone builder
+# merges the modules without renaming the service, so only the base and the extension differ.
 SERVICE_NAME="mol_Moleculer"
 SERVICE_ROOT="moleculer"
+
+case "$INBOUND_MODE" in
+	canonical)
+		BASE_DIR="build/ib"
+		CONNECTOR_NAME="MoleculerSidecarConnector"
+		BASE_LABEL="canonical extension, loaded by run-tests.sh --mode canonical"
+		;;
+	standalone)
+		BASE_DIR="build/ib-tests"
+		CONNECTOR_NAME="MoleculerSidecarConnectorStandalone"
+		BASE_LABEL="standalone variant, loaded by run-tests.sh --mode standalone"
+		;;
+	*)
+		echo "unknown mode: $INBOUND_MODE" >&2
+		exit 2
+		;;
+esac
 
 # A packet shaped like mol_Transport.NewPacket produces. No handler is registered for an
 # empty action, so the connector answers with its own envelope instead of running a job.
@@ -70,7 +133,7 @@ gap() {
 # --------------------------------------------------------------------------------- setup
 
 if [ ! -d "$REPO_ROOT/$BASE_DIR" ]; then
-	echo "missing test base $BASE_DIR; run tests/bsl/run-tests.sh --mode canonical first" >&2
+	echo "missing test base $BASE_DIR; run tests/bsl/run-tests.sh --mode $INBOUND_MODE first" >&2
 	exit 1
 fi
 
@@ -232,6 +295,7 @@ assert_contains() {
 
 # ---------------------------------------------------------------------------------- main
 
+echo "==> mode $INBOUND_MODE: $BASE_LABEL"
 echo "==> stopping any running stand-alone server"
 stop_server || exit 1
 
@@ -292,6 +356,7 @@ echo "==> checking input validation"
 request POST "$SERVICE_URL" "application/json" 'not json'
 if [ "$STATUS" = "500" ] && [ "${CONTENT_TYPE#text/plain}" != "$CONTENT_TYPE" ]; then
 	gap "a malformed body answers $STATUS ${CONTENT_TYPE} without an envelope; expected a classified error"
+	assert_contains "$(body_text)" "$CONNECTOR_NAME" "the platform page names $CONNECTOR_NAME, so the $INBOUND_MODE artifact answered"
 elif printf '%s' "$(body_json)" | grep -qF '"name":"MoleculerServerError"'; then
 	pass "a malformed body is classified into the error envelope"
 else
@@ -301,6 +366,7 @@ fi
 request POST "$SERVICE_URL" "application/json" ''
 if [ "$STATUS" = "500" ] && [ "${CONTENT_TYPE#text/plain}" != "$CONTENT_TYPE" ]; then
 	gap "an empty body answers $STATUS ${CONTENT_TYPE} without an envelope; expected a classified error"
+	assert_contains "$(body_text)" "$CONNECTOR_NAME" "the platform page names $CONNECTOR_NAME, so the $INBOUND_MODE artifact answered"
 elif printf '%s' "$(body_json)" | grep -qF '"name":"MoleculerServerError"'; then
 	pass "an empty body is classified into the error envelope"
 else
@@ -313,7 +379,7 @@ stop_server || exit 1
 rm -f "$BODY_FILE"
 
 echo
-echo "inbound transport: $PASSED passed, $FAILED failed"
+echo "inbound transport ($INBOUND_MODE): $PASSED passed, $FAILED failed"
 
 if [ "$FAILED" -ne 0 ]; then
 	exit 1

@@ -1,10 +1,8 @@
 # T021 — Standalone variant runtime verification
 
-Status: in_progress — one acceptance item is open. The client blocker is gone (a licence is present
-and the canonical suite runs the client on every run), the artifact is regenerated from current
-sources, and standalone mode is 18/18, covering `IsStandalone()`, the provider-sourced config,
-connections and publications, and the controlled outbound failure. The inbound `POST` round-trip
-remains; it needs the standalone base published on its own port.
+Status: verified. Every acceptance item is covered by the evidence below: standalone mode is 18/18 in
+YAxUnit, and the inbound HTTP round-trip passes against both bases, each confirmed to have been
+answered by the artifact under test rather than by whatever else the base happens to contain.
 Depends on: T015, T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -32,7 +30,7 @@ Next: T022 quality gate and delivery documentation.
       the settings injected by the profile.
 - [x] `Moleculer.GetConnections()` and `GetPublications()` return the provider's
       data, not the stub sample rows.
-- [ ] An inbound `POST /moleculer/sidecar` request reaches the transport handler
+- [x] An inbound `POST /moleculer/sidecar` request reaches the transport handler
       and produces the expected response shape for a fixture request.
 - [x] An outbound action call fails in a controlled, documented way when no sidecar
       is reachable, rather than leaking safe-mode state or an unhandled error.
@@ -89,9 +87,17 @@ standalone mode to **18/18** in 41 s:
   отправить запрос` raised from `ОбщийМодуль.Moleculer.Модуль(654)`. That is the controlled,
   documented failure the acceptance asks for.
 
-Still open — the inbound `POST /moleculer/sidecar` round-trip in standalone mode. It needs a second
-publication, because `build/ibsrv/publication.yaml` points at `build/ib`, which carries the canonical
-extension; the standalone base would have to be published on its own port.
+The inbound `POST /moleculer/sidecar` round-trip now runs against both bases.
+`tests/bsl/http/test-inbound-transport.sh` takes `--mode canonical|standalone` and, with no argument,
+verifies both as separate child invocations, so each base keeps its own server lifecycle and its own
+counters. Both report **9 passed, 0 failed**, with the same two recorded gaps: a malformed and an
+empty body are answered by the platform's own 500 page instead of the error envelope. That defect
+belongs to the error taxonomy work, not here, and it reproduces identically in both variants.
+
+Each mode also proves that *its* artifact answered. The platform's error page names the extension, so
+the run asserts that it names `MoleculerSidecarConnector` for `build/ib` and
+`MoleculerSidecarConnectorStandalone` for `build/ib-tests`. Without that check a pass could come from
+the wrong extension: both variants declare an HTTP service with the same metadata name and root.
 
 Generator facts the assertions should use: the builder emits `MoleculerOverridable` with
 `ModulePrefix = "Service"`, `LogLevel = "Info"`, `ExtVersion = "0.2.0 beta 4"` and no connections or

@@ -29,7 +29,7 @@ blocker below, which gates T017–T022.
 | T018 | Transport, context factory and errors are covered by executable tests | in_progress | T017 | [Task](tasks/T018-core-suites-transport-context-errors.md) |
 | T019 | Broker, schema factory, facade and provider are covered by executable tests | in_progress | T017 | [Task](tasks/T019-core-suites-broker-schema-facade.md) |
 | T020 | Helpers, logger, reuse caching and context cleanup are covered by tests | blocked | T017 | [Task](tasks/T020-core-suites-helpers-logger-reuse.md) |
-| T021 | The generated standalone CFE loads and works in a database-free infobase | blocked | T015, T017 | [Task](tasks/T021-standalone-runtime-verification.md) |
+| T021 | The generated standalone CFE loads and works in a database-free infobase | verified | T015, T017 | [Task](tasks/T021-standalone-runtime-verification.md) |
 | T022 | Static quality gate and standalone delivery documentation exist | blocked | T018–T021 | [Task](tasks/T022-static-gate-and-delivery-docs.md) |
 | T023 | Error reporting distinguishes internal, sidecar and end-node failures | draft | T018 | [Task](tasks/T023-error-taxonomy.md) |
 
