@@ -9,15 +9,17 @@
 
 | Файл | Что это | Размер |
 |---|---|---|
-| `YamlParserNative.zip` | Архив внешней компоненты: `manifest.xml`, `YamlParser_linux_x86_64.so`, `YamlParser_win_x86_64.dll`. Именно его содержимое загружается в общий макет с двоичными данными. | 897 980 |
-| `YamlParser.cfe` | Расширение конфигурации: общий модуль `yp_YAML` (публичный интерфейс) и общий макет `yp_YamlParserNative` с этим архивом внутри. | 948 193 |
+| `YamlParserNative.zip` | Архив внешней компоненты: `manifest.xml`, `YamlParser_linux_x86_64.so`, `YamlParser_win_x86_64.dll`. Именно его содержимое загружается в общий макет с двоичными данными. | 470 691 |
+| `YamlParser.cfe` | Расширение конфигурации: общий модуль `yp_YAML` (публичный интерфейс) и общий макет `yp_YamlParserNative` с этим архивом внутри. | 501 849 |
 | `yp_YAML.bsl` | Текст общего модуля отдельным файлом — чтобы вставить в свою конфигурацию, не разбирая XML-выгрузку. | 15 883 |
 
-Внутри архива: `YamlParser_linux_x86_64.so` — 612 264 байта, `YamlParser_win_x86_64.dll` —
-1 322 496 байт. Это сборка release с LTO, `codegen-units = 1`, `panic = "abort"` и
-`strip = "symbols"` — отладочных символов в библиотеках нет, поэтому в отчёте о
-падении будет меньше имён. Собранные без `strip` библиотеки занимают
-соответственно 732 832 и 1 753 603 байта.
+Внутри архива: `YamlParser_linux_x86_64.so` — 255 240 байт, `YamlParser_win_x86_64.dll` —
+690 688 байт. Библиотеки собраны **по размеру, а не по скорости**: `opt-level = "z"`,
+`lto = true`, `codegen-units = 1`, `strip = "symbols"` и `std`, пересобранный из
+исходников. Разбор от этого немного медленнее, размер — почти вдвое меньше; что именно
+даёт экономию, послойно, — в `docs/plan/environment.md`. Отладочных символов в
+библиотеках нет, поэтому в отчёте о падении будет меньше имён; пересобрать с символами
+можно, добавив `--config 'profile.release.strip="debuginfo"'`.
 
 Версия компоненты — `0.1.0`, её возвращает `yp_YAML.ВерсияКомпоненты()`.
 
@@ -165,20 +167,20 @@ sha256sum YamlParserNative.zip YamlParser.cfe
 
 ```bash
 # Библиотеки: обе цели сразу, Windows собирается кросс-компилятором.
-cd rust
-cargo build --release -p yaml_parser_addin --target x86_64-unknown-linux-gnu
-cargo build --release -p yaml_parser_addin --target x86_64-pc-windows-gnu
+tools/native/build-addin.sh           # нужен nightly, см. ниже
 
 # Архив компоненты: manifest.xml + обе библиотеки, с проверкой по манифесту.
-cd ..
 tools/native/pack-addin.sh            # -> build/dist/YamlParserNative.zip
 
 # Расширение: макет с архивом внутри, компиляция без лицензии 1С (ibcmd).
 tools/1c-release/compile-extension.sh # -> build/out/YamlParser-v0.1.0.cfe
 ```
 
-Нужны Rust 1.92 с обеими целями и mingw-w64 для Windows-сборки. Компиляция расширения
-лицензии не требует; запуск — требует.
+Нужны Rust 1.92 с обеими целями, mingw-w64 для Windows-сборки и nightly с компонентом
+`rust-src`: последний потому, что самые маленькие библиотеки получаются из пересборки
+`std` (`-Z build-std` вместе с `optimize_for_size` и стратегией `immediate-abort`). Если
+nightly нет — `rustup toolchain install nightly --profile minimal --component rust-src`.
+Компиляция расширения лицензии не требует; запуск — требует.
 
 Комплект для передачи собирается теми же файлами:
 
