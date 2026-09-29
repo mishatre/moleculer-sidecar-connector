@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -155,16 +156,38 @@ class CanonicalMergeTests(unittest.TestCase):
                 f"{module}. qualifier survived the merge",
             )
 
-    def test_reuse_caches_are_explicit(self):
-        self.assertIn("If ReuseCallsStack = Undefined Then", self.merged)
-        self.assertIn("If HTTPConnectionCache = Undefined Then", self.merged)
-        self.assertIn("Перем ReuseCallsStack;", self.merged)
+    def test_reuse_modules_are_kept_separate(self):
+        # The platform forbids module variables in a common module, so the two
+        # ReturnValuesReuse-based modules cannot be folded into the merged one.
+        for module in builder.KEPT_MODULES:
+            self.assertNotIn(module, builder.MERGED_MODULES)
+        self.assertIn("mol_Reuse", builder.KEPT_MODULES)
+        self.assertIn("mol_ReuseCalls", builder.KEPT_MODULES)
+
+    def test_merged_module_declares_no_module_variables(self):
+        self.assertNotRegex(self.merged, r"^[ \t]*(?:Перем|Var)[ \t]")
+
+    def test_merged_module_still_calls_the_reuse_modules(self):
+        # mol_Helpers lives inside the merged module and depends on both caches.
+        self.assertIn("mol_ReuseCalls.GetCacheStack()", self.merged)
+        self.assertIn("mol_Reuse.GetHTTPConnectionCache()", self.merged)
+
+    def test_dead_standalone_branches_are_removed(self):
+        survivors = builder.dead_branch_lines(self.merged)
+        self.assertEqual([], survivors, "a dead Not IsStandalone() branch survived")
+
+    def test_no_infobase_references_survive_in_code(self):
+        for reference in ("Catalog.", "Constants[", "Constants.", "FunctionalOption.", "DataProcessor."):
+            self.assertEqual(
+                0,
+                builder.count_outside_strings(self.merged, re.escape(reference)),
+                f"{reference} is still referenced from code",
+            )
 
     def test_platform_facts_are_patched(self):
         self.assertIn("CompileServiceSchema(Moleculer)", self.merged)
         self.assertNotIn("Constants.mol_TestConnection.Get()", self.merged)
         self.assertNotIn("YAML.ToObject(Text);", self.merged)
-        self.assertIn("ReuseCallsStack = Undefined;", self.merged)
 
     def test_internal_service_constructor_keeps_its_discovered_name(self):
         names = {name for name, _export in builder.definition_names(self.merged)}
@@ -192,24 +215,34 @@ class EmissionTests(unittest.TestCase):
         return builder.emit_tree(self.profile, self.merged, directory, self.source_root)
 
     def test_tree_contains_only_database_free_objects(self):
+        expected = {
+            "Configuration.xml",
+            "Languages/Русский.xml",
+            "CommonModules/Moleculer.xml",
+            "CommonModules/Moleculer/Ext/Module.bsl",
+            "CommonModules/MoleculerOverridable.xml",
+            "CommonModules/MoleculerOverridable/Ext/Module.bsl",
+            "CommonModules/mol_Reuse.xml",
+            "CommonModules/mol_Reuse/Ext/Module.bsl",
+            "CommonModules/mol_ReuseCalls.xml",
+            "CommonModules/mol_ReuseCalls/Ext/Module.bsl",
+            "HTTPServices/mol_Moleculer.xml",
+            "HTTPServices/mol_Moleculer/Ext/Module.bsl",
+        }
+
         with tempfile.TemporaryDirectory() as tmp:
             output = Path(tmp) / "default"
             files = self._emit(output)
-            self.assertEqual(
-                sorted(
-                    [
-                        "CommonModules/Moleculer.xml",
-                        "CommonModules/Moleculer/Ext/Module.bsl",
-                        "CommonModules/MoleculerOverridable.xml",
-                        "CommonModules/MoleculerOverridable/Ext/Module.bsl",
-                        "Configuration.xml",
-                        "HTTPServices/mol_Moleculer.xml",
-                        "HTTPServices/mol_Moleculer/Ext/Module.bsl",
-                        "Languages/Русский.xml",
-                    ]
-                ),
-                files,
-            )
+            self.assertEqual(expected, set(files))
+
+    def test_reuse_module_descriptors_keep_their_reuse_setting(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "default"
+            self._emit(output)
+            reuse = (output / "CommonModules" / "mol_Reuse.xml").read_text(encoding="utf-8")
+            calls = (output / "CommonModules" / "mol_ReuseCalls.xml").read_text(encoding="utf-8")
+            self.assertIn("<ReturnValuesReuse>DuringSession</ReturnValuesReuse>", reuse)
+            self.assertIn("<ReturnValuesReuse>DuringRequest</ReturnValuesReuse>", calls)
 
     def test_configuration_declares_seven_contained_objects(self):
         with tempfile.TemporaryDirectory() as tmp:

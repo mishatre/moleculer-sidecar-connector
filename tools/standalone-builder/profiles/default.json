@@ -5,7 +5,7 @@
     "version": "0.2.0 beta 4",
     "purpose": "AddOn",
     "scriptVariant": "English",
-    "compatibilityMode": "Version8_3_21",
+    "compatibilityMode": "Version8_3_24",
     "targetModule": "Moleculer",
     "providerModule": "MoleculerOverridable",
     "compile": true,

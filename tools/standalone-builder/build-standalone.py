@@ -28,6 +28,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -46,7 +47,7 @@ DEFAULT_PROFILE = {
     "version": "0.2.0 beta 4",
     "purpose": "AddOn",
     "scriptVariant": "English",
-    "compatibilityMode": "Version8_3_21",
+    "compatibilityMode": "Version8_3_24",
     "targetModule": "Moleculer",
     "providerModule": "MoleculerOverridable",
     "compile": True,
@@ -61,14 +62,21 @@ MERGED_MODULES = [
     "mol_Logger",
     "mol_Helpers",
     "mol_HelpersClientServer",
-    "mol_Reuse",
-    "mol_ReuseCalls",
     "mol_Transport",
     "mol_ContextFactory",
     "mol_Broker",
     "mol_SchemaFactory",
     "mol_Internal",
 ]
+
+# Modules that must stay separate.  Both exist to hand a mutable structure back to
+# the platform, which then reuses it: `mol_Reuse` is declared
+# `ReturnValuesReuse = DuringSession` and `mol_ReuseCalls` is `DuringRequest`.  A
+# merged module can only be `DontUse`, and the platform forbids module variables in
+# a common module (BSL Language Server reports `CommonModuleVariables` as an error),
+# so the caching cannot be reimplemented inside the merged module.  Their bodies
+# call the merged module's exported functions, so they are copied unchanged.
+KEPT_MODULES = ["mol_Reuse", "mol_ReuseCalls"]
 
 # Modules left out of the variant: administration and role bootstrap, the Monaco
 # editor wrapper and the unused local YAML parsers.
@@ -128,13 +136,6 @@ RENAMES = {
         "thismetadata": "LoggerThisMetadata",
         "error": "LoggerError",
     },
-    "mol_Reuse": {
-        "getconfig": "ReuseGetConfig",
-        "getconnections": "ReuseGetConnections",
-        "getpublications": "ReuseGetPublications",
-        "getservicemodules": "ReuseGetServiceModules",
-        "getservices": "ReuseGetServices",
-    },
     "mol_Internal": {
         "this": "InternalThis",
         "thismetadata": "InternalThisMetadata",
@@ -159,16 +160,6 @@ RENAMES = {
 # textual merge cannot infer.
 MERGE_PATCHES = [
     (
-        "module-level caches replace the lost ReturnValuesReuse mechanism",
-        r"Function\s+GetCacheStack\(\)\s+Export\s*\n\s*Return\s+New\s+Structure\(\)\s*;",
-        "Function GetCacheStack() Export\n\t\n\tIf ReuseCallsStack = Undefined Then\n\t\tReuseCallsStack = New Structure();\n\tEndIf;\n\t\n\tReturn ReuseCallsStack;",
-    ),
-    (
-        "module-level caches replace the lost ReturnValuesReuse mechanism",
-        r"Function\s+GetHTTPConnectionCache\(\)\s+Export\s*\n\s*Return\s+New\s+Map\(\)\s*;",
-        "Function GetHTTPConnectionCache() Export\n\t\n\tIf HTTPConnectionCache = Undefined Then\n\t\tHTTPConnectionCache = New Map();\n\tEndIf;\n\t\n\tReturn HTTPConnectionCache;",
-    ),
-    (
         "the internal service is a service of the merged module, not a separate module",
         r'CompileServiceSchema\(\s*"mol_Internal"\s*\)',
         "CompileServiceSchema(Moleculer)",
@@ -177,6 +168,11 @@ MERGE_PATCHES = [
         "the local YAML parsers are not part of the variant and the branch was unreachable",
         r"Return\s+YAML\.ToObject\(Text\)\s*;",
         "// Unreachable in the canonical sources: YAML parsing is delegated to the sidecar.",
+    ),
+    (
+        "the dynamic-service branch is unreachable without the mol_Services catalog",
+        r"\n[ \t]*ElsIf[ \t]+Context\.Type[ \t]*=[ \t]*Upper\(\"Dynamic\"\)[ \t]+Then\n[ \t]*EvaluateServiceConstructor\(Context\)[ \t]*;",
+        "",
     ),
     (
         "the test-connection constant does not exist outside an infobase",
@@ -193,30 +189,20 @@ MERGE_PATCHES = [
         r"Use mol_Broker instead",
         "Use Moleculer.Broker() instead",
     ),
-    (
-        "reset the request-scoped stack when an inbound request is handled",
-        r"Function\s+Transporter_HTTP_Receive\s*\([^)]*\)\s+Export",
-        r"\g<0>\n\t\n\tReuseCallsStack = Undefined;",
-    ),
 ]
 
-MODULE_VARIABLES = """
-#Область StandaloneCaches
+# Whole definitions that are meaningless in the variant, removed before the merge.
+# `GetDynamicServiceConstructor` reads `Catalog.mol_Services`, and the variant has no
+# dynamic services by design.  The two BSP helpers are only ever called by `mol_Server`,
+# which is dropped, and they read a BSP information register the variant does not have.
+REMOVED_DEFINITIONS = {
+    "mol_SchemaFactory": ("GetDynamicServiceConstructor", "EvaluateServiceConstructor"),
+    "mol_Reuse": ("BSPVersion", "BSPVersionAsNumber"),
+}
 
-// The canonical modules used the platform's ReturnValuesReuse (DuringSession and
-// DuringRequest).  A merged module cannot declare a per-function reuse mode, so the
-// caches are explicit here.  A server common module keeps module variables for the
-// session; the request-scoped stack is cleared when an inbound request is handled.
-
-Перем HTTPConnectionCache;
-Перем ReuseCallsStack;
-
-#КонецОбласти
-"""
-
-# References to infobase objects that remain inside dead `IsStandalone()` guards.  The
-# variant always reports standalone mode, so the guarded branches cannot execute; they
-# are reported rather than failed so the retained guards stay visible.
+# References to infobase objects retained on purpose, reported but not failed.  The
+# strip step removes every dead `Not IsStandalone()` branch, so this list is expected to
+# stay empty and is kept as a tripwire for future sources.
 REPORTED_REFERENCES = [
     "Catalog.",
     "Constants.",
@@ -350,6 +336,140 @@ def definition_names(text: str) -> list[tuple[str, bool]]:
     return found
 
 
+DEAD_CONDITION = re.compile(
+    r"Not\s+(?:Moleculer\s*\.\s*)?IsStandalone\s*\(\s*\)", re.IGNORECASE
+)
+BRANCH_START = re.compile(r"^([ \t]*)(If|ElsIf)\b(.*)$", re.IGNORECASE)
+BRANCH_END = re.compile(r"^([ \t]*)(ElsIf|Else|EndIf)\b", re.IGNORECASE)
+IS_IF = re.compile(r"^[ \t]*If\b", re.IGNORECASE)
+IS_ENDIF = re.compile(r"^[ \t]*EndIf\b", re.IGNORECASE)
+
+
+def dead_branch_lines(text: str) -> list[str]:
+    """Branch headers whose condition can only be true outside standalone mode.
+
+    A ternary `?(Not IsStandalone(), ..., Undefined)` is not a branch: the platform
+    evaluates only the selected operand, so it stays and is not reported here.
+    """
+    found = []
+
+    for line in text.split("\n"):
+        if line.lstrip().startswith("#"):
+            continue
+        match = BRANCH_START.match(line)
+        if match and DEAD_CONDITION.search(match.group(3)):
+            found.append(line)
+
+    return found
+
+
+def strip_dead_standalone_branches(text: str) -> tuple[str, int]:
+    """Delete the branches that can only run when the extension is *not* standalone.
+
+    The variant has no `Catalog.mol_Services`, so `IsStandalone()` is always true and
+    every `Not IsStandalone()` branch is dead.  Deleting them removes the queries and
+    type references that point at metadata the variant deliberately does not contain,
+    which the platform's metadata check tolerates but BSL Language Server reports as
+    `QueryToMissingMetadata` errors.
+    """
+    lines = text.split("\n")
+    kept: list[str] = []
+    removed = 0
+    index = 0
+
+    while index < len(lines):
+        line = lines[index]
+        match = BRANCH_START.match(line)
+        keyword = match.group(2).lower() if match else ""
+
+        # Preprocessor directives (`#If`, `#EndIf`) are not branches.
+        is_directive = line.lstrip().startswith("#")
+
+        if match and not is_directive and DEAD_CONDITION.search(match.group(3)):
+            indent = match.group(1)
+
+            if keyword == "if":
+                depth = 0
+                while index < len(lines):
+                    current = lines[index]
+                    if not current.lstrip().startswith("#"):
+                        if IS_IF.match(current):
+                            depth += 1
+                        elif IS_ENDIF.match(current):
+                            depth -= 1
+                            if depth == 0:
+                                index += 1
+                                break
+                    index += 1
+                removed += 1
+                continue
+
+            # An `ElsIf` branch ends at the next branch keyword at the same indent.
+            index += 1
+            while index < len(lines):
+                end_match = BRANCH_END.match(lines[index])
+                if end_match and end_match.group(1) == indent:
+                    break
+                index += 1
+            removed += 1
+            continue
+
+        kept.append(line)
+        index += 1
+
+    return "\n".join(kept), removed
+
+
+def remove_definitions(text: str, names) -> tuple[str, int]:
+    """Delete whole procedure/function definitions by name."""
+    wanted = {name.lower() for name in names}
+    header = re.compile(
+        r"^[ \t]*(?:Процедура|Функция|Procedure|Function)[ \t]+"
+        r"([A-Za-zА-Яа-яЁё_][A-Za-zА-Яа-яЁё0-9_]*)",
+        re.IGNORECASE,
+    )
+    terminator = re.compile(r"^[ \t]*End(?:Procedure|Function)\b", re.IGNORECASE)
+    lines = text.split("\n")
+    kept: list[str] = []
+    removed = 0
+    index = 0
+
+    while index < len(lines):
+        match = header.match(lines[index])
+
+        if match and match.group(1).lower() in wanted:
+            index += 1
+            while index < len(lines) and not terminator.match(lines[index]):
+                index += 1
+            index += 1
+            removed += 1
+            continue
+
+        kept.append(lines[index])
+        index += 1
+
+    return "\n".join(kept), removed
+
+
+def strip_client_flags(descriptor: str) -> str:
+    """Make a common module descriptor server-only.
+
+    The variant drops client-context support, so every emitted module runs on the
+    server only.  Leaving a module flagged for the ordinary client while it calls the
+    server-only merged module makes BSL Language Server report
+    `CommonModuleInvalidType`.
+    """
+    for element in ("ClientManagedApplication", "ClientOrdinaryApplication", "ServerCall"):
+        descriptor = re.sub(
+            rf"<{element}>.*?</{element}>",
+            f"<{element}>false</{element}>",
+            descriptor,
+            count=1,
+        )
+
+    return descriptor
+
+
 # --------------------------------------------------------------------------------------
 # Profile handling
 # --------------------------------------------------------------------------------------
@@ -407,7 +527,20 @@ def read_module(source_root: Path, module: str) -> str:
 def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
     target_module = profile["targetModule"]
     texts = {module: read_module(source_root, module) for module in MERGED_MODULES}
-    stats = {"renames": 0, "qualified_calls": 0, "module_references": 0, "patches": 0}
+    stats = {
+        "renames": 0,
+        "qualified_calls": 0,
+        "module_references": 0,
+        "patches": 0,
+        "dead_branches": 0,
+        "removed_definitions": 0,
+    }
+
+    # 0. Drop definitions that exist only for database-backed features.
+    for module, names in REMOVED_DEFINITIONS.items():
+        if module in texts:
+            texts[module], removed = remove_definitions(texts[module], names)
+            stats["removed_definitions"] += removed
 
     # 1. Rename the qualified calls that cross a module boundary (Module.Symbol).
     for module, renames in RENAMES.items():
@@ -457,6 +590,10 @@ def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
             merged = replace_outside_strings(merged, pattern, target_module)
             stats["module_references"] += hits
 
+    # 4b. Delete the branches that can only run outside standalone mode.
+    merged, dead_branches = strip_dead_standalone_branches(merged)
+    stats["dead_branches"] = dead_branches
+
     # 5. Declarative patches for the facts a textual merge cannot infer.  These run
     #    on the raw text because some of them span a string literal.
     for _description, pattern, replacement in MERGE_PATCHES:
@@ -464,8 +601,6 @@ def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
         if hits:
             merged = re.sub(pattern, replacement, merged, flags=re.IGNORECASE | re.MULTILINE)
             stats["patches"] += hits
-
-    merged = MODULE_VARIABLES.strip() + "\n\n" + merged
 
     return merged, stats
 
@@ -497,6 +632,27 @@ def validate_merged(merged: str, profile: dict) -> tuple[list[str], list[str]]:
         hits = count_outside_strings(merged, re.escape(reference))
         if hits:
             observations.append(f"{hits} guarded infobase reference(s) retained: {reference}")
+
+    module_variables = re.findall(r"^[ \t]*(?:Перем|Var)[ \t]", merged, re.IGNORECASE | re.MULTILINE)
+    if module_variables:
+        problems.append(
+            "the platform does not allow module variables in a common module: "
+            f"{len(module_variables)} declaration(s)"
+        )
+
+    if dead_branch_lines(merged):
+        survivors = len(dead_branch_lines(merged))
+        problems.append(f"{survivors} dead `Not IsStandalone()` branch(es) survived the strip step")
+
+    compatibility = re.search(r"Version(\d+)_(\d+)_(\d+)", str(profile.get("compatibilityMode", "")))
+    if compatibility:
+        version = tuple(int(part) for part in compatibility.groups())
+        if version < (8, 3, 23):
+            observations.append(
+                f"compatibilityMode {profile['compatibilityMode']} is below 8.3.23, but the "
+                "merged sources use ОшибкаРаботыСРечью and ОшибкаТабличногоПространстваБазыДанных, "
+                "which the platform only exposes from 8.3.23"
+            )
 
     opened = count_outside_strings(merged, r"\b(?:Procedure|Процедура)\b")
     closed = count_outside_strings(merged, r"\bEndProcedure\b")
@@ -535,6 +691,7 @@ def configuration_xml(profile: dict) -> str:
         )
         for class_id, object_id in CONTAINED_OBJECTS
     )
+    kept_modules = "".join(f"\t\t\t<CommonModule>{module}</CommonModule>\n" for module in KEPT_MODULES)
 
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -565,6 +722,7 @@ def configuration_xml(profile: dict) -> str:
         "\t\t\t<Language>Русский</Language>\n"
         f"\t\t\t<CommonModule>{profile['targetModule']}</CommonModule>\n"
         f"\t\t\t<CommonModule>{profile['providerModule']}</CommonModule>\n"
+        f"{kept_modules}"
         "\t\t\t<HTTPService>mol_Moleculer</HTTPService>\n"
         "\t\t</ChildObjects>\n"
         "\t</Configuration>\n"
@@ -745,7 +903,7 @@ def emit_tree(profile: dict, merged_bsl: str, output_dir: Path, source_root: Pat
     write_text(output_dir / "Configuration.xml", configuration_xml(profile))
     write_text(output_dir / "Languages" / "Русский.xml", language_xml())
 
-    write_text(output_dir / "CommonModules" / f"{target_module}.xml", common_module_xml(target_module, True))
+    write_text(output_dir / "CommonModules" / f"{target_module}.xml", common_module_xml(target_module, False))
     write_text(output_dir / "CommonModules" / target_module / "Ext" / "Module.bsl", merged_bsl)
 
     write_text(output_dir / "CommonModules" / f"{provider_module}.xml", common_module_xml(provider_module, False))
@@ -753,6 +911,17 @@ def emit_tree(profile: dict, merged_bsl: str, output_dir: Path, source_root: Pat
         output_dir / "CommonModules" / provider_module / "Ext" / "Module.bsl",
         provider_module_bsl(profile),
     )
+
+    # The reuse modules keep their own descriptors, so their ReturnValuesReuse setting
+    # survives, and their unchanged bodies.
+    for module in KEPT_MODULES:
+        descriptor = strip_client_flags(
+            (source_root / "CommonModules" / f"{module}.xml").read_text(encoding="utf-8-sig")
+        )
+        body = read_module(source_root, module)
+        body, _removed = remove_definitions(body, REMOVED_DEFINITIONS.get(module, ()))
+        write_text(output_dir / "CommonModules" / f"{module}.xml", descriptor)
+        write_text(output_dir / "CommonModules" / f"{module}" / "Ext" / "Module.bsl", body)
 
     write_text(output_dir / "HTTPServices" / "mol_Moleculer.xml", httpservice_descriptor)
     write_text(
@@ -780,7 +949,19 @@ def compile_variant(profile: dict, output_dir: Path) -> Path:
     ]
 
     print("+ " + " ".join(command))
-    result = subprocess.run(command, cwd=REPO_ROOT, capture_output=True, text=True)
+
+    # Run from a neutral directory on purpose.  `vrunner` picks up
+    # `autumn-properties.json` from the working directory, and this repository's copy
+    # pins `ibconnection` to `/F./build/ib`.  Inheriting that makes the compiler load
+    # the variant into the dev infobase instead of a temporary one, which both defeats
+    # the "never touch build/ib" guarantee and fails when that base is locked.  Every
+    # path passed here is absolute, so the working directory is free to be anywhere.
+    result = subprocess.run(
+        command,
+        cwd=tempfile.gettempdir(),
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode != 0:
         raise BuildError(
