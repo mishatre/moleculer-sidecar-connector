@@ -1,0 +1,24 @@
+{
+    "variant": "default",
+    "extensionName": "MoleculerSidecarConnectorStandalone",
+    "namePrefix": "mol_",
+    "version": "0.2.0 beta 4",
+    "purpose": "AddOn",
+    "scriptVariant": "English",
+    "compatibilityMode": "Version8_3_21",
+    "targetModule": "Moleculer",
+    "providerModule": "MoleculerOverridable",
+    "compile": true,
+    "v8version": "8.3",
+    "settings": {
+        "config": {
+            "namespace": "",
+            "modulePrefix": "Service",
+            "logLevel": "Info",
+            "extVersion": "0.2.0 beta 4",
+            "extAdminRole": ""
+        },
+        "connections": [],
+        "publications": []
+    }
+}

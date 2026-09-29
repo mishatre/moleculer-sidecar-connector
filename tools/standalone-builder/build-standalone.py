@@ -1,0 +1,883 @@
+#!/usr/bin/env python3
+"""Build a standalone, database-free variant of the MoleculerSidecarConnector CFE.
+
+The canonical extension combines runtime code with persistence, administration and
+developer-tool objects.  This generator reads the canonical sources, drops the
+objects that need an infobase, merges the remaining common modules into a single
+public module, injects the deployment settings into the provider module, and emits
+a fresh extension source tree that is compiled with `vrunner cfe compile`.
+
+The canonical sources are never modified.  Everything is written under the output
+root (default `build/standalone`).
+
+Why Python: the job is XML/BSL text generation and rewriting.  The repository's
+OneScript packages do not expose an XML library and the bundled `json` package has
+no global reader, so a Python generator removes two dependency risks at once.  It
+is a developer tool, not shipped product code.
+
+See docs/plan/tasks/T015-standalone-builder.md for the design and the verified
+compiler commands.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+import sys
+import uuid
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# --------------------------------------------------------------------------------------
+# Declarative profile defaults
+# --------------------------------------------------------------------------------------
+
+DEFAULT_PROFILE = {
+    "variant": "default",
+    "sourceRoot": "src/cfe/MoleculerSidecarConnector",
+    "outputRoot": "build/standalone",
+    "extensionName": "MoleculerSidecarConnectorStandalone",
+    "namePrefix": "mol_",
+    "version": "0.2.0 beta 4",
+    "purpose": "AddOn",
+    "scriptVariant": "English",
+    "compatibilityMode": "Version8_3_21",
+    "targetModule": "Moleculer",
+    "providerModule": "MoleculerOverridable",
+    "compile": True,
+    "v8version": "8.3",
+}
+
+# Modules folded into the target module, in emit order.  The public facade comes
+# first so the merged module is readable from its entry point down.
+MERGED_MODULES = [
+    "Moleculer",
+    "mol_Errors",
+    "mol_Logger",
+    "mol_Helpers",
+    "mol_HelpersClientServer",
+    "mol_Reuse",
+    "mol_ReuseCalls",
+    "mol_Transport",
+    "mol_ContextFactory",
+    "mol_Broker",
+    "mol_SchemaFactory",
+    "mol_Internal",
+]
+
+# Modules left out of the variant: administration and role bootstrap, the Monaco
+# editor wrapper and the unused local YAML parsers.
+DROPPED_MODULES = [
+    "mol_Server",
+    "mol_Client",
+    "MoleculerClientServer",
+    "CodeEditor",
+    "CodeEditorClient",
+    "CodeEditorClientServer",
+    "YAML",
+    "YAML1",
+    "YAML2",
+    "YAML3",
+]
+
+# Symbol collisions between the merged modules, resolved by renaming the symbol in
+# the listed module.  Derived from a case-insensitive definition scan because BSL
+# identifiers are case-insensitive.  The owning module keeps the original name.
+RENAMES = {
+    "mol_Broker": {
+        "this": "BrokerThis",
+        "thismetadata": "BrokerThisMetadata",
+        "call": "BrokerCall",
+        "emit": "BrokerEmit",
+        "broadcast": "BrokerBroadcast",
+    },
+    "mol_ContextFactory": {
+        "this": "ContextFactoryThis",
+        "thismetadata": "ContextFactoryThisMetadata",
+        "broker": "ContextFactoryBroker",
+        "call": "ContextFactoryCall",
+        "emit": "ContextFactoryEmit",
+        "getcurrentcontext": "ContextFactoryGetCurrentContext",
+        "newcontext": "ContextFactoryNewContext",
+        "constructor": "ContextFactoryConstructor",
+    },
+    "mol_Transport": {
+        "this": "TransportThis",
+        "thismetadata": "TransportThisMetadata",
+    },
+    "mol_SchemaFactory": {
+        "this": "SchemaFactoryThis",
+        "thismetadata": "SchemaFactoryThisMetadata",
+        "newcontext": "SchemaFactoryNewContext",
+        "constructor": "SchemaFactoryConstructor",
+    },
+    "mol_Errors": {
+        "this": "ErrorsThis",
+        "thismetadata": "ErrorsThisMetadata",
+        "getcurrenterror": "ErrorsGetCurrentError",
+        "raiseerror": "ErrorsRaiseError",
+        "raisecustomerror": "ErrorsRaiseCustomError",
+    },
+    "mol_Logger": {
+        "this": "LoggerThis",
+        "thismetadata": "LoggerThisMetadata",
+        "error": "LoggerError",
+    },
+    "mol_Reuse": {
+        "getconfig": "ReuseGetConfig",
+        "getconnections": "ReuseGetConnections",
+        "getpublications": "ReuseGetPublications",
+        "getservicemodules": "ReuseGetServiceModules",
+        "getservices": "ReuseGetServices",
+    },
+    "mol_Internal": {
+        "this": "InternalThis",
+        "thismetadata": "InternalThisMetadata",
+    },
+    "mol_HelpersClientServer": {
+        "isobject": "IsObjectClientServer",
+        "isstructure": "IsStructureClientServer",
+        "ismap": "IsMapClientServer",
+        "isarray": "IsArrayClientServer",
+        "isstring": "IsStringClientServer",
+        "isnumber": "IsNumberClientServer",
+        "isbinarydata": "IsBinaryDataClientServer",
+        "isvaliddate": "IsValidDateClientServer",
+        "isstream": "IsStreamClientServer",
+        "canbenumber": "CanBeNumberClientServer",
+        "getversionedfullname": "GetVersionedFullNameClientServer",
+    },
+}
+
+# Ordered text transforms applied to the merged module after renaming.  Each entry
+# is (description, regex, replacement).  They encode the platform facts that a
+# textual merge cannot infer.
+MERGE_PATCHES = [
+    (
+        "module-level caches replace the lost ReturnValuesReuse mechanism",
+        r"Function\s+GetCacheStack\(\)\s+Export\s*\n\s*Return\s+New\s+Structure\(\)\s*;",
+        "Function GetCacheStack() Export\n\t\n\tIf ReuseCallsStack = Undefined Then\n\t\tReuseCallsStack = New Structure();\n\tEndIf;\n\t\n\tReturn ReuseCallsStack;",
+    ),
+    (
+        "module-level caches replace the lost ReturnValuesReuse mechanism",
+        r"Function\s+GetHTTPConnectionCache\(\)\s+Export\s*\n\s*Return\s+New\s+Map\(\)\s*;",
+        "Function GetHTTPConnectionCache() Export\n\t\n\tIf HTTPConnectionCache = Undefined Then\n\t\tHTTPConnectionCache = New Map();\n\tEndIf;\n\t\n\tReturn HTTPConnectionCache;",
+    ),
+    (
+        "the internal service is a service of the merged module, not a separate module",
+        r'CompileServiceSchema\(\s*"mol_Internal"\s*\)',
+        "CompileServiceSchema(Moleculer)",
+    ),
+    (
+        "the local YAML parsers are not part of the variant and the branch was unreachable",
+        r"Return\s+YAML\.ToObject\(Text\)\s*;",
+        "// Unreachable in the canonical sources: YAML parsing is delegated to the sidecar.",
+    ),
+    (
+        "the test-connection constant does not exist outside an infobase",
+        r"Return\s+String\(Constants\.mol_TestConnection\.Get\(\)\)\s*;",
+        'Return ""; // No test-connection constant in the standalone variant.',
+    ),
+    (
+        "the explicit-connection guidance must name the surviving entry point",
+        r"Используйте mol_Broker вместо него",
+        "Используйте Moleculer.Broker() вместо него",
+    ),
+    (
+        "the explicit-connection guidance must name the surviving entry point",
+        r"Use mol_Broker instead",
+        "Use Moleculer.Broker() instead",
+    ),
+    (
+        "reset the request-scoped stack when an inbound request is handled",
+        r"Function\s+Transporter_HTTP_Receive\s*\([^)]*\)\s+Export",
+        r"\g<0>\n\t\n\tReuseCallsStack = Undefined;",
+    ),
+]
+
+MODULE_VARIABLES = """
+#Область StandaloneCaches
+
+// The canonical modules used the platform's ReturnValuesReuse (DuringSession and
+// DuringRequest).  A merged module cannot declare a per-function reuse mode, so the
+// caches are explicit here.  A server common module keeps module variables for the
+// session; the request-scoped stack is cleared when an inbound request is handled.
+
+Перем HTTPConnectionCache;
+Перем ReuseCallsStack;
+
+#КонецОбласти
+"""
+
+# References to infobase objects that remain inside dead `IsStandalone()` guards.  The
+# variant always reports standalone mode, so the guarded branches cannot execute; they
+# are reported rather than failed so the retained guards stay visible.
+REPORTED_REFERENCES = [
+    "Catalog.",
+    "Constants.",
+    "Constant.",
+    "Enum.",
+    "FunctionalOption.",
+    "DataProcessor.",
+    "CommonForm.",
+]
+
+
+class BuildError(RuntimeError):
+    """Raised when the profile, the sources or the generated variant are invalid."""
+
+
+# --------------------------------------------------------------------------------------
+# BSL-aware text rewriting
+# --------------------------------------------------------------------------------------
+
+
+def split_string_segments(text: str):
+    """Yield (kind, chunk) pairs where kind is code, literal or comment.
+
+    BSL has one string form (`"` with `""` as the escape) and one comment form
+    (`//` to end of line).  Comments must be recognised as well as literals: a
+    comment containing a stray quote would otherwise desynchronise the scanner and
+    hide the code that follows it.
+    """
+    segments = []
+    index = 0
+    length = len(text)
+    code_start = 0
+
+    def flush_code(end: int) -> None:
+        if end > code_start:
+            segments.append(("code", text[code_start:end]))
+
+    def starts_line(position: int) -> bool:
+        """True when only horizontal whitespace separates `position` from a line start."""
+        line_start = text.rfind("\n", code_start, position) + 1
+        return not text[line_start:position].strip(" \t")
+
+    while index < length:
+        char = text[index]
+
+        if char == "#" and starts_line(index):
+            flush_code(index)
+            directive_start = index
+
+            while index < length and text[index] != "\n":
+                index += 1
+
+            segments.append(("directive", text[directive_start:index]))
+            code_start = index
+            continue
+
+        if char == '"':
+            flush_code(index)
+            literal_start = index
+            index += 1
+
+            while index < length:
+                if text[index] == '"':
+                    if index + 1 < length and text[index + 1] == '"':
+                        index += 2
+                        continue
+                    index += 1
+                    break
+                index += 1
+
+            segments.append(("literal", text[literal_start:index]))
+            code_start = index
+            continue
+
+        if char == "/" and index + 1 < length and text[index + 1] == "/":
+            flush_code(index)
+            comment_start = index
+
+            while index < length and text[index] != "\n":
+                index += 1
+
+            segments.append(("comment", text[comment_start:index]))
+            code_start = index
+            continue
+
+        index += 1
+
+    flush_code(length)
+
+    return segments
+
+
+def replace_outside_strings(text: str, pattern: str, replacement: str, flags=re.IGNORECASE) -> str:
+    """Apply a regex only to the code parts of the text."""
+    compiled = re.compile(pattern, flags)
+    result = []
+
+    for kind, chunk in split_string_segments(text):
+        if kind == "code":
+            result.append(compiled.sub(replacement, chunk))
+        else:
+            result.append(chunk)
+
+    return "".join(result)
+
+
+def count_outside_strings(text: str, pattern: str) -> int:
+    compiled = re.compile(pattern, re.IGNORECASE)
+    total = 0
+
+    for kind, chunk in split_string_segments(text):
+        if kind == "code":
+            total += len(compiled.findall(chunk))
+
+    return total
+
+
+def definition_names(text: str) -> list[tuple[str, bool]]:
+    """Return (lowercased name, is_export) for every top-level definition."""
+    pattern = re.compile(
+        r"^[ \t]*(?:Процедура|Функция|Procedure|Function)[ \t]+"
+        r"([A-Za-zА-Яа-яЁё_][A-Za-zА-Яа-яЁё0-9_]*)(.*)$",
+        re.IGNORECASE | re.MULTILINE,
+    )
+    found = []
+
+    for match in pattern.finditer(text):
+        tail = match.group(2)
+        found.append((match.group(1).lower(), "export" in tail.lower()))
+
+    return found
+
+
+# --------------------------------------------------------------------------------------
+# Profile handling
+# --------------------------------------------------------------------------------------
+
+
+def load_profile(path: Path | None) -> dict:
+    profile = json.loads(json.dumps(DEFAULT_PROFILE))
+
+    if path is not None:
+        if not path.is_file():
+            raise BuildError(f"Profile not found: {path}")
+        overrides = json.loads(path.read_text(encoding="utf-8"))
+        profile.update(overrides)
+
+    profile.setdefault("settings", {})
+    return profile
+
+
+def validate_profile(profile: dict, source_root: Path) -> None:
+    for key in ("extensionName", "namePrefix", "version", "targetModule", "providerModule"):
+        if not str(profile.get(key, "")).strip():
+            raise BuildError(f"Profile field '{key}' must not be empty")
+
+    if not re.fullmatch(r"[A-Za-zА-Яа-яЁё_][A-Za-zА-Яа-яЁё0-9_]*", profile["extensionName"]):
+        raise BuildError(f"Invalid extension name: {profile['extensionName']}")
+
+    if not source_root.is_dir():
+        raise BuildError(f"Source root not found: {source_root}")
+
+    compatibility = profile.get("compatibilityMode", "")
+    if compatibility and not re.fullmatch(r"Version\d+(?:_\d+)*|DontUse", compatibility):
+        raise BuildError(f"Invalid compatibility mode: {compatibility}")
+
+    settings = profile.get("settings", {})
+    for connection in settings.get("connections", []):
+        for field in ("id", "endpoint", "port"):
+            if field not in connection:
+                raise BuildError(f"Connection entry is missing '{field}': {connection}")
+
+
+# --------------------------------------------------------------------------------------
+# Merge
+# --------------------------------------------------------------------------------------
+
+
+def read_module(source_root: Path, module: str) -> str:
+    module_file = source_root / "CommonModules" / module / "Ext" / "Module.bsl"
+
+    if not module_file.is_file():
+        raise BuildError(f"Module source not found: {module_file}")
+
+    return module_file.read_text(encoding="utf-8-sig")
+
+
+def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
+    target_module = profile["targetModule"]
+    texts = {module: read_module(source_root, module) for module in MERGED_MODULES}
+    stats = {"renames": 0, "qualified_calls": 0, "module_references": 0, "patches": 0}
+
+    # 1. Rename the qualified calls that cross a module boundary (Module.Symbol).
+    for module, renames in RENAMES.items():
+        if module not in texts:
+            continue
+
+        for old_name, new_name in renames.items():
+            pattern = rf"\b{re.escape(module)}\s*\.\s*{re.escape(old_name)}\b"
+
+            for owner in texts:
+                hits = count_outside_strings(texts[owner], pattern)
+                if hits:
+                    texts[owner] = replace_outside_strings(texts[owner], pattern, new_name)
+                    stats["renames"] += hits
+
+    # 2. Rename the local definitions and local calls inside their own module.
+    for module, renames in RENAMES.items():
+        if module not in texts:
+            continue
+
+        for old_name, new_name in renames.items():
+            pattern = rf"(?<![.\w]){re.escape(old_name)}(?![\w])"
+            hits = count_outside_strings(texts[module], pattern)
+            if hits:
+                texts[module] = replace_outside_strings(texts[module], pattern, new_name)
+                stats["renames"] += hits
+
+    merged = "\n\n".join(
+        f"// ===== merged from CommonModule.{module} =====\n{texts[module].strip()}\n"
+        for module in MERGED_MODULES
+    )
+
+    # 3. Local calls: drop the qualifier of the merged modules.
+    for module in MERGED_MODULES:
+        pattern = rf"\b{re.escape(module)}\s*\.\s*"
+        hits = count_outside_strings(merged, pattern)
+        if hits:
+            merged = replace_outside_strings(merged, pattern, "")
+            stats["qualified_calls"] += hits
+
+    # 4. Module references: a bare module name becomes the merged module.  The
+    #    qualifier of a remaining `Metadata.CommonModules.<module>` is kept.
+    for module in MERGED_MODULES:
+        pattern = rf"(?<![\w]){re.escape(module)}(?![\w])"
+        hits = count_outside_strings(merged, pattern)
+        if hits:
+            merged = replace_outside_strings(merged, pattern, target_module)
+            stats["module_references"] += hits
+
+    # 5. Declarative patches for the facts a textual merge cannot infer.  These run
+    #    on the raw text because some of them span a string literal.
+    for _description, pattern, replacement in MERGE_PATCHES:
+        hits = len(re.findall(pattern, merged, re.IGNORECASE))
+        if hits:
+            merged = re.sub(pattern, replacement, merged, flags=re.IGNORECASE | re.MULTILINE)
+            stats["patches"] += hits
+
+    merged = MODULE_VARIABLES.strip() + "\n\n" + merged
+
+    return merged, stats
+
+
+def validate_merged(merged: str, profile: dict) -> tuple[list[str], list[str]]:
+    """Static checks that stand in for the unavailable BSL syntax check.
+
+    Returns (fatal problems, reported observations).
+    """
+    problems = []
+    observations = []
+    target_module = profile["targetModule"]
+
+    definitions: dict[str, list[int]] = {}
+    for position, (name, _is_export) in enumerate(definition_names(merged)):
+        definitions.setdefault(name, []).append(position)
+
+    for name, positions in sorted(definitions.items()):
+        if len(positions) > 1:
+            problems.append(f"duplicate definition after merge: {name} ({len(positions)} definitions)")
+
+    for module in MERGED_MODULES + DROPPED_MODULES:
+        if module == target_module:
+            continue
+        if count_outside_strings(merged, rf"(?<![.\w]){re.escape(module)}(?![\w])"):
+            problems.append(f"unresolved reference to removed module: {module}")
+
+    for reference in REPORTED_REFERENCES:
+        hits = count_outside_strings(merged, re.escape(reference))
+        if hits:
+            observations.append(f"{hits} guarded infobase reference(s) retained: {reference}")
+
+    opened = count_outside_strings(merged, r"\b(?:Procedure|Процедура)\b")
+    closed = count_outside_strings(merged, r"\bEndProcedure\b")
+    if opened != closed:
+        problems.append(f"Procedure/EndProcedure mismatch: {opened} opened, {closed} closed")
+
+    functions = count_outside_strings(merged, r"\b(?:Function|Функция)\b")
+    end_functions = count_outside_strings(merged, r"\bEndFunction\b")
+    if functions != end_functions:
+        problems.append(f"Function/EndFunction mismatch: {functions} opened, {end_functions} closed")
+
+    return problems, observations
+
+
+# --------------------------------------------------------------------------------------
+# Emission
+# --------------------------------------------------------------------------------------
+
+
+def write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def configuration_xml(profile: dict) -> str:
+    language_uuid = str(uuid.uuid4())
+    compatibility = profile.get("compatibilityMode", "").strip()
+    compatibility_line = (
+        f"\t\t\t<ConfigurationExtensionCompatibilityMode>{compatibility}</ConfigurationExtensionCompatibilityMode>\n"
+        if compatibility
+        else ""
+    )
+    contained = "\n".join(
+        "\t\t\t<xr:ContainedObject><xr:ClassId>{}</xr:ClassId><xr:ObjectId>{}</xr:ObjectId></xr:ContainedObject>".format(
+            class_id, object_id
+        )
+        for class_id, object_id in CONTAINED_OBJECTS
+    )
+
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<MetaDataObject xmlns="http://v8.1c.ru/8.3/MDClasses" xmlns:v8="http://v8.1c.ru/8.1/data/core"'
+        ' xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
+        ' version="2.17">\n'
+        '\t<Configuration uuid="' + str(uuid.uuid4()) + '">\n'
+        "\t\t<InternalInfo>\n"
+        f"{contained}\n"
+        "\t\t</InternalInfo>\n"
+        "\t\t<Properties>\n"
+        f"\t\t\t<Name>{profile['extensionName']}</Name>\n"
+        "\t\t\t<Synonym>\n"
+        "\t\t\t\t<v8:item>\n"
+        "\t\t\t\t\t<v8:lang>ru</v8:lang>\n"
+        f"\t\t\t\t\t<v8:content>{profile['extensionName']}</v8:content>\n"
+        "\t\t\t\t</v8:item>\n"
+        "\t\t\t</Synonym>\n"
+        "\t\t\t<Comment>Standalone, database-free variant generated by tools/standalone-builder</Comment>\n"
+        f"\t\t\t<ConfigurationExtensionPurpose>{profile['purpose']}</ConfigurationExtensionPurpose>\n"
+        "\t\t\t<ObjectBelonging>Adopted</ObjectBelonging>\n"
+        f"{compatibility_line}"
+        f"\t\t\t<NamePrefix>{profile['namePrefix']}</NamePrefix>\n"
+        f"\t\t\t<ScriptVariant>{profile['scriptVariant']}</ScriptVariant>\n"
+        f"\t\t\t<Version>{profile['version']}</Version>\n"
+        "\t\t</Properties>\n"
+        "\t\t<ChildObjects>\n"
+        "\t\t\t<Language>Русский</Language>\n"
+        f"\t\t\t<CommonModule>{profile['targetModule']}</CommonModule>\n"
+        f"\t\t\t<CommonModule>{profile['providerModule']}</CommonModule>\n"
+        "\t\t\t<HTTPService>mol_Moleculer</HTTPService>\n"
+        "\t\t</ChildObjects>\n"
+        "\t</Configuration>\n"
+        "</MetaDataObject>\n"
+    )
+
+
+# The platform requires exactly these seven contained-object class ids in a
+# configuration's InternalInfo; the object ids are allocated per build.
+CONTAINED_OBJECTS = [
+    ("9cd510cd-abfc-11d4-9434-004095e12fc7", "a1000000-0000-4000-8000-000000000001"),
+    ("9fcd25a0-4822-11d4-9414-008048da11f9", "a1000000-0000-4000-8000-000000000002"),
+    ("e3687481-0a87-462c-a166-9f34594f9bba", "a1000000-0000-4000-8000-000000000003"),
+    ("9de14907-ec23-4a07-96f0-85521cb6b53b", "a1000000-0000-4000-8000-000000000004"),
+    ("51f2d5d8-ea4d-4064-8892-82951750031e", "a1000000-0000-4000-8000-000000000005"),
+    ("e68182ea-4237-4383-967f-90c1e3370bc7", "a1000000-0000-4000-8000-000000000006"),
+    ("fb282519-d103-4dd3-bc12-cb271d631dfc", "a1000000-0000-4000-8000-000000000007"),
+]
+
+
+def language_xml() -> str:
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<MetaDataObject xmlns="http://v8.1c.ru/8.3/MDClasses" xmlns:v8="http://v8.1c.ru/8.1/data/core"'
+        ' xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
+        ' version="2.17">\n'
+        f'\t<Language uuid="{uuid.uuid4()}">\n'
+        "\t\t<InternalInfo/>\n"
+        "\t\t<Properties>\n"
+        "\t\t\t<ObjectBelonging>Adopted</ObjectBelonging>\n"
+        "\t\t\t<Name>Русский</Name>\n"
+        "\t\t\t<Comment/>\n"
+        "\t\t\t<LanguageCode>ru</LanguageCode>\n"
+        "\t\t</Properties>\n"
+        "\t</Language>\n"
+        "</MetaDataObject>\n"
+    )
+
+
+def common_module_xml(name: str, server_call: bool) -> str:
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<MetaDataObject xmlns="http://v8.1c.ru/8.3/MDClasses" xmlns:v8="http://v8.1c.ru/8.1/data/core"'
+        ' xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
+        ' version="2.17">\n'
+        f'\t<CommonModule uuid="{uuid.uuid4()}">\n'
+        "\t\t<Properties>\n"
+        f"\t\t\t<Name>{name}</Name>\n"
+        "\t\t\t<Synonym>\n"
+        "\t\t\t\t<v8:item>\n"
+        "\t\t\t\t\t<v8:lang>ru</v8:lang>\n"
+        f"\t\t\t\t\t<v8:content>{name}</v8:content>\n"
+        "\t\t\t\t</v8:item>\n"
+        "\t\t\t</Synonym>\n"
+        "\t\t\t<Comment/>\n"
+        "\t\t\t<Global>false</Global>\n"
+        "\t\t\t<ClientManagedApplication>false</ClientManagedApplication>\n"
+        "\t\t\t<Server>true</Server>\n"
+        "\t\t\t<ExternalConnection>false</ExternalConnection>\n"
+        "\t\t\t<ClientOrdinaryApplication>false</ClientOrdinaryApplication>\n"
+        f"\t\t\t<ServerCall>{'true' if server_call else 'false'}</ServerCall>\n"
+        "\t\t\t<Privileged>false</Privileged>\n"
+        "\t\t\t<ReturnValuesReuse>DontUse</ReturnValuesReuse>\n"
+        "\t\t</Properties>\n"
+        "\t</CommonModule>\n"
+        "</MetaDataObject>\n"
+    )
+
+
+def provider_module_bsl(profile: dict) -> str:
+    settings = profile.get("settings", {})
+    config = settings.get("config", {})
+    lines = [
+        "// Provider seam for the standalone variant.",
+        "//",
+        "// The canonical extension reads this data from the mol_* catalogs and constants.",
+        "// The standalone variant has no catalog and no constant, so the deployment",
+        "// settings are declared here. Edit this module to change them, or regenerate the",
+        "// variant with a different profile.",
+        "",
+        f"Procedure GetConfig(Config) Export",
+        "",
+        f'\tConfig.Namespace    = "{config.get("namespace", "")}";',
+        f'\tConfig.ModulePrefix = "{config.get("modulePrefix", "Service")}";',
+        f'\tConfig.LogLevel     = "{config.get("logLevel", "Info")}";',
+        f'\tConfig.ExtVersion   = "{config.get("extVersion", profile["version"])}";',
+        f'\tConfig.ExtAdminRole = "{config.get("extAdminRole", "")}";',
+        "",
+        "EndProcedure",
+        "",
+        "Procedure GetConnections(Connections) Export",
+        "",
+    ]
+
+    connections = settings.get("connections", [])
+    if not connections:
+        lines.append("\t// No connections declared in the profile.")
+    for connection in connections:
+        lines.extend(
+            [
+                "\tNewParams = Moleculer.NewConnectionParams();",
+                f'\tNewParams.Id          = "{connection["id"]}";',
+                f'\tNewParams.Description = "{connection.get("description", "")}";',
+                f'\tNewParams.Default     = {"True" if connection.get("default") else "False"};',
+                f'\tNewParams.Type        = "HTTP";',
+                f'\tNewParams.Endpoint    = "{connection["endpoint"]}";',
+                f'\tNewParams.Port        = {int(connection["port"])};',
+                f'\tNewParams.UseSSL      = {"True" if connection.get("useSSL") else "False"};',
+                f'\tNewParams.AccessKey   = "{connection.get("accessKey", "")}";',
+                f'\tNewParams.SecretKey   = "{connection.get("secretKey", "")}";',
+                f'\tNewParams.Timeout     = {int(connection.get("timeout", 120))};',
+                "\tConnections.Add(NewParams);",
+                "",
+            ]
+        )
+
+    lines.extend(["EndProcedure", "", "Procedure GetPublications(Publications) Export", ""])
+
+    publications = settings.get("publications", [])
+    if not publications:
+        lines.append("\t// No publications declared in the profile.")
+    for publication in publications:
+        lines.extend(
+            [
+                "\tNewParams = Moleculer.NewPublicationParams();",
+                f'\tNewParams.id          = "{publication["id"]}";',
+                f'\tNewParams.description = "{publication.get("description", "")}";',
+                f'\tNewParams.endpoint    = "{publication["endpoint"]}";',
+                f'\tNewParams.port        = {int(publication["port"])};',
+                f'\tNewParams.useSSL      = {"True" if publication.get("useSSL") else "False"};',
+                f'\tNewParams.path        = "{publication.get("path", "")}";',
+                "\tPublications.Add(NewParams);",
+                "",
+            ]
+        )
+
+    lines.extend(
+        [
+            "EndProcedure",
+            "",
+            "Procedure GetServiceModules(Modules) Export",
+            "",
+            "\t// Host service modules are discovered by the configured module prefix.",
+            "",
+            "EndProcedure",
+            "",
+            "Procedure GetServices(Services) Export",
+            "",
+            "\t// No extra service definitions are declared by the provider.",
+            "",
+            "EndProcedure",
+        ]
+    )
+
+    return "\n".join(lines) + "\n"
+
+
+def httpservice_handler_bsl(profile: dict) -> str:
+    return (
+        "\nFunction GatewayPOST(Request)\n"
+        "\t\n"
+        f"\tReturn {profile['targetModule']}.Transporter_HTTP_Receive(Request);\n"
+        "\t\n"
+        "EndFunction\n"
+    )
+
+
+def emit_tree(profile: dict, merged_bsl: str, output_dir: Path, source_root: Path) -> list[str]:
+    target_module = profile["targetModule"]
+    provider_module = profile["providerModule"]
+
+    # The HTTP service descriptor has no infobase dependency, so the proven canonical
+    # document is reused instead of being regenerated.
+    httpservice_descriptor = (source_root / "HTTPServices" / "mol_Moleculer.xml").read_text(
+        encoding="utf-8-sig"
+    )
+
+    write_text(output_dir / "Configuration.xml", configuration_xml(profile))
+    write_text(output_dir / "Languages" / "Русский.xml", language_xml())
+
+    write_text(output_dir / "CommonModules" / f"{target_module}.xml", common_module_xml(target_module, True))
+    write_text(output_dir / "CommonModules" / target_module / "Ext" / "Module.bsl", merged_bsl)
+
+    write_text(output_dir / "CommonModules" / f"{provider_module}.xml", common_module_xml(provider_module, False))
+    write_text(
+        output_dir / "CommonModules" / provider_module / "Ext" / "Module.bsl",
+        provider_module_bsl(profile),
+    )
+
+    write_text(output_dir / "HTTPServices" / "mol_Moleculer.xml", httpservice_descriptor)
+    write_text(
+        output_dir / "HTTPServices" / "mol_Moleculer" / "Ext" / "Module.bsl",
+        httpservice_handler_bsl(profile),
+    )
+
+    return sorted(path.relative_to(output_dir).as_posix() for path in output_dir.rglob("*") if path.is_file())
+
+
+def compile_variant(profile: dict, output_dir: Path) -> Path:
+    artifact = output_dir.parent / f"{profile['extensionName']}.cfe"
+    command = [
+        "vrunner",
+        "cfe",
+        "compile",
+        "--src",
+        str(output_dir),
+        "--extension-name",
+        str(profile["extensionName"]),
+        "--ibcmd",
+        "--v8version",
+        str(profile["v8version"]),
+        str(artifact),
+    ]
+
+    print("+ " + " ".join(command))
+    result = subprocess.run(command, cwd=REPO_ROOT, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        raise BuildError(
+            "cfe compile failed with exit code "
+            f"{result.returncode}\n{result.stdout}\n{result.stderr}"
+        )
+
+    if not artifact.is_file():
+        raise BuildError(f"cfe compile reported success but produced no artifact: {artifact}")
+
+    return artifact
+
+
+# --------------------------------------------------------------------------------------
+# Entry point
+# --------------------------------------------------------------------------------------
+
+
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--profile", type=Path, default=None, help="JSON profile overriding the defaults")
+    parser.add_argument("--out-root", type=Path, default=None, help="Override the output root directory")
+    parser.add_argument("--no-compile", action="store_true", help="Emit the source tree without compiling it")
+    parser.add_argument("--keep-tree", action="store_true", help="Keep an existing output tree instead of replacing it")
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str]) -> int:
+    args = parse_args(argv)
+    profile = load_profile(args.profile)
+
+    source_root = REPO_ROOT / profile["sourceRoot"]
+    validate_profile(profile, source_root)
+
+    output_root = Path(args.out_root) if args.out_root else REPO_ROOT / profile["outputRoot"]
+    output_dir = output_root / profile["variant"]
+
+    if output_dir.exists():
+        if not args.keep_tree:
+            shutil.rmtree(output_dir)
+        else:
+            raise BuildError(f"Output tree already exists: {output_dir}")
+
+    print(f"Building variant '{profile['variant']}' from {source_root}")
+
+    merged_bsl, stats = merge_modules(source_root, profile)
+    print(
+        "Merge: {renames} rename(s), {qualified_calls} local call(s), "
+        "{module_references} module reference(s), {patches} patch(es)".format(**stats)
+    )
+
+    problems, observations = validate_merged(merged_bsl, profile)
+    for observation in observations:
+        print(f"  [note] {observation}")
+    if problems:
+        for problem in problems:
+            print(f"  [FAIL] {problem}", file=sys.stderr)
+        raise BuildError(f"Merged module failed {len(problems)} static check(s)")
+
+    print("Static checks: passed")
+
+    written = emit_tree(profile, merged_bsl, output_dir, source_root)
+    print(f"Emitted {len(written)} file(s) under {output_dir}")
+    for relative in written:
+        print(f"  {relative}")
+
+    manifest = {
+        "profile": profile,
+        "mergeStats": stats,
+        "files": written,
+        "mergedModuleSha256": hashlib.sha256(merged_bsl.encode("utf-8")).hexdigest(),
+        "observations": observations,
+        "unverified": [
+            "BSL module syntax is not verified: the container's 1C client cannot start,",
+            "so neither the designer module check nor any test runner can be used.",
+            "Module loading and metadata correctness are verified via ibcmd.",
+        ],
+    }
+
+    manifest_path = output_dir / "standalone-manifest.json"
+    write_text(manifest_path, json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+
+    print(f"Manifest: {manifest_path}")
+
+    if profile.get("compile", True) and not args.no_compile:
+        artifact = compile_variant(profile, output_dir)
+        digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+        print(f"Artifact: {artifact} ({artifact.stat().st_size} bytes, sha256 {digest})")
+    else:
+        print("Compilation skipped")
+
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except BuildError as error:
+        print(f"BUILD FAILED: {error}", file=sys.stderr)
+        sys.exit(1)
