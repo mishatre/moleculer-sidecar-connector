@@ -30,7 +30,14 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("AdaptConnectionParamsPassesThroughUndefinedAndObjects")
 		.ДобавитьСерверныйТест("AdaptConnectionParamsRefusesAnUnknownIdentifier")
 		.ДобавитьСерверныйТест("ProviderConnectionsMatchTheDeclaredStructure")
-		.ДобавитьСерверныйТест("BrokerIsAvailable");
+		.ДобавитьСерверныйТест("BrokerIsAvailable")
+		.ДобавитьСерверныйТест("EmitRefusesAnOptsConnectionWithItsOwnMessage")
+		.ДобавитьСерверныйТест("BroadcastRefusesAnOptsConnectionWithItsOwnMessage")
+		.ДобавитьСерверныйТест("ProvidedServicesAreAnArray")
+		.ДобавитьСерверныйТест("ProvidedPublicationsAreAnArray")
+		.ДобавитьСерверныйТест("ProvidedServiceModulesAreAnArray")
+		.ДобавитьСерверныйТест("TheFacadeForwardsTheCurrentContext")
+		.ДобавитьСерверныйТест("TheFacadeForwardsTheCurrentError");
 
 EndProcedure
 
@@ -223,6 +230,89 @@ EndProcedure
 Procedure BrokerIsAvailable() Export
 
 	ЮТест.ОжидаетЧто(Moleculer.Broker() = Неопределено, "the facade exposes the broker").ЭтоЛожь();
+
+EndProcedure
+
+Procedure EmitRefusesAnOptsConnectionWithItsOwnMessage() Export
+
+	// The same guard Call has, and one of the three whose English text was empty until the NStr fix,
+	// so this test also keeps that fix from regressing.
+	Opts = Новый Структура;
+	Opts.Insert("Connection", "some-connection");
+
+	Raised  = Ложь;
+	Failure = "";
+
+	Попытка
+		Moleculer.Emit("probe.event", Новый Структура, Opts);
+	Исключение
+		Raised  = Истина;
+		Failure = ОписаниеОшибки();
+	КонецПопытки;
+
+	ЮТест.ОжидаетЧто(Raised, "Emit refuses Opts.Connection instead of using it").ЭтоИстина();
+	ЮТест.ОжидаетЧто(СтрНайти(Failure, "Opts.Connection") > 0, "the failure names the rejected option: " + Failure).ЭтоИстина();
+
+EndProcedure
+
+Procedure BroadcastRefusesAnOptsConnectionWithItsOwnMessage() Export
+
+	Opts = Новый Структура;
+	Opts.Insert("Connection", "some-connection");
+
+	Raised  = Ложь;
+	Failure = "";
+
+	Попытка
+		Moleculer.Broadcast("probe.event", Новый Структура, Opts);
+	Исключение
+		Raised  = Истина;
+		Failure = ОписаниеОшибки();
+	КонецПопытки;
+
+	ЮТест.ОжидаетЧто(Raised, "Broadcast refuses Opts.Connection instead of using it").ЭтоИстина();
+	ЮТест.ОжидаетЧто(СтрНайти(Failure, "Opts.Connection") > 0, "the failure names the rejected option: " + Failure).ЭтоИстина();
+
+EndProcedure
+
+Procedure ProvidedServicesAreAnArray() Export
+
+	// The catalogs are the source of truth in extension mode and the test base has none, so the body
+	// here is vacuous today; the count is part of the message so that stays visible rather than
+	// reading as coverage.
+	Services = Moleculer.GetServices(Истина);
+
+	ЮТест.ОжидаетЧто(mol_Helpers.IsArray(Services), "the provider returns an array; declared: " + Строка(Services.Количество())).ЭтоИстина();
+
+EndProcedure
+
+Procedure ProvidedPublicationsAreAnArray() Export
+
+	Publications = Moleculer.GetPublications(Истина);
+
+	ЮТест.ОжидаетЧто(mol_Helpers.IsArray(Publications), "the provider returns an array; declared: " + Строка(Publications.Количество())).ЭтоИстина();
+
+EndProcedure
+
+Procedure ProvidedServiceModulesAreAnArray() Export
+
+	Modules = Moleculer.GetServiceModules(Истина, "mol_");
+
+	ЮТест.ОжидаетЧто(mol_Helpers.IsArray(Modules), "the provider returns an array; declared: " + Строка(Modules.Количество())).ЭтоИстина();
+
+EndProcedure
+
+Procedure TheFacadeForwardsTheCurrentContext() Export
+
+	// A delegation check: the facade must not keep a context of its own. Comparing the two calls with
+	// each other keeps this independent of whatever thread state the surrounding suite left behind.
+	ЮТест.ОжидаетЧто(Moleculer.GetCurrentContext() = mol_ContextFactory.GetCurrentContext(), "the facade forwards the current context").ЭтоИстина();
+
+EndProcedure
+
+Procedure TheFacadeForwardsTheCurrentError() Export
+
+	ЮТест.ОжидаетЧто(Moleculer.GetCurrentError() = mol_Errors.GetCurrentError(), "the facade forwards the current error").ЭтоИстина();
 
 EndProcedure
 

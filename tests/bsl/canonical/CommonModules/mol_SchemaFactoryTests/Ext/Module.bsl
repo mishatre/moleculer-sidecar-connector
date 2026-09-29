@@ -40,7 +40,8 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("FromStringRejectsANonString")
 		.ДобавитьСерверныйТест("FromStringNeedsTheSidecarForAnythingThatIsNotJSON")
 		.ДобавитьСерверныйТест("TheSafeModeWindowIsReal")
-		.ДобавитьСерверныйТест("ASafeModeWindowDoesNotBlockLocalParsing");
+		.ДобавитьСерверныйТест("ASafeModeWindowDoesNotBlockLocalParsing")
+		.ДобавитьСерверныйТест("AnEmptyServiceReferenceIsNotATypeError");
 	
 EndProcedure
 
@@ -336,6 +337,33 @@ Procedure SchemaFailuresUseATypeTheFactoriesDoNotProduce() Export
 			"KNOWN DEFECT: the caller's key is not dispatched, so the error keeps the raw key instead of SERVICE_SCHEMA_ERROR")
 		.Равно("ServiceSchema");
 	
+EndProcedure
+
+// A catalog reference selects a dynamic service in extension mode, so the dispatch must treat it as
+// an accepted value type rather than falling through to the type error. An empty reference is the
+// boundary of that path: the constructor text is missing, so a refusal is expected, but it must be a
+// refusal about the constructor and not the argument type.
+//
+// The failure text is carried in the assertion messages so the distinction stays visible when this
+// changes.
+Procedure AnEmptyServiceReferenceIsNotATypeError() Export
+
+	Raised  = Ложь;
+	Failure = "";
+
+	Попытка
+		mol_SchemaFactory.CompileServiceSchema(Справочники.mol_Services.ПустаяСсылка());
+	Исключение
+		Raised  = Истина;
+		Failure = ОписаниеОшибки();
+	КонецПопытки;
+
+	// RaiseTypeError names its parameter, so a failure that mentions it would mean the catalog
+	// reference was rejected as an unsupported type instead of being dispatched as a dynamic service.
+	ЮТест.ОжидаетЧто(СтрНайти(Failure, "ModuleOrReference") = 0,
+		"a catalog reference is an accepted type, so the type error must not fire: " + Failure).ЭтоИстина();
+	ЮТест.ОжидаетЧто(Raised, "an empty reference is refused rather than compiled silently: " + Failure).ЭтоИстина();
+
 EndProcedure
 
 #EndRegion

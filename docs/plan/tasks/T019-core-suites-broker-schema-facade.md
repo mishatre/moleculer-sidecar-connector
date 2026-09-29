@@ -1,8 +1,9 @@
 # T019 — Core unit suites B: broker, schema factory, facade, provider
 
-Status: in_progress — the schema factory, the facade and the reachable part of `mol_Broker` are covered,
-and the canonical suite is 101/101. One acceptance item remains: `MoleculerOverridable` is not exercised
-at all. What `mol_Broker` cannot prove without a sidecar is recorded below rather than faked.
+Status: in_progress — the canonical suite is 116/116 and almost every acceptance item is covered or
+explicitly re-scoped. Three sub-items remain: the facade's `RaiseError`, the version derivation of a
+service's `fullName`, and the `$node.services` parameter shape, which is private to
+`GetSidecarNodeServices` and ends in a sidecar call. Details below.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -127,6 +128,29 @@ transport, while `Emit` handled the identical case. `Broadcast` now normalises i
 The first version of that test hid the cause behind a boolean. Returning the failure text instead is
 what made the diagnosis immediate, so the suite now uses `TransportRefusal`, which hands the actual
 error back to the assertion message.
+
+### Provider, schema and facade completed
+
+- `MoleculerOverridable` — seven tests. In extension mode all five procedures return without touching
+their argument, because the catalogs are the source of truth there and the standalone builder replaces
+the module wholesale. The suite pins that inertness with a sentinel in each collection, so a provider
+that started filling data in this mode would be caught; the filling contract is asserted by
+`tests/bsl/standalone`. It also asserts the premise (`IsStandalone()` is false) so the rest cannot pass
+for the wrong reason, and invokes all five procedures with empty collections, which is the acceptance's
+"every provider procedure is invoked" item.
+- `mol_SchemaFactory` — one more test, `AnEmptyServiceReferenceIsNotATypeError`: a catalog reference has
+to be dispatched as a dynamic service rather than rejected as an unsupported value type. `RaiseTypeError`
+names its parameter, so asserting that the failure does not mention it proves which branch ran. This also
+established that the test extension can reference `Справочники.mol_Services` at compile time.
+- `Moleculer` facade — seven more tests: the `Emit` and `Broadcast` guards, which also protect the
+  `NStr` fix, because a non-empty message proves the locale parse now succeeds; the array shape of
+  `GetServices`, `GetPublications` and `GetServiceModules`; and delegation checks for
+  `GetCurrentContext` and `GetCurrentError`, written as facade-versus-module comparisons so they do not
+depend on whatever thread state the surrounding suite left behind.
+- canonical suite **116/116** in 43 s.
+
+Still open, and the reason this task is not verified yet: the facade's `RaiseError`; the version
+derivation of a service's `fullName`; and the `$node.services` parameter shape.
 
 ## Optional pilot metrics
 
