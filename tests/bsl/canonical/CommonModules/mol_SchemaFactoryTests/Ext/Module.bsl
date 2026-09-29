@@ -37,7 +37,9 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("CompileServiceSchemaRaisesForANonModuleValue")
 		.ДобавитьСерверныйТест("SchemaFailuresUseATypeTheFactoriesDoNotProduce")
 		.ДобавитьСерверныйТест("FromStringRejectsANonString")
-		.ДобавитьСерверныйТест("FromStringNeedsTheSidecarForAnythingThatIsNotJSON");
+		.ДобавитьСерверныйТест("FromStringNeedsTheSidecarForAnythingThatIsNotJSON")
+		.ДобавитьСерверныйТест("TheSafeModeWindowIsReal")
+		.ДобавитьСерверныйТест("ASafeModeWindowDoesNotBlockLocalParsing");
 	
 EndProcedure
 
@@ -162,6 +164,53 @@ Procedure TheBuilderRefusesToRunOutsideACompilingService() Export
 	ЮТест.ОжидаетЧто(Raised,
 			"a finished compile must leave no building context, so a stray builder call has to fail")
 		.Равно(Истина);
+	
+EndProcedure
+
+#EndRegion
+
+#Region SafeMode
+
+// CompileServiceSchema wraps the service constructor in SetSafeMode(True), and the
+// constructor is where a text definition would be parsed. The platform forbids loading and
+// connecting external components in safe mode, which is what makes an AddIn parser awkward.
+//
+// These two tests put the other option on a measured footing: if safe mode does not block
+// local computation, then a parser written in BSL needs no exception at all, and the
+// question of switching safe mode off never arises.
+//
+// Each test enables safe mode exactly once and disables it exactly once in the same
+// procedure. The platform also clears it on return from the procedure that enabled it, so a
+// throwaway experiment here cannot leak into the rest of the run.
+
+Procedure TheSafeModeWindowIsReal() Export
+	
+	УстановитьБезопасныйРежим(Истина);
+	IsSafe = БезопасныйРежим();
+	УстановитьБезопасныйРежим(Ложь);
+	
+	ЮТест.ОжидаетЧто(IsSafe, "safe mode is on for anything reached from the window")
+		.Равно(Истина);
+	
+EndProcedure
+
+Procedure ASafeModeWindowDoesNotBlockLocalParsing() Export
+	
+	УстановитьБезопасныйРежим(Истина);
+	
+	Parsed = Неопределено;
+	Failure = Неопределено;
+	Try
+		Parsed = mol_Helpers.FromJSONString("{""name"":""probe""}");
+	Except
+		Failure = ИнформацияОбОшибке();
+	EndTry;
+	
+	УстановитьБезопасныйРежим(Ложь);
+	
+	ЮТест.ОжидаетЧто(Failure, "safe mode restricts external actions, not local computation")
+		.Равно(Неопределено);
+	ЮТест.ОжидаетЧто(Parsed.name, "and the parsed value is usable inside the window").Равно("probe");
 	
 EndProcedure
 

@@ -48,12 +48,15 @@ for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
 
 ### Research notes
 
-- [yaml-native-parser-viability.md](yaml-native-parser-viability.md) — a native YAML
-  parser module is not viable: the platform has no YAML API, safe mode forbids
-  external components around the constructor, and the JSON branch already gives an
-  offline, testable format. Recommends JSON as the documented offline format, fixing
-  the misleading parse error, and parser injection through the overridable module if a
-  consumer genuinely needs YAML offline.
+- [yaml-native-parser-viability.md](yaml-native-parser-viability.md) — revised after
+  owner review. The requirement (constructors must compile with no sidecar connected)
+  is accepted and a local parser is the answer. The platform has no YAML API, so the
+  choice is a BSL parser or a Native API component: Native is first-class
+  (`AddInType = { COM, Native }`) and the loader accepts a configuration template, so
+  one CFE can carry the binary. Safe mode forbids loading and connecting, not using,
+  an already-connected component, and does not restrict local computation. A BSL
+  parser is the lower-risk route; a Native component cannot be built in this container
+  today.
 
 ### Resolved: the 1C client starts and a licence is present
 

@@ -1,14 +1,32 @@
 # Viability of a native YAML parser module
 
-Status: analysis, no implementation authorised
+Status: analysis, revised after owner review; no implementation authorised yet
 Triggered by: a request to consider a native API module for an internal YAML parser,
 judged on speed, testing value, sidecar mitigation and build-config guarding.
 
-Short answer: **not viable as framed.** The platform has no YAML API at all, the
-external-component route is blocked by the connector's own safe-mode window plus
-delivery and ABI costs, and a BSL parser contradicts a decision the owner already
-recorded. The three goals behind the request are reachable more cheaply, and one
-of them is already met by the JSON branch that exists today.
+Short answer, revised after review: **the requirement is legitimate and the
+external-component route is workable.** The platform has no YAML API, so a parser is
+either BSL or a compiled Native API component. Native components are first-class on
+the platform, and the platform's own loader accepts a **configuration template** as
+the component location, so a single CFE can carry the binary. Two claims in the
+first draft were wrong; they are corrected under "External components: revised
+assessment". The requirement that forced the revision is recorded next.
+
+## Requirement
+
+Stated by the owner during review, and the thing this document has to serve:
+
+> this project should be able to process service constructors without any available
+> sidecar node connected
+
+Stated as the consequence of not having it:
+
+- sidecar node available: YAML + JSON + internal builder;
+- sidecar node unavailable: JSON + internal builder.
+
+and therefore a constructor written in YAML cannot use YAML for any purpose when no
+sidecar is up — not parsing, not conversion (YAML -> JSON, YAML -> builder), and not
+the reverse.
 
 ## What was checked
 
@@ -20,15 +38,22 @@ of them is already met by the JSON branch that exists today.
 | Nothing inside the connector reads YAML | `mol_SchemaFactory.FromString` has no caller in `src/`; it is a public authoring/import API plus a possible body for `Catalog.mol_Services.ServiceConstructor` |
 | JSON already works offline | `ParseServiceDefinition` returns `mol_Helpers.FromJSONString(Text)` when the text starts with `{` or `[` |
 | A BSL parser existed and was deleted | T024 removed `YAML`, `YAML1`, `YAML2`, `YAML3`: ~3,500 lines, all unreachable |
-| Safe mode forbids external components | `УстановитьБезопасныйРежим`: "В безопасном режиме: … запрещены … загрузка и подключение внешних компонентов" |
+| Safe mode forbids **loading and connecting** external components | `УстановитьБезопасныйРежим`: "В безопасном режиме: … запрещены … загрузка и подключение внешних компонентов". It lists COM separately as "операции с COM-объектами", so *using* a connected component is not among the listed restrictions |
+| Safe mode does **not** restrict local computation | `mol_SchemaFactoryTests.ASafeModeWindowDoesNotBlockLocalParsing`: `mol_Helpers.FromJSONString` parses correctly with `БезопасныйРежим()` reporting `Истина` |
+| Native API is a first-class component kind | `ТипВнешнейКомпоненты` (`AddInType`) has exactly `COM` and `Native`, the latter documented as "Компонент, реализованный с использованием Native API" |
+| The loader accepts a configuration template | `ПодключитьВнешнююКомпоненту`: `Местоположение` may be "полное имя макета, хранящего двоичные данные или ZIP-архив", a URL, or a file path (the file path alone is marked "недоступно на веб-клиенте") |
+| A component cannot be a declared metadata object | the designer schemas this project already uses (`v8.1c.ru-8.3-MDClasses.xsd`) define no `AddIn` type; `AddInCallUseMode` belongs to the configuration's synchronous-call compatibility mode, not to a component declaration |
 | Schema compilation runs under safe mode | `mol_SchemaFactory.CompileServiceSchema` does `SetSafeMode(True)` → executes the module's `Constructor` → `SetSafeMode(False)` |
+| Unsafe to "just switch safe mode off" inside the parser | `УстановитьБезопасныйРежим` is accounted per procedure: calling it with `Ложь` in a procedure that did not enable it raises |
 | Parsing is a startup cost | `FromString` is reached from `CompileServiceSchema`, i.e. once per service construction, not per request |
 
 Two tests were added to pin the dependency rather than argue from reading:
 `mol_SchemaFactoryTests.FromStringRejectsANonString` and
 `FromStringNeedsTheSidecarForAnythingThatIsNotJSON`. Both pass without a sidecar
 connected, which is the point: the JSON branch needs nothing, the YAML branch
-cannot run at all. Canonical suite: 56/56.
+cannot run at all. Two more settle the safe-mode question by measurement rather than
+assertion: `TheSafeModeWindowIsReal` and `ASafeModeWindowDoesNotBlockLocalParsing`.
+Canonical suite: 58/58.
 
 ## The three goals, assessed
 
@@ -41,8 +66,11 @@ parser would not move request latency at all.
 What the sidecar call really costs is different: it is a **cross-process
 dependency at construction time**, so a service cannot be defined if the sidecar
 is unreachable. That is an availability and diagnosability problem, not a
-throughput one — and it is worth fixing on its own terms, with JSON or a clear
-error, rather than with a parser written in C.
+throughput one. The speed argument therefore does not justify a parser, but the
+availability argument does, which is why this document now turns on the requirement
+rather than on performance — with one exception: if the parser runs on every call
+rather than at construction, speed becomes a real criterion and the Native route
+wins.
 
 ### 2. Testing — real, but already solvable without a parser
 
@@ -59,83 +87,149 @@ Two existing facts shrink that sliver further:
   model: "Code-first builders are the locked canonical authoring model;
   declarative parsing is convenience/import behavior until separately specified."
 
-So a native parser would buy coverage of a convenience path that the project has
-already decided is not canonical.
+So the coverage argument alone would not justify a parser — but the requirement above
+does, and the parser then pays for itself twice: it restores the missing capability
+and it turns `FromString` from the one public entry point no suite can reach into an
+ordinary one.
 
-### 3. Sidecar dependency — the gain is much smaller than it looks
+### 3. Sidecar dependency — the first draft measured the wrong thing
 
-The connector calls eight internal sidecar actions: `$sidecar.utils.parseYAML`,
-`$sidecar.parseYAML`, `$sidecar.register`, `$sidecar.unregister`,
-`$sidecar.updateService`, `$sidecar.callLocalNode`, `$node.services`, `$node.list`.
+The first draft argued that YAML is only two of eight internal sidecar calls, so the
+dependency barely shrinks. That counts calls and misses the requirement: the problem
+is not how many calls, it is **which capability exists locally**.
 
-YAML is two of the eight, and one of those two is dead code. The other six are
-broker protocol: registering services, unregistering them, calling a local node.
-**No parser change removes any of them.** Replacing YAML parsing does not reduce
-sidecar dependence in any meaningful sense; it only makes *declarative* service
-definitions work offline.
+- sidecar connected: YAML + JSON + the internal builder;
+- sidecar absent: JSON + the internal builder only.
 
-## Why the external-component route fails
+A service whose constructor is written in YAML therefore compiles only while a
+sidecar happens to be up, and a dynamic-service constructor stored in
+`Catalog.mol_Services.ServiceConstructor` cannot use YAML at all — not even to
+convert YAML into something else — regardless of what it is trying to do locally.
+That is a capability split inside a single constructor, and it is worse than a
+dependency on the broker: a local computation is made to wait for a remote process.
 
-This is the interpretation the request pointed at — a Native API (AddIn)
-component, viable only in a full CFE publication, with a compatibility penalty.
-Three separate problems, in ascending order of severity:
+The call count is still worth knowing for a different reason: the six broker calls
+mean the connector cannot function without a sidecar anyway. The goal is therefore
+not "remove the sidecar" but "stop making local work wait for it", which is what
+makes the requirement as narrow and as reasonable as it is.
 
-1. **Delivery.** A CFE carries metadata objects, not process binaries. A `.so`/`.dll`
-   would need a separate install step and a version pairing between connector and
-   component build.
-2. **ABI.** The binary is per operating system, per architecture and tied to the
-   platform build it was compiled against. The connector currently ships one CFE
-   that works wherever the extension loads.
-3. **Safe mode — this one is fatal for the primary path.** `CompileServiceSchema`
-   turns safe mode **on** around the service constructor, and safe mode explicitly
-   forbids *loading and connecting* external components. `FromString`, the only
-   YAML entry point, is reached from that constructor. The connector would be
-   forbidding the very thing the parser needs.
+## External components: revised assessment
 
-   Attaching the component earlier, outside the window, and only *calling* it
-   inside is the one escape route, and it is unverified. It would add a lifecycle
-   dependency (attach at broker start, handle absence, cope with reconnect) and a
-   new failure mode, to speed up a startup-only parse. That is a bad trade even if
-   it works.
+The first draft called this route fatal. That was wrong in two places, and the
+corrections matter because they invert the conclusion.
 
-For the testing goal an AddIn is actively counterproductive: it makes the harness
-depend on a binary that must be installed per machine, which is the opposite of
-the current container-only, no-licence-needed test story.
+**Native API is a first-class kind, not a Windows workaround.**
+`ТипВнешнейКомпоненты` (`AddInType`) has exactly two values, `COM` and `Native`, and
+`ПодключитьВнешнююКомпоненту` takes the kind as an optional third parameter. A Rust
+or C++ component is an explicitly supported thing.
 
-## What the recorded owner decision already says
+**Delivery inside one CFE is supported** — this is where the first draft was
+plainly wrong. `ПодключитьВнешнююКомпоненту(Местоположение, Имя, Тип?)` documents
+`Местоположение` as any of:
 
-`refactor-backlog.md`, T024: *"the owner confirms YAML is validated and converted
-on the Node side on purpose."* The sidecar dependency for YAML is deliberate, and
-the BSL parsers were removed as part of that decision, one task ago. Re-opening it
-needs a reason that did not exist when it was made. The analysis above does not
-supply one; it weakens the case instead.
+- a path in the file system — explicitly marked "недоступно на веб-клиенте";
+- **"полное имя макета, хранящего двоичные данные или ZIP-архив"**;
+- a URL to the component as binary data or a ZIP archive.
+
+A template is a metadata object an extension can carry, so the binary ships inside
+the extension and no separate install step is needed. "A CFE carries metadata, not
+process binaries" had it backwards: the platform's own loader names the template
+form as a supported location, and it is the form that works where a file path does
+not.
+
+**Server side — the direct answer to the fear that it cannot work there.** The API
+is server-centric rather than client-oriented: `УстановитьВнешнююКомпоненту`
+"доставляет объект внешнего компонента **с сервера на клиент**", so the server holds
+the component and is the party that supplies it. The template-based loader is
+exactly the form that does not depend on a local file system, which is what
+server-side and web-client contexts need.
+
+One limit worth recording: the component cannot be a *declared* metadata object.
+The designer schemas this project already uses define no `AddIn` metadata type, so a
+Native component can only arrive as a template plus a runtime connect call.
+
+**Safe mode is a placement constraint, not a blocker.** Safe mode forbids loading and
+connecting external components. It does not list *using* a connected component, and it
+lists COM separately as "операции с COM-объектами", which suggests the two are not the
+same restriction. Connecting once during connector start-up, outside any safe-mode
+window, and calling the parser from inside it is the design that fits.
+
+What does **not** work is the obvious shortcut: `FromString` cannot switch safe mode
+off for itself. `УстановитьБезопасныйРежим` is accounted for per procedure, so calling
+it with `Ложь` in a procedure that did not enable it raises. The window has to be
+placed correctly instead — and for a BSL parser the question never arises, because
+safe mode does not restrict local computation (measured; see the table above).
+
+**Remaining unknowns**, both requiring a real component to settle:
+
+1. Whether *calling* an already-connected Native component inside a safe-mode window
+   is permitted. The documentation implies yes; nothing in this container can prove
+   it.
+2. Whether the Native API SDK and per-platform builds can be produced at all here.
+   The container has no Native API headers or libraries.
+
+## The recorded owner decision, revisited
+
+`refactor-backlog.md`, T024 records: *"the owner confirms YAML is validated and
+converted on the Node side on purpose."* The four BSL parser modules were deleted on
+the strength of that decision, one task before this analysis.
+
+That decision is now being revisited **by the owner, deliberately**, for a reason that
+did not exist when it was made: constructors must compile with no sidecar connected,
+and a constructor written in YAML currently cannot. This document exists to price the
+reversal rather than to defend the earlier note.
 
 ## Recommendation
 
-Do not build a parser. Take the cheap steps that capture the real benefits:
+Two implementations satisfy the requirement. Choose on toolchain cost rather than on
+capability, because both can do the job.
 
-1. **Document JSON as the offline and test-authoring format.** It is native, it
-   needs no sidecar, and it is already testable. This covers the testing goal
-   with zero new code.
-2. **Stop misdiagnosing the failure.** The `Try` around `ParseServiceDefinition`
-   converts a transport failure into "TextDefinition should contain valid YAML or
-   JSON", blaming the caller's text for a missing parser. Belongs to the error
-   taxonomy work (T023); the new test deliberately asserts only the raise, so the
-   message is free to change.
-3. **If a consumer needs offline YAML specifically, let it inject one.** The
-   project already has the two guard mechanisms the request asks for:
-   `providerModule: MoleculerOverridable` for a runtime-selected parser, and the
-   standalone builder's `patches` for a build-config choice — and a patch that
-   stops matching raises `BuildError` rather than silently doing nothing. That
-   gives config/build-config guarding without the connector owning thousands of
-   lines of YAML.
+| | BSL parser | Native component (Rust/C++) |
+|---|---|---|
+| Ships inside the CFE | yes, as source | yes, as a binary template plus a connect call |
+| Safe mode | unaffected, safe mode does not restrict local computation | must be connected outside the window; calling inside is unverified |
+| Toolchain available in this container | none needed | **none** — no Native API SDK, so nothing can be built or tested here |
+| Per-platform artifacts | one | Linux x86-64 and Windows x86-64 at minimum, ABI-bound to the platform build |
+| Testable in the existing harness | yes, today | only after each binary is built |
+| Speed | slower, at start-up only | faster, at start-up only |
 
-## What would change this verdict
+A BSL parser is the lower-risk way to meet the requirement, and the safe-mode
+experiment removes the objection that made the first draft doubt it. A Native
+component is faster and is the better answer if the parser must handle full YAML or
+large documents, but it cannot be built or verified in this container as things
+stand.
 
-- The platform gains a native YAML reader. Re-open immediately; the whole
-  compatibility discussion then becomes a version-floor question, and the
-  `compatibilityMode` field in the builder profile is the place to express it.
-- A consumer requires offline YAML and cannot use JSON, and injection through the
-  overridable module proves insufficient.
-- Attaching a component outside the safe-mode window is shown to work **and** the
-  parse is shown to be a measured bottleneck. Both would have to hold.
+Either way, the shape should be the same:
+
+1. **One parser for every caller, chosen in one place.** Prefer local and fall back to
+   the sidecar, or the reverse — that order is an owner choice, but it must be one
+   order rather than two capability sets that depend on connectivity.
+2. **Guard it the way the project already guards variants.** `providerModule:
+   MoleculerOverridable` for the runtime choice, and the builder profile's `patches`
+   for the build-config choice; a stale patch already raises `BuildError` instead of
+   silently doing nothing.
+3. **Cover the conversions the requirement names**, not just parsing: YAML -> object,
+   YAML -> JSON, object -> YAML. The requirement is about a constructor being able to
+   use YAML for any local purpose, not only to read a definition.
+4. **Keep the parser scope honest.** Service definitions need mappings, sequences and
+   scalars. Anchors, tags, multiple documents and complex keys are not needed by
+   anything in `src/`, and excluding them keeps a BSL implementation testable.
+
+## Open questions before implementation
+
+- If the Native route is chosen, confirm that calling a connected component inside a
+  safe-mode window is permitted. This is the one blocking unknown and it needs a real
+  component binary.
+- Choose the fallback order: local parser first, or sidecar first. The requirement is
+  met either way; the difference is which parser production runs actually exercise.
+- Confirm the YAML subset the connector must accept, so the parser is bounded by a
+  specification rather than by whatever its author thought of.
+
+## What would change this back
+
+- A consumer needs full YAML (anchors, tags, multiple documents) rather than the
+  service-definition subset, which argues for the Native route over a bounded BSL one.
+- Measurement shows the start-up parse is a real cost rather than a once-per-service
+  rounding error.
+- The platform gains a native YAML reader, which makes both options unnecessary; the
+  version floor then belongs in the builder profile's `compatibilityMode` field.
