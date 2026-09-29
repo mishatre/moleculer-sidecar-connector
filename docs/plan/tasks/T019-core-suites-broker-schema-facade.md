@@ -1,8 +1,7 @@
 # T019 — Core unit suites B: broker, schema factory, facade, provider
 
-Status: in_progress — unblocked: the client runs and the harness reports in both modes.
-The broker and schema-factory suites exist, so what remains is the facade and provider
-surface recorded below.
+Status: in_progress — unblocked. The broker, schema-factory and facade suites exist and the canonical
+suite is 81/81. What remains is the provider surface (`mol_HelpersClientServer`) recorded below.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -69,8 +68,28 @@ dependency and test the remainder.
 
 ## Completion evidence / resume point
 
-Record suite names, command, report path, summary, the current-behaviour
-assertions deliberately pinning known defects, and untested corners.
+Verified 2026-09-29, canonical mode:
+
+- `tests/bsl/canonical/CommonModules/MoleculerFacadeTests` adds 13 tests over the facade's parameter
+  factories (`NewConfigParams`, `NewConnectionParams`, `NewPublicationParams`,
+  `NewPublicationAuthParams`), `AuthTypes` resolving to the enum, `Namespace`, the `Call` connection
+  guard, `RaiseCustomError`, `AdaptConnectionParams` and `Broker`.
+- Command `tests/bsl/run-tests.sh --mode canonical`; report `build/test/reports/yaxunit.xml`; summary
+  **81/81 passed, 0 failed, 0 errors** in 50 s.
+- Two of the new assertions failed on the first run and exposed five empty-message `NStr` sites in
+  `src/`. They are recorded and fixed in T023. That is what asserting message content rather than only
+  the raise buys.
+- Recorded rather than hidden: `ProviderConnectionsMatchTheDeclaredStructure` is vacuous while
+  `Catalog.mol_Connections` is empty, which is the state of the test base, so its message carries the
+  declared count instead of letting an empty loop look like coverage.
+
+The helper predicates come from `mol_Helpers`, not from `Moleculer`: the facade's own `IsString` and
+`IsArray` exist only in the standalone build, where the builder merges the helpers in.
+
+Untested corners: `GetCurrentContext`, `GetCurrentError` and `RaiseError` are not asserted yet. The
+first two read thread state another suite could leave dirty, and `RaiseError` needs the platform
+error-object shape. `GetServiceModules`, `GetServices` and `GetPublications` remain uncovered in
+canonical mode; the standalone suite covers their empty-provider case.
 
 ## Optional pilot metrics
 
