@@ -12,10 +12,10 @@
 ### Запуск
 
 ```bash
-tools/standalone-builder/build-standalone.py    # пересобрать проверяемый вариант
-tests/bsl/run-tests.sh                          # собрать тестовое расширение и прогнать
-tests/bsl/run-tests.sh --rebuild-base           # пересоздать тестовую базу
-tests/bsl/run-tests.sh --tests MoleculerTests.IsStringAcceptsString
+tests/bsl/run-tests.sh                       # каноническое расширение (по умолчанию)
+tests/bsl/run-tests.sh --mode standalone     # автономный вариант
+tests/bsl/run-tests.sh --rebuild-base        # пересоздать тестовую базу
+tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
 ```
 
 Отчёт: `build/test/reports/yaxunit.xml` (jUnit), журнал `build/test/reports/run.log`,
@@ -67,13 +67,15 @@ tests/bsl/run-tests.sh --tests MoleculerTests.IsStringAcceptsString
 `Moleculer` и **оставляет** только `mol_Reuse` и `mol_ReuseCalls`. Поверхность вызовов
 различается:
 
-| Набор | Что вызывает | Где применим |
+| Каталог | Что вызывает | Режим |
 |---|---|---|
-| `mol_ReuseTests` | `mol_Reuse.*` | обе базы (модуль сохранён) |
-| `MoleculerTests` | `Moleculer.*` | автономная база (слитая поверхность) |
+| `common/CommonModules/mol_ReuseTests` | `mol_Reuse.*` | оба (модуль сохранён) |
+| `canonical/CommonModules/mol_ErrorsTests` | `mol_Errors.*` | каноническое расширение |
+| `standalone/CommonModules/MoleculerTests` | `Moleculer.*` | автономная база |
 
-Наборы для расширенной базы, обращающиеся к `mol_Helpers.*` напрямую, должны лежать
-отдельно.
+`run-tests.sh` собирает наборы из `common/` плюс каталога выбранного режима, поэтому
+набор, обращающийся к `mol_Helpers.*` напрямую, должен лежать в `canonical/`, а
+набор для слитой поверхности — в `standalone/`.
 
 ### Что уже найдено
 
@@ -81,6 +83,40 @@ tests/bsl/run-tests.sh --tests MoleculerTests.IsStringAcceptsString
   компилировался, и ни одна статическая проверка этого не видела. Исправлено (функция
   стала процедурой). Поиск таких мест для регрессии:
   `tools/bsl-checks/find-procedure-as-function.py`.
+- `mol_Errors.CustomError` в ветке неизвестного типа передаёт `"Error"` в позицию
+  `Code`, а не `Name` (сигнатура `Error(Type, Code, Name, Message, ...)`), поэтому такой
+  тип даёт `Name = "MoleculerError"` и нечисловой `Code`. Не исправлено — поведение
+  зафиксировано тестом `CustomErrorFallsBackToAGenericError`.
+
+### Каноническое расширение не собирается из исходников
+
+`vrunner cfe compile --src src/cfe/MoleculerSidecarConnector` падает и через `ibcmd`, и
+через конфигуратор:
+
+```
+Ошибка XDTO в файле - Configuration.xml, при чтении свойства: Form
+Тип '{...}MDClasses}Form' не соответствует типу '{...}MDClasses}Configuration'
+```
+
+Две независимые причины, обе созданы самим конфигуратором:
+
+1. форма с именем `Configuration` лежит в `DataProcessors/mol_AdminPanel/Forms/Configuration.xml`,
+   а импорт определяет вид объекта по имени файла;
+2. формы процессора лежат вперемешку: четыре прямо в каталоге процессора, две — в
+   подкаталоге `Forms/`, тогда как импорт требует единообразия.
+
+Проверено: выгрузка `build/out/cfe/MoleculerSidecarConnector.cfe`, сделанная самим
+конфигуратором, воспроизводит ту же ошибку на побайтово тех же файлах, а артефакт от
+апреля 2025 имеет тот же расклад. То есть платформа не может прочитать собственную
+выгрузку, а `src/` ей соответствует.
+
+Обход, проверенный на копии: единый расклад `Forms/` плюс переименование формы даёт
+сборку. В исходники пока не внесён — нужен выбор владельца.
+
+Пока каноническая база собирается из артефакта конфигуратора
+(`build/out/cfe/MoleculerSidecarConnector.cfe`), а не из `src/`. Поэтому она отражает
+состояние на момент выгрузки: `mol_ContextFactory.Emit` в ней ещё не исправлен.
+Автономный вариант собирается из `src/` и этого недостатка не имеет.
 
 ## Тесты конструктора
 
