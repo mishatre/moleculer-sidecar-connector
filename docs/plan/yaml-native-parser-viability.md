@@ -199,21 +199,26 @@ instead of silently letting the last one win.
 
 ### Timing
 
-30 iterations of a 247-byte document — the size and shape a real service definition has:
+Component 0.1.0, 100 iterations of a 247-byte document — the size and shape a real service
+definition has — measured over **three consecutive runs**:
 
-| Measurement | Total | Per call |
+| Measurement | Total, three runs | Per call |
 |---|---|---|
-| First call of a session (library load) | 3–6 ms | 3–6 ms |
-| Reused instance: `РазобратьYAML(Текст, "")` | 1–3 ms | **≈ 0.03–0.1 ms** |
-| `ПодключитьКомпоненту().РазобратьYAML(...)` | 70–126 ms | ≈ 2.3–4.2 ms |
-| `yp_YAML.РазобратьYAML(Текст)` — what a caller uses | 81–132 ms | ≈ 2.7–4.4 ms |
-| Platform JSON read of the same answer | ~1 ms | ≈ 0.03 ms |
+| First call of a session (library load) | 3, 8, 3 ms | 3–8 ms, once per session |
+| Reused instance: `РазобратьYAML(Текст, "")` | 6, 6, 6 ms | **0.06 ms** |
+| `ПодключитьКомпоненту().РазобратьYAML(...)` | 262, 244, 237 ms | 2.37–2.62 ms |
+| `yp_YAML.РазобратьYAML(Текст)` — what a caller uses | 258, 238, 271 ms | 2.38–2.71 ms |
+| Platform JSON read of the same answer | 1, 2, 1 ms | 0.01–0.02 ms |
 
-The parse is not the cost. Holding one connected instance, the component parses a service
-definition in **under a tenth of a millisecond**. Reconnecting on every call costs
-2.3–4.2 ms, and that is what the module's design pays, because an extension common module
-cannot declare module variables and so cannot cache the component. The platform JSON read
-that turns the answer into Map/Structure/Array is negligible.
+The reused-instance figure is the same millisecond in all three runs, which is what makes it
+usable: the parse itself is **0.06 ms**, and the 2.4–2.6 ms a caller pays is the reconnect.
+The first numbers published here (0.03–0.1 ms per parse, 2.3–4.2 ms per reconnect) came from a
+single 30-iteration run and were noise around the same values.
+
+**The rebuild did not move the timings.** The Linux library shrank from 732 832 to 612 264
+bytes, the archive from 1 037 332 to 897 980, the extension from 1 094 101 to 948 193 — and
+none of it shows in the parse, because the parser was never the cost. What the rebuild bought
+is measurement quality: 100 iterations across three runs instead of 30 in one.
 
 Read plainly: the component is **fast enough held, and fast enough not held**, because
 parsing happens once per service at construction rather than per request. What the numbers

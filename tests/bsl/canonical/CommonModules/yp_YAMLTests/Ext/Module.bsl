@@ -168,7 +168,7 @@ EndProcedure
 Procedure ReportsWhatAParseCosts() Export
 	
 	Текст = ПредставительныйДокумент();
-	Итераций = 30;
+	Итераций = 100;
 	
 	// The first call pays for loading the library and connecting it.
 	Прогрев = ТекущаяУниверсальнаяДатаВМиллисекундах();
@@ -217,11 +217,11 @@ Procedure ReportsWhatAParseCosts() Export
 	JSONМс = ТекущаяУниверсальнаяДатаВМиллисекундах() - Начало;
 	
 	Сообщить(СтрШаблон(
-		"yp_YAML timing over %1 iterations of a %2-byte document: warm-up %3 ms; "
-		+ "reused instance %4 ms; component call %5 ms; module call %6 ms; platform JSON read %7 ms",
-		Итераций, СтрДлина(Текст),
-		Формат(ПрогревМс, "ЧГ=0"), Формат(ОднаждыМс, "ЧГ=0"), Формат(КомпонентаМс, "ЧГ=0"),
-		Формат(МодульМс, "ЧГ=0"), Формат(JSONМс, "ЧГ=0")));
+		"yp_YAML timing, component %1, %2 iterations of a %3-byte document: warm-up %4 ms; "
+		+ "reused instance %5 ms; component call %6 ms; module call %7 ms; platform JSON read %8 ms",
+		yp_YAML.ВерсияКомпоненты(), Итераций, СтрДлина(Текст),
+		Строка(ПрогревМс), Строка(ОднаждыМс), Строка(КомпонентаМс),
+		Строка(МодульМс), Строка(JSONМс)));
 	
 	// Generous ceilings. The point is to catch a pathological change, not to benchmark.
 	ЮТест.ОжидаетЧто(МодульМс, "a parse must finish in well under a second, or it is unusable at start-up")
