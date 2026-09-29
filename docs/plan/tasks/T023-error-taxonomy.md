@@ -42,6 +42,11 @@ proper taxonomy has to settle:
 - Transport failures and remote node failures are not distinguished at all, so a
   sidecar that is down and a node that rejected a call look the same to a
   caller.
+- `mol_Helpers.Get` takes an `IgnoreCase` flag that is inert for Structures: the
+  platform's `Structure.Property()` already matches case-insensitively, while the
+  Map branch uses the case-sensitive `Map.Get()`. The same flag therefore means
+  two different things depending on the container. Pinned by the
+  `GetOnStructureIgnoresCase` and `GetOnMapIsCaseSensitiveByDefault` tests.
 
 ## Acceptance and consumer example
 
