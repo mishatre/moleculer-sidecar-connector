@@ -1,7 +1,8 @@
 # T019 — Core unit suites B: broker, schema factory, facade, provider
 
-Status: in_progress — unblocked. The broker, schema-factory and facade suites exist and the canonical
-suite is 81/81. What remains is the provider surface (`mol_HelpersClientServer`) recorded below.
+Status: in_progress — the schema factory and the facade are covered and the canonical suite is 94/94.
+Two acceptance items remain, and both are larger than the suite counts suggest: `mol_Broker` has only
+its two `GenerateUid` tests, and `MoleculerOverridable` is not exercised at all. Details below.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -90,6 +91,29 @@ Untested corners: `GetCurrentContext`, `GetCurrentError` and `RaiseError` are no
 first two read thread state another suite could leave dirty, and `RaiseError` needs the platform
 error-object shape. `GetServiceModules`, `GetServices` and `GetPublications` remain uncovered in
 canonical mode; the standalone suite covers their empty-provider case.
+
+### Corrected later the same day
+
+An earlier revision of this file described the remaining gap as "the facade and the provider
+`mol_HelpersClientServer`". The facade was indeed missing, but the provider named by the acceptance is
+`MoleculerOverridable`, and `mol_HelpersClientServer` is a different module the acceptance never
+mentions. Both below.
+
+Added in the same pass:
+
+- `tests/bsl/canonical/CommonModules/mol_HelpersClientServerTests` — 13 tests over all 11 of that
+  module's exports, plus one asserting that `mol_Helpers` forwards to it, so the pair cannot drift
+  apart unnoticed. This is extra coverage, not an acceptance item. One test needed correcting on the
+  first run: `BinaryData` cannot be built from base64 through its constructor, which expects a path.
+- canonical suite now **94/94** in 43 s.
+
+Still open, in the acceptance's own words:
+
+- `mol_Broker` — only `GenerateUid` is covered. The payload field set for each direction, the fact that
+  event payloads omit `meta` and do not carry `sender`, the `$node.services` query shape, and
+  `GetPublicationValidationCode` deleting `Connection` from its argument are all unasserted.
+- `MoleculerOverridable` — no test invokes it. The acceptance wants every procedure invoked and
+  honoured, the mutation semantics and required fields pinned, and `GetServices` reached.
 
 ## Optional pilot metrics
 
