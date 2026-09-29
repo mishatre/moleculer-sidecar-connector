@@ -45,6 +45,7 @@ for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
 | T026 | Module surface and naming are consistent | draft | T023, T025 | [Plan](refactor-backlog.md) |
 | T027 | The form layer is rebuilt | draft | owner decision | [Plan](refactor-backlog.md) |
 | T028 | Service definitions parse locally instead of through the sidecar | draft | owner decision on safe mode; T025 | [Plan](refactor-backlog.md) |
+| T030 | The ambient context stack is pushed and popped symmetrically | draft | T020 | [Plan](refactor-backlog.md) |
 
 ### Service module migration (new, low priority)
 

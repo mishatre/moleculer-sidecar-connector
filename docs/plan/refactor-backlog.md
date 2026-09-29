@@ -141,6 +141,26 @@ Full assessment and measurements: [yaml-native-parser-viability.md](yaml-native-
 Low priority: nothing in `src/` reads YAML today, so this restores a capability rather than
 unblocking existing code.
 
+## T030 — make the ambient context stack balanced
+
+Outcome: every push onto the ambient stack is matched by a pop, so the stack stops growing for the
+process lifetime and a finished operation stops being the current context.
+
+Why: `mol_ContextFactory.Handler` pushes the incoming context and pops it again, so the inbound path is
+balanced. `mol_Broker.Call`, `Emit` and `Broadcast` call `SetCurrentContext`, which pushes onto the same
+stack, and nothing pops it. `mol_Errors` does the same with a raised error. Two consequences: the stack
+grows once per call, and `GetCurrentContext` and `GetCurrentError` keep returning a value after the
+operation that produced it has ended.
+
+Evidence: `tests/bsl/canonical/CommonModules/mol_AmbientContextTests` pins the reachable half — an
+ambient error survives an unrelated successful operation — and its header names all four sites. The
+broker's push happens after the transport answers, so reaching it needs a sidecar; the HTTP integration
+test provides that path but does not observe the stack today.
+
+Shape, to confirm during refinement: either a pop around the transport call in the three broker methods,
+or a scoped helper on `mol_ContextFactory` that pushes and pops around a passed block. The second is
+harder in BSL, which has no closures, so the first is the likely answer.
+
 ## Open decisions
 
 1. Delivery target for this cycle: smaller/simpler, or more testable? The two pull

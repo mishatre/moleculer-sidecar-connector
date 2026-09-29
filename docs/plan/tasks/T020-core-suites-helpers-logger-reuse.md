@@ -1,7 +1,8 @@
 # T020 — Core unit suites C: helpers, logger, reuse caching, context cleanup
 
-Status: in_progress — unblocked: the client runs, so this no longer waits on T014. No work
-has started on it and the scope below is unchanged.
+Status: in_progress — the ambient-context lifecycle is covered and the canonical suite is 120/120. The
+logger, `SignV4` and the reuse-caching semantics are still open. The leak's fix is raised as T030, which
+this task's delivery note requires.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -70,8 +71,42 @@ Stop if the caching mechanism under test is undecided by T015; record the blocke
 
 ## Completion evidence / resume point
 
-Record suite names, command, report path, summary, the mechanism asserted, and the
-leak's observed behaviour with the follow-up task reference.
+### Ambient-context lifecycle — verified 2026-09-29
+
+`tests/bsl/canonical/CommonModules/mol_AmbientContextTests`, four tests, canonical only. The canonical
+suite is **120/120** in 44 s.
+
+Mechanism asserted: the ambient context is a named stack in `mol_Helpers`. `mol_ContextFactory`
+`GetCurrentContext` reads its top and `SetCurrentContext` pushes onto it. The lifecycle spans three
+modules, so the suite is named for the lifecycle and its header lists them:
+
+| Site | Behaviour |
+|---|---|
+| `mol_ContextFactory.Handler` | pushes the incoming context and pops it again — balanced |
+| `mol_Broker.Call`, `Emit`, `Broadcast` | call `SetCurrentContext`, which pushes — never popped |
+| `mol_Errors` | pushes the raised error — never popped |
+
+Pinned behaviour: the publish contract of `SetCurrentContext`; that a call which cannot reach a sidecar
+leaves the ambient context alone rather than half-publishing; that a nested call stamps the action name
+into the caller's context before the transport is attempted; and the staleness the acceptance asks to
+expose.
+
+Observed leak behaviour: raising publishes an ambient error and nothing removes it, so an unrelated
+successful operation — a `GenerateUid` call — still reads that error afterwards. The test states this
+explicitly and is written to be rewritten to the opposite assertion, not deleted, when the lifecycle
+changes.
+
+Not reachable here: the broker publishes its context only *after* the transport answers, so its
+push-without-pop cannot be triggered without a sidecar. All four sites are recorded in T030, which owns
+the fix.
+
+### Still open in this task
+
+- `mol_Logger` — level mapping for the enum path and the standalone path, plus the fallback when the
+  enum is unavailable.
+- `mol_Helpers` — `SignV4` determinism for fixed inputs, and the serialization round-trips.
+- Reuse caching — session-scoped `mol_Reuse` and request-scoped `mol_ReuseCalls`, including
+  invalidation through `RefreshReusableValues`.
 
 ## Optional pilot metrics
 
