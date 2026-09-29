@@ -1,7 +1,10 @@
 # T014 — Prove the 1C/OneScript toolchain and choose the BSL test runner
 
-Status: blocked — the 1C client cannot start in this container; tooling and
-compile/load routes are verified, the test-framework decision is not
+Status: in_progress — the client blocker is resolved: the client starts, a licence is
+present, and YAxUnit is the framework the suites run on (T017 verified; the canonical
+suite was 54/54 when this was written and is 68/68 now). Remaining: record the
+test-framework decision and the tooling evidence here, then hand over for independent
+review.
 Depends on: none
 Recipe: normal
 Coordinator: Sol Medium

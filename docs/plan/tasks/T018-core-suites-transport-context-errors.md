@@ -1,6 +1,8 @@
 # T018 — Core unit suites A: transport, context factory, errors
 
-Status: blocked — requires a runnable 1C client (see T014 completion evidence)
+Status: in_progress — unblocked: the client runs and the harness reports in both modes.
+The transport boundary has an integration test, so what remains is the unit coverage
+recorded below.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium

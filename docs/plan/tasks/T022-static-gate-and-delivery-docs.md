@@ -1,7 +1,8 @@
 # T022 — Static quality gate and standalone delivery documentation
 
-Status: blocked — the BSL syntax-check half needs the designer; metadata-level
-checks are available now via `ibcmd config check`
+Status: blocked — but no longer on client availability: the designer runs, since `vrunner`
+drives it for compile and load, so the BSL syntax-check half is feasible. What blocks it
+now is its own dependencies: T018–T020 are unfinished suite work. T021 is verified.
 Depends on: T018, T019, T020, T021
 Recipe: normal
 Coordinator: Sol Medium

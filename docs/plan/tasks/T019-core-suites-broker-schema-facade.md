@@ -1,6 +1,8 @@
 # T019 — Core unit suites B: broker, schema factory, facade, provider
 
-Status: blocked — requires a runnable 1C client (see T014 completion evidence)
+Status: in_progress — unblocked: the client runs and the harness reports in both modes.
+The broker and schema-factory suites exist, so what remains is the facade and provider
+surface recorded below.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium

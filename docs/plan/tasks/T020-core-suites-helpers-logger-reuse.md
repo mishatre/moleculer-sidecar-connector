@@ -1,6 +1,7 @@
 # T020 — Core unit suites C: helpers, logger, reuse caching, context cleanup
 
-Status: blocked — requires a runnable 1C client (see T014 completion evidence)
+Status: in_progress — unblocked: the client runs, so this no longer waits on T014. No work
+has started on it and the scope below is unchanged.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium

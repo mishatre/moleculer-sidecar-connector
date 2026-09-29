@@ -3,8 +3,7 @@
 Two workstreams share this index: the installer roadmap (T001–T013, unchanged)
 and the standalone-builder/test workstream (T014–T022).
 
-Next: **T015/T016 need independent review**; then decide the 1C client-library
-blocker below, which gates T017–T022.
+Next: **T015 still needs independent review**. The 1C client-library blocker is resolved (see below), so nothing here waits on client availability any more; what remains is unfinished suite work in T018–T020 and what depends on it.
 
 | ID | Outcome | Status | Depends on | File |
 |---|---|---|---|---|
@@ -22,13 +21,13 @@ blocker below, which gates T017–T022.
 | T011 | Optional SSL/BSP role-protection extension is specified | deferred | User details; T005, T008 | [Task](tasks/T011-optional-ssl-role-protection-extension.md) |
 | T012 | Installed connector receives deeper compatibility validation | deferred | Concrete failure cases; T003, T008 | [Task](tasks/T012-validate-installed-connector.md) |
 | T013 | Installer removes only the connector after destructive confirmation | draft | T003 | [Task](tasks/T013-remove-sidecar-connector.md) |
-| T014 | Container toolchain, test runner and test hosting are verified | blocked | none | [Task](tasks/T014-verify-toolchain-and-test-runner.md) |
+| T014 | Container toolchain, test runner and test hosting are verified | in_progress | none | [Task](tasks/T014-verify-toolchain-and-test-runner.md) |
 | T015 | Standalone CFE variant is generated from the canonical sources | in_progress | T014 | [Task](tasks/T015-standalone-builder.md) |
 | T016 | Builder transformation and output shape are guarded by container-only tests | verified | T015 | [Task](tasks/T016-builder-transformation-tests.md) |
 | T017 | A BSL suite can run and report in extension and standalone modes | verified | T014 | [Task](tasks/T017-test-harness-foundation.md) |
 | T018 | Transport, context factory and errors are covered by executable tests | in_progress | T017 | [Task](tasks/T018-core-suites-transport-context-errors.md) |
 | T019 | Broker, schema factory, facade and provider are covered by executable tests | in_progress | T017 | [Task](tasks/T019-core-suites-broker-schema-facade.md) |
-| T020 | Helpers, logger, reuse caching and context cleanup are covered by tests | blocked | T017 | [Task](tasks/T020-core-suites-helpers-logger-reuse.md) |
+| T020 | Helpers, logger, reuse caching and context cleanup are covered by tests | in_progress | T017 | [Task](tasks/T020-core-suites-helpers-logger-reuse.md) |
 | T021 | The generated standalone CFE loads and works in a database-free infobase | verified | T015, T017 | [Task](tasks/T021-standalone-runtime-verification.md) |
 | T022 | Static quality gate and standalone delivery documentation exist | blocked | T018–T021 | [Task](tasks/T022-static-gate-and-delivery-docs.md) |
 | T023 | Error reporting distinguishes internal, sidecar and end-node failures | draft | T018 | [Task](tasks/T023-error-taxonomy.md) |
@@ -46,6 +45,18 @@ for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
 | T026 | Module surface and naming are consistent | draft | T023, T025 | [Plan](refactor-backlog.md) |
 | T027 | The form layer is rebuilt | draft | owner decision | [Plan](refactor-backlog.md) |
 | T028 | Service definitions parse locally instead of through the sidecar | draft | owner decision on safe mode; T025 | [Plan](refactor-backlog.md) |
+
+### Service module migration (new, low priority)
+
+Consumer service modules written against the removed registration API
+(`Moleculer.SchemaAddAction`, `Context.RegisterSchema`) no longer compile against this
+connector. The fixtures are the three real modules in `docs/service-migration/`; the
+decisions, the verification approach and the open questions are in
+[service-migration-tool.md](service-migration-tool.md).
+
+| ID | Outcome | Status | Depends on | Where |
+|---|---|---|---|---|
+| T029 | Service modules migrate from the removed registration API to the constructor shape | draft | constructor contract; T028 for YAML output | [Plan](service-migration-tool.md) |
 
 ### Research notes
 
