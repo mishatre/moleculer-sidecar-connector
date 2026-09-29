@@ -19,4 +19,13 @@
 
 	"terminal.integrated.cwd": "${workspaceFolder}",
 
+	// BSL alignment in this repository is deliberate: aligned `=` and trailing-comment columns,
+	// plus the leading spaces after `|` inside multi-line string literals, where the spaces are
+	// part of the message text. The formatter flattens both, so it stays off for BSL.
+	"[bsl]": {
+		"editor.formatOnSave": false,
+		"editor.formatOnPaste": false,
+		"editor.formatOnType": false
+	}
+
 }

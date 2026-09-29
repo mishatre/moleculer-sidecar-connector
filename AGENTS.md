@@ -58,6 +58,8 @@ Use docs/workflow.md for the five operations: project planning, task creation, r
 
 Use descriptive names and explicit control flow. In brace-based languages, always use braces for if/else/for/while bodies. Separate logical steps with blank lines. Avoid compressed one-liners, nested ternaries and unnecessarily clever chains. In BSL use idiomatic explicit blocks and the project's naming language. Keep related behavior together; extract operations by responsibility rather than arbitrary size. Follow existing good examples identified in the task; do not preserve unreadable compression merely because it exists nearby. No unrelated reformatting.
 
+BSL is aligned in columns on purpose. Match the surrounding module's aligned `=` and trailing-comment columns instead of letting a formatter left-align them, and treat the leading spaces after `|` in a multi-line string literal as message text rather than layout. Keep formatter output out of a commit that carries a change, and treat a repo-wide reformat as its own decision.
+
 ## Implementation pipeline
 
 Only the top-level coordinator applies this pipeline. Delegated agents complete their assigned roles and do not orchestrate the task. For normal tasks, explicitly delegate a bounded worker (Terra Medium) and then an independent reviewer (Sol Medium) on stable edits. Coordinator is Sol Medium selected in the client. Luna Medium is for mechanical work; Sol High handles unfamiliar integrations; Astra Medium is a bounded escalation. At most two active children, one writer, no nested delegation. Tiny changes can use one agent. Workers run appropriate checks; reviewers examine actual code and evidence. Two failed repairs of one issue require diagnosis before further attempts. Do not mark unmet requirements complete.

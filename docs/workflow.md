@@ -103,6 +103,8 @@ Use descriptive domain names, braces in languages that use them, and blank lines
 
 Keep the public path easy to trace: entry point → main operations → output. Review should flag needless indirection and compressed code. Finish with a three-to-five-sentence walkthrough and the location of the likely next change. A formatter/linter should enforce mechanical rules when supported, without wholesale unrelated reformatting.
 
+BSL columnar alignment is part of the style, not an accident of editing: keep the aligned `=` and trailing-comment columns of the surrounding module, and keep the leading spaces after `|` inside a multi-line string literal, which are part of the message text. A formatter that left-aligns either one produces churn that has to be reverted, so it is disabled for BSL in `.vscode/settings.json` rather than merely discouraged.
+
 ## Validation and delivery
 
 Record actual commands, results and limitations. Start with a representative acceptance fixture and consumer-level smoke check. Run required project checks and tests covering changed behavior; broaden for new evidence or failures. Do not rerun passing checks mechanically in every role. Recheck after relevant code changes.
