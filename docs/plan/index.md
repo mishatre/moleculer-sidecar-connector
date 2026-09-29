@@ -25,12 +25,13 @@ blocker below, which gates T017–T022.
 | T014 | Container toolchain, test runner and test hosting are verified | blocked | none | [Task](tasks/T014-verify-toolchain-and-test-runner.md) |
 | T015 | Standalone CFE variant is generated from the canonical sources | in_progress | T014 | [Task](tasks/T015-standalone-builder.md) |
 | T016 | Builder transformation and output shape are guarded by container-only tests | verified | T015 | [Task](tasks/T016-builder-transformation-tests.md) |
-| T017 | A BSL suite can run and report in extension and standalone modes | blocked | T014 | [Task](tasks/T017-test-harness-foundation.md) |
-| T018 | Transport, context factory and errors are covered by executable tests | blocked | T017 | [Task](tasks/T018-core-suites-transport-context-errors.md) |
+| T017 | A BSL suite can run and report in extension and standalone modes | verified | T014 | [Task](tasks/T017-test-harness-foundation.md) |
+| T018 | Transport, context factory and errors are covered by executable tests | in_progress | T017 | [Task](tasks/T018-core-suites-transport-context-errors.md) |
 | T019 | Broker, schema factory, facade and provider are covered by executable tests | blocked | T017 | [Task](tasks/T019-core-suites-broker-schema-facade.md) |
 | T020 | Helpers, logger, reuse caching and context cleanup are covered by tests | blocked | T017 | [Task](tasks/T020-core-suites-helpers-logger-reuse.md) |
 | T021 | The generated standalone CFE loads and works in a database-free infobase | blocked | T015, T017 | [Task](tasks/T021-standalone-runtime-verification.md) |
 | T022 | Static quality gate and standalone delivery documentation exist | blocked | T018–T021 | [Task](tasks/T022-static-gate-and-delivery-docs.md) |
+| T023 | Error reporting distinguishes internal, sidecar and end-node failures | draft | T018 | [Task](tasks/T023-error-taxonomy.md) |
 
 ### Blocker: the 1C client has no licence
 

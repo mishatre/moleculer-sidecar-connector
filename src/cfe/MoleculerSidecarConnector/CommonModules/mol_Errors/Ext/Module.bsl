@@ -30,7 +30,11 @@ Function CustomError(Type, Message = "", Data = Undefined, ErrorInfo = Undefined
 	ElsIf Type = "InvalidPacketData" Then
 		Error = InvalidPacketData(Message, Data, ErrorInfo);
 	Else        
-		Error = Error(Type, "Error", , Message, Data, ErrorInfo);
+		// Unknown type: return a generic Moleculer error that still carries the caller's
+		// type. Code and Name are left to the factory defaults, matching the other generic
+		// errors in this module. The call used to pass the literal "Error" in the Code
+		// position, which produced a non-numeric code and rendered as "Error: Error".
+		Error = Error(Type, , , Message, Data, ErrorInfo);
 	EndIf;     
 	
 	Return Error;

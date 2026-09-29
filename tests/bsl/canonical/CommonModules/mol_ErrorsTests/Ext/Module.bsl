@@ -19,6 +19,7 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("RequestTimeoutCarriesCode504")
 		.ДобавитьСерверныйТест("CustomErrorDispatchesToTheNamedFactory")
 		.ДобавитьСерверныйТест("CustomErrorFallsBackToAGenericError")
+		.ДобавитьСерверныйТест("RaiseCustomErrorRecordsANumericCode")
 		.ДобавитьСерверныйТест("MessageIsPreserved")
 		.ДобавитьСерверныйТест("RegenerateErrorPreservesTheErrorShape")
 		.ДобавитьСерверныйТест("ToStringIncludesTypeAndCode")
@@ -72,18 +73,36 @@ EndProcedure
 
 // An unknown type name must still produce a usable error carrying that type.
 //
-// NOTE: CustomError calls the base factory as Error(Type, "Error", , Message, ...), which
-// puts "Error" in the Code position rather than the Name position
-// (Error(Type, Code = 500, Name = "MoleculerError", Message, ...)). The fallback therefore
-// has Name = "MoleculerError" and a non-numeric Code. This test pins the behaviour as it
-// is today so that a future fix is a visible change, not a silent one.
+// The fallback used to call the base factory as Error(Type, "Error", , Message, ...), which
+// put the literal "Error" in the Code position. RaiseError renders the code as Type:Code, so
+// such an error read "Error: Error". Code and Name now come from the factory defaults.
 Procedure CustomErrorFallsBackToAGenericError() Export
 
 	Error = mol_Errors.CustomError("SomethingElse", "unexpected");
 
 	ЮТест.ОжидаетЧто(Error.Type, "an unknown type must be kept as-is").Равно("SomethingElse");
-	ЮТест.ОжидаетЧто(Error.Name, "the fallback uses the base error class").Равно("MoleculerError");
-	ЮТест.ОжидаетЧто(Error.Code, "the fallback does not set a numeric code").Равно("Error");
+	ЮТест.ОжидаетЧто(Error.Name, "the fallback uses the generic Moleculer class").Равно("MoleculerError");
+	ЮТест.ОжидаетЧто(Error.Code, "the fallback carries the default code").Равно(500);
+
+EndProcedure
+
+// End-to-end guard on the same defect through the path real callers use: Moleculer raises
+// an error with the type "Error" in several places, which is not one of the dispatched types
+// and therefore goes through the fallback.
+Procedure RaiseCustomErrorRecordsANumericCode() Export
+
+	Thrown = False;
+
+	Try
+		mol_Errors.RaiseCustomError("Error", "boom");
+	Except
+		Thrown = True;
+	EndTry;
+
+	ЮТест.ОжидаетЧто(Thrown, "RaiseCustomError must raise").ЭтоИстина();
+	ЮТест.ОжидаетЧто(mol_Errors.GetCurrentError().Code,
+			"a raised error must carry a numeric code, not a type name")
+		.Равно(500);
 
 EndProcedure
 
