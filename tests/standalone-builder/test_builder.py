@@ -127,6 +127,7 @@ class CanonicalMergeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.profile = builder.load_profile(PROFILE_PATH)
+        cls.plan = builder.plan_of(cls.profile)
         cls.source_root = REPO_ROOT / cls.profile["sourceRoot"]
         cls.merged, cls.stats = builder.merge_modules(cls.source_root, cls.profile)
 
@@ -140,7 +141,7 @@ class CanonicalMergeTests(unittest.TestCase):
         self.assertEqual(set(), duplicates)
 
     def test_removed_modules_are_not_referenced_in_code(self):
-        for module in builder.DROPPED_MODULES:
+        for module in self.plan["droppedModules"]:
             pattern = rf"(?<![.\w]){module}(?![\w])"
             self.assertEqual(
                 0,
@@ -149,7 +150,7 @@ class CanonicalMergeTests(unittest.TestCase):
             )
 
     def test_no_qualifier_for_merged_modules_remains_in_code(self):
-        for module in builder.MERGED_MODULES:
+        for module in self.plan["mergedModules"]:
             self.assertEqual(
                 0,
                 builder.count_outside_strings(self.merged, rf"\b{module}\s*\.\s*"),
@@ -159,10 +160,11 @@ class CanonicalMergeTests(unittest.TestCase):
     def test_reuse_modules_are_kept_separate(self):
         # The platform forbids module variables in a common module, so the two
         # ReturnValuesReuse-based modules cannot be folded into the merged one.
-        for module in builder.KEPT_MODULES:
-            self.assertNotIn(module, builder.MERGED_MODULES)
-        self.assertIn("mol_Reuse", builder.KEPT_MODULES)
-        self.assertIn("mol_ReuseCalls", builder.KEPT_MODULES)
+        kept = self.plan["keptModules"]
+        for module in kept:
+            self.assertNotIn(module, self.plan["mergedModules"])
+        self.assertIn("mol_Reuse", kept)
+        self.assertIn("mol_ReuseCalls", kept)
 
     def test_merged_module_declares_no_module_variables(self):
         self.assertNotRegex(self.merged, r"^[ \t]*(?:Перем|Var)[ \t]")
@@ -323,6 +325,66 @@ class CommandLineTests(unittest.TestCase):
         )
         self.assertEqual(1, result.returncode)
         self.assertIn("BUILD FAILED", result.stderr)
+
+
+class PlanTests(unittest.TestCase):
+    """The plan is data in the profile; the engine must stay generic and strict."""
+
+    def test_shipped_profile_loads_without_an_override(self):
+        profile = builder.load_profile(None)
+        self.assertIn("plan", profile)
+
+    def test_profile_without_a_plan_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "no-plan.json"
+            path.write_text(json.dumps({"plan": None}), encoding="utf-8")
+            with self.assertRaises(builder.BuildError) as raised:
+                builder.plan_of(builder.load_profile(path))
+            self.assertIn("plan", str(raised.exception))
+
+    def test_plan_missing_a_key_is_rejected(self):
+        profile = builder.load_profile(None)
+        profile["plan"] = json.loads(json.dumps(profile["plan"]))
+        del profile["plan"]["keptModules"]
+        with self.assertRaises(builder.BuildError) as raised:
+            builder.plan_of(profile)
+        self.assertIn("keptModules", str(raised.exception))
+
+    def test_override_inherits_the_shipped_plan(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "override.json"
+            path.write_text(json.dumps({"extensionName": "CustomVariant"}), encoding="utf-8")
+            profile = builder.load_profile(path)
+            self.assertEqual("CustomVariant", profile["extensionName"])
+            self.assertEqual(
+                builder.load_profile(None)["plan"],
+                builder.plan_of(profile),
+            )
+
+    def test_a_stale_patch_fails_the_build(self):
+        # Silently skipping an unmatched patch made the generator quietly wrong.
+        profile = builder.load_profile(None)
+        profile["plan"] = json.loads(json.dumps(profile["plan"]))
+        profile["plan"]["patches"].append(
+            {
+                "description": "deliberately stale patch",
+                "pattern": r"NO_SUCH_TEXT_ANYWHERE_12345",
+                "replacement": "",
+            }
+        )
+
+        with self.assertRaises(builder.BuildError) as raised:
+            builder.merge_modules(REPO_ROOT / profile["sourceRoot"], profile)
+
+        self.assertIn("deliberately stale patch", str(raised.exception))
+
+    def test_plan_categories_do_not_overlap(self):
+        plan = builder.plan_of(builder.load_profile(None))
+        merged = plan["mergedModules"]
+
+        self.assertEqual(len(merged), len(set(merged)))
+        for module in plan["keptModules"] + plan["droppedModules"]:
+            self.assertNotIn(module, merged, f"{module} is both merged and not merged")
 
 
 if __name__ == "__main__":

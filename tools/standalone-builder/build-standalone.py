@@ -54,164 +54,17 @@ DEFAULT_PROFILE = {
     "v8version": "8.3",
 }
 
-# Modules folded into the target module, in emit order.  The public facade comes
-# first so the merged module is readable from its entry point down.
-MERGED_MODULES = [
-    "Moleculer",
-    "mol_Errors",
-    "mol_Logger",
-    "mol_Helpers",
-    "mol_HelpersClientServer",
-    "mol_Transport",
-    "mol_ContextFactory",
-    "mol_Broker",
-    "mol_SchemaFactory",
-    "mol_Internal",
-]
+DEFAULT_PROFILE_PATH = Path(__file__).resolve().parent / "profiles" / "default.json"
 
-# Modules that must stay separate.  Both exist to hand a mutable structure back to
-# the platform, which then reuses it: `mol_Reuse` is declared
-# `ReturnValuesReuse = DuringSession` and `mol_ReuseCalls` is `DuringRequest`.  A
-# merged module can only be `DontUse`, and the platform forbids module variables in
-# a common module (BSL Language Server reports `CommonModuleVariables` as an error),
-# so the caching cannot be reimplemented inside the merged module.  Their bodies
-# call the merged module's exported functions, so they are copied unchanged.
-KEPT_MODULES = ["mol_Reuse", "mol_ReuseCalls"]
-
-# Modules left out of the variant: administration and role bootstrap, the Monaco
-# editor wrapper and the unused local YAML parsers.
-DROPPED_MODULES = [
-    "mol_Server",
-    "mol_Client",
-    "MoleculerClientServer",
-    "CodeEditor",
-    "CodeEditorClient",
-    "CodeEditorClientServer",
-    "YAML",
-    "YAML1",
-    "YAML2",
-    "YAML3",
-]
-
-# Symbol collisions between the merged modules, resolved by renaming the symbol in
-# the listed module.  Derived from a case-insensitive definition scan because BSL
-# identifiers are case-insensitive.  The owning module keeps the original name.
-RENAMES = {
-    "mol_Broker": {
-        "this": "BrokerThis",
-        "thismetadata": "BrokerThisMetadata",
-        "call": "BrokerCall",
-        "emit": "BrokerEmit",
-        "broadcast": "BrokerBroadcast",
-    },
-    "mol_ContextFactory": {
-        "this": "ContextFactoryThis",
-        "thismetadata": "ContextFactoryThisMetadata",
-        "broker": "ContextFactoryBroker",
-        "call": "ContextFactoryCall",
-        "emit": "ContextFactoryEmit",
-        "getcurrentcontext": "ContextFactoryGetCurrentContext",
-        "newcontext": "ContextFactoryNewContext",
-        "constructor": "ContextFactoryConstructor",
-    },
-    "mol_Transport": {
-        "this": "TransportThis",
-        "thismetadata": "TransportThisMetadata",
-    },
-    "mol_SchemaFactory": {
-        "this": "SchemaFactoryThis",
-        "thismetadata": "SchemaFactoryThisMetadata",
-        "newcontext": "SchemaFactoryNewContext",
-        "constructor": "SchemaFactoryConstructor",
-    },
-    "mol_Errors": {
-        "this": "ErrorsThis",
-        "thismetadata": "ErrorsThisMetadata",
-        "getcurrenterror": "ErrorsGetCurrentError",
-        "raiseerror": "ErrorsRaiseError",
-        "raisecustomerror": "ErrorsRaiseCustomError",
-    },
-    "mol_Logger": {
-        "this": "LoggerThis",
-        "thismetadata": "LoggerThisMetadata",
-        "error": "LoggerError",
-    },
-    "mol_Internal": {
-        "this": "InternalThis",
-        "thismetadata": "InternalThisMetadata",
-    },
-    "mol_HelpersClientServer": {
-        "isobject": "IsObjectClientServer",
-        "isstructure": "IsStructureClientServer",
-        "ismap": "IsMapClientServer",
-        "isarray": "IsArrayClientServer",
-        "isstring": "IsStringClientServer",
-        "isnumber": "IsNumberClientServer",
-        "isbinarydata": "IsBinaryDataClientServer",
-        "isvaliddate": "IsValidDateClientServer",
-        "isstream": "IsStreamClientServer",
-        "canbenumber": "CanBeNumberClientServer",
-        "getversionedfullname": "GetVersionedFullNameClientServer",
-    },
-}
-
-# Ordered text transforms applied to the merged module after renaming.  Each entry
-# is (description, regex, replacement).  They encode the platform facts that a
-# textual merge cannot infer.
-MERGE_PATCHES = [
-    (
-        "the internal service is a service of the merged module, not a separate module",
-        r'CompileServiceSchema\(\s*"mol_Internal"\s*\)',
-        "CompileServiceSchema(Moleculer)",
-    ),
-    (
-        "the local YAML parsers are not part of the variant and the branch was unreachable",
-        r"Return\s+YAML\.ToObject\(Text\)\s*;",
-        "// Unreachable in the canonical sources: YAML parsing is delegated to the sidecar.",
-    ),
-    (
-        "the dynamic-service branch is unreachable without the mol_Services catalog",
-        r"\n[ \t]*ElsIf[ \t]+Context\.Type[ \t]*=[ \t]*Upper\(\"Dynamic\"\)[ \t]+Then\n[ \t]*EvaluateServiceConstructor\(Context\)[ \t]*;",
-        "",
-    ),
-    (
-        "the test-connection constant does not exist outside an infobase",
-        r"Return\s+String\(Constants\.mol_TestConnection\.Get\(\)\)\s*;",
-        'Return ""; // No test-connection constant in the standalone variant.',
-    ),
-    (
-        "the explicit-connection guidance must name the surviving entry point",
-        r"Используйте mol_Broker вместо него",
-        "Используйте Moleculer.Broker() вместо него",
-    ),
-    (
-        "the explicit-connection guidance must name the surviving entry point",
-        r"Use mol_Broker instead",
-        "Use Moleculer.Broker() instead",
-    ),
-]
-
-# Whole definitions that are meaningless in the variant, removed before the merge.
-# `GetDynamicServiceConstructor` reads `Catalog.mol_Services`, and the variant has no
-# dynamic services by design.  The two BSP helpers are only ever called by `mol_Server`,
-# which is dropped, and they read a BSP information register the variant does not have.
-REMOVED_DEFINITIONS = {
-    "mol_SchemaFactory": ("GetDynamicServiceConstructor", "EvaluateServiceConstructor"),
-    "mol_Reuse": ("BSPVersion", "BSPVersionAsNumber"),
-}
-
-# References to infobase objects retained on purpose, reported but not failed.  The
-# strip step removes every dead `Not IsStandalone()` branch, so this list is expected to
-# stay empty and is kept as a tripwire for future sources.
-REPORTED_REFERENCES = [
-    "Catalog.",
-    "Constants.",
-    "Constant.",
-    "Enum.",
-    "FunctionalOption.",
-    "DataProcessor.",
-    "CommonForm.",
-]
+PLAN_KEYS = (
+    "mergedModules",
+    "keptModules",
+    "droppedModules",
+    "renames",
+    "removedDefinitions",
+    "patches",
+    "reportedReferences",
+)
 
 
 class BuildError(RuntimeError):
@@ -318,6 +171,43 @@ def count_outside_strings(text: str, pattern: str) -> int:
             total += len(compiled.findall(chunk))
 
     return total
+
+
+def plan_of(profile: dict) -> dict:
+    """Everything the engine needs to know about *these* sources.
+
+    The plan is data, not code.  Which modules are merged, kept or dropped, how
+    colliding symbols are renamed, which text patches apply and which definitions are
+    removed all live in the profile, so the engine below stays generic and a change in
+    the canonical sources becomes a data diff instead of a code change.
+
+    Shape:
+        mergedModules      [str]  modules folded into targetModule, in emit order
+        keptModules        [str]  modules emitted separately, unchanged
+        droppedModules     [str]  modules left out; only used by the guard checks
+        renames            {module: {lowercase symbol: new name}}
+        removedDefinitions {module: [symbol]}
+        patches            [{description, pattern, replacement}]
+        reportedReferences [str]  substrings that must not survive in code
+    """
+    plan = profile.get("plan")
+
+    if not isinstance(plan, dict):
+        raise BuildError(
+            "The profile has no 'plan' section. The module plan is data: copy it from "
+            f"{DEFAULT_PROFILE_PATH} and adapt it to these sources."
+        )
+
+    for key in PLAN_KEYS:
+        if key not in plan:
+            raise BuildError(f"The profile's plan is missing '{key}'")
+
+    for patch in plan["patches"]:
+        for field in ("description", "pattern", "replacement"):
+            if field not in patch:
+                raise BuildError(f"A plan patch is missing '{field}': {patch}")
+
+    return plan
 
 
 def definition_names(text: str) -> list[tuple[str, bool]]:
@@ -476,19 +366,29 @@ def strip_client_flags(descriptor: str) -> str:
 
 
 def load_profile(path: Path | None) -> dict:
+    """Load a profile: generic defaults, then the shipped profile, then the override.
+
+    An override only has to contain the fields it changes.  The plan travels with the
+    shipped profile, so overriding, say, the extension name does not require copying it.
+    """
+    if not DEFAULT_PROFILE_PATH.is_file():
+        raise BuildError(f"Shipped profile not found: {DEFAULT_PROFILE_PATH}")
+
     profile = json.loads(json.dumps(DEFAULT_PROFILE))
+    profile.update(json.loads(DEFAULT_PROFILE_PATH.read_text(encoding="utf-8")))
 
     if path is not None:
         if not path.is_file():
             raise BuildError(f"Profile not found: {path}")
-        overrides = json.loads(path.read_text(encoding="utf-8"))
-        profile.update(overrides)
+        profile.update(json.loads(path.read_text(encoding="utf-8")))
 
     profile.setdefault("settings", {})
     return profile
 
 
 def validate_profile(profile: dict, source_root: Path) -> None:
+    plan = plan_of(profile)
+
     for key in ("extensionName", "namePrefix", "version", "targetModule", "providerModule"):
         if not str(profile.get(key, "")).strip():
             raise BuildError(f"Profile field '{key}' must not be empty")
@@ -525,8 +425,10 @@ def read_module(source_root: Path, module: str) -> str:
 
 
 def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
+    plan = plan_of(profile)
+    merged_modules = plan["mergedModules"]
     target_module = profile["targetModule"]
-    texts = {module: read_module(source_root, module) for module in MERGED_MODULES}
+    texts = {module: read_module(source_root, module) for module in merged_modules}
     stats = {
         "renames": 0,
         "qualified_calls": 0,
@@ -537,13 +439,13 @@ def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
     }
 
     # 0. Drop definitions that exist only for database-backed features.
-    for module, names in REMOVED_DEFINITIONS.items():
+    for module, names in plan["removedDefinitions"].items():
         if module in texts:
             texts[module], removed = remove_definitions(texts[module], names)
             stats["removed_definitions"] += removed
 
     # 1. Rename the qualified calls that cross a module boundary (Module.Symbol).
-    for module, renames in RENAMES.items():
+    for module, renames in plan["renames"].items():
         if module not in texts:
             continue
 
@@ -557,7 +459,7 @@ def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
                     stats["renames"] += hits
 
     # 2. Rename the local definitions and local calls inside their own module.
-    for module, renames in RENAMES.items():
+    for module, renames in plan["renames"].items():
         if module not in texts:
             continue
 
@@ -570,11 +472,11 @@ def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
 
     merged = "\n\n".join(
         f"// ===== merged from CommonModule.{module} =====\n{texts[module].strip()}\n"
-        for module in MERGED_MODULES
+        for module in merged_modules
     )
 
     # 3. Local calls: drop the qualifier of the merged modules.
-    for module in MERGED_MODULES:
+    for module in merged_modules:
         pattern = rf"\b{re.escape(module)}\s*\.\s*"
         hits = count_outside_strings(merged, pattern)
         if hits:
@@ -583,7 +485,7 @@ def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
 
     # 4. Module references: a bare module name becomes the merged module.  The
     #    qualifier of a remaining `Metadata.CommonModules.<module>` is kept.
-    for module in MERGED_MODULES:
+    for module in merged_modules:
         pattern = rf"(?<![\w]){re.escape(module)}(?![\w])"
         hits = count_outside_strings(merged, pattern)
         if hits:
@@ -595,12 +497,22 @@ def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
     stats["dead_branches"] = dead_branches
 
     # 5. Declarative patches for the facts a textual merge cannot infer.  These run
-    #    on the raw text because some of them span a string literal.
-    for _description, pattern, replacement in MERGE_PATCHES:
-        hits = len(re.findall(pattern, merged, re.IGNORECASE))
-        if hits:
-            merged = re.sub(pattern, replacement, merged, flags=re.IGNORECASE | re.MULTILINE)
-            stats["patches"] += hits
+    #    on the raw text because some of them span a string literal.  A patch that no
+    #    longer matches means the canonical sources moved on and the plan is stale;
+    #    that used to pass silently, which made the generator quietly wrong.
+    for patch in plan["patches"]:
+        hits = len(re.findall(patch["pattern"], merged, re.IGNORECASE))
+
+        if not hits:
+            raise BuildError(f"plan patch no longer applies: {patch['description']}")
+
+        merged = re.sub(
+            patch["pattern"],
+            patch["replacement"],
+            merged,
+            flags=re.IGNORECASE | re.MULTILINE,
+        )
+        stats["patches"] += hits
 
     return merged, stats
 
@@ -612,6 +524,7 @@ def validate_merged(merged: str, profile: dict) -> tuple[list[str], list[str]]:
     """
     problems = []
     observations = []
+    plan = plan_of(profile)
     target_module = profile["targetModule"]
 
     definitions: dict[str, list[int]] = {}
@@ -622,13 +535,13 @@ def validate_merged(merged: str, profile: dict) -> tuple[list[str], list[str]]:
         if len(positions) > 1:
             problems.append(f"duplicate definition after merge: {name} ({len(positions)} definitions)")
 
-    for module in MERGED_MODULES + DROPPED_MODULES:
+    for module in plan["mergedModules"] + plan["droppedModules"]:
         if module == target_module:
             continue
         if count_outside_strings(merged, rf"(?<![.\w]){re.escape(module)}(?![\w])"):
             problems.append(f"unresolved reference to removed module: {module}")
 
-    for reference in REPORTED_REFERENCES:
+    for reference in plan["reportedReferences"]:
         hits = count_outside_strings(merged, re.escape(reference))
         if hits:
             observations.append(f"{hits} guarded infobase reference(s) retained: {reference}")
@@ -691,7 +604,9 @@ def configuration_xml(profile: dict) -> str:
         )
         for class_id, object_id in CONTAINED_OBJECTS
     )
-    kept_modules = "".join(f"\t\t\t<CommonModule>{module}</CommonModule>\n" for module in KEPT_MODULES)
+    kept_modules = "".join(
+        f"\t\t\t<CommonModule>{module}</CommonModule>\n" for module in plan_of(profile)["keptModules"]
+    )
 
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -912,14 +827,17 @@ def emit_tree(profile: dict, merged_bsl: str, output_dir: Path, source_root: Pat
         provider_module_bsl(profile),
     )
 
+    kept_modules = plan_of(profile)["keptModules"]
+    removed_definitions = plan_of(profile)["removedDefinitions"]
+
     # The reuse modules keep their own descriptors, so their ReturnValuesReuse setting
     # survives, and their unchanged bodies.
-    for module in KEPT_MODULES:
+    for module in kept_modules:
         descriptor = strip_client_flags(
             (source_root / "CommonModules" / f"{module}.xml").read_text(encoding="utf-8-sig")
         )
         body = read_module(source_root, module)
-        body, _removed = remove_definitions(body, REMOVED_DEFINITIONS.get(module, ()))
+        body, _removed = remove_definitions(body, removed_definitions.get(module, ()))
         write_text(output_dir / "CommonModules" / f"{module}.xml", descriptor)
         write_text(output_dir / "CommonModules" / f"{module}" / "Ext" / "Module.bsl", body)
 

@@ -68,6 +68,31 @@ A connection entry needs `id`, `endpoint` and `port`; `description`, `default`,
 `useSSL`, `accessKey`, `secretKey` and `timeout` are optional. A publication entry
 needs `id`, `endpoint` and `port`; `description`, `useSSL` and `path` are optional.
 
+## How it is structured
+
+`build-standalone.py` contains only a generic engine: BSL-aware text rewriting, the
+merge, the static checks, tree emission and the compiler call. Everything that is
+specific to *these* sources is data in the profile's `plan` section:
+
+| Plan key | Meaning |
+|---|---|
+| `mergedModules` | Modules folded into `targetModule`, in emit order |
+| `keptModules` | Modules emitted separately and unchanged |
+| `droppedModules` | Modules left out; used by the unresolved-reference checks |
+| `renames` | `{module: {lowercase symbol: new name}}` for the collisions |
+| `removedDefinitions` | `{module: [symbol]}` removed wholesale |
+| `patches` | `[{description, pattern, replacement}]` for what a textual merge cannot infer |
+| `reportedReferences` | Substrings that must not survive in code |
+
+So a change in the canonical sources is a **data diff**, not a code change. A patch
+with a description is self-documenting, and a patch that no longer matches **fails the
+build** instead of being skipped — silently skipping one used to make the generator
+quietly wrong.
+
+The engine also refuses to emit a module that declares module variables, that still
+contains a dead `Not IsStandalone()` branch, that duplicates a symbol, that references
+a removed module, or whose `Procedure`/`Function` blocks are unbalanced.
+
 ## What the generator does
 
 1. **Strips.** Administration and role bootstrap (`mol_Server`, `mol_Client`,
@@ -101,6 +126,19 @@ Text rewriting is aware of BSL string literals, `""` escapes, `//` comments and
 touched.
 
 ## Verification
+
+**Static analysis, no 1C licence needed.** `1c-syntax/bsl-language-server` parses BSL
+properly and needs only a JRE:
+
+```bash
+java -jar <vscode-extensions>/1c-syntax.language-1c-bsl/bsl-language-server/*/bsl-language-server/lib/app/*-exec.jar \
+  analyze -s build/standalone/default -o /tmp/bsl-report -r json -q
+```
+
+Measured on the generated variant against the canonical sources: 16 errors versus 76,
+and **every remaining error is pre-existing** — the merge introduces none. This step
+caught a defect that `cfe compile` and `ibcmd config check` both accepted: the platform
+forbids module variables in a common module.
 
 Container-only suite (no 1C platform needed):
 
@@ -143,12 +181,11 @@ and needs no rebuild of the merged module.
 
 ## Known limitations
 
-- **BSL syntax is not verified by the platform.** The container's 1C client cannot
-  start (missing `libwebkit2gtk-4.0`, `libjavascriptcoregtk-4.0`, `libsoup-2.4`), so
-  neither the designer module check nor any test runner can run. The generator
-  therefore relies on its own static checks plus the platform's metadata check.
-  Loading does not compile module bodies, so a syntax error would only appear at
-  runtime.
+- **BSL syntax is verified statically, not by the platform.** The container's 1C client
+  cannot start because no licence is present, so the designer module check and every
+  test runner are blocked. The BSL Language Server analysis above is the strongest check
+  available. Loading does not compile module bodies, so a defect it misses would only
+  appear at runtime.
 - **Runtime behaviour is unverified.** No action call or HTTP round-trip has been
   exercised. See `docs/plan/tasks/T021-standalone-runtime-verification.md`.
 - **Client contexts are dropped.** The canonical `Moleculer` module is also

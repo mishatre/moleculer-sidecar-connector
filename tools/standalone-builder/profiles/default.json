@@ -20,5 +20,144 @@
         },
         "connections": [],
         "publications": []
+    },
+    "plan": {
+        "mergedModules": [
+            "Moleculer",
+            "mol_Errors",
+            "mol_Logger",
+            "mol_Helpers",
+            "mol_HelpersClientServer",
+            "mol_Transport",
+            "mol_ContextFactory",
+            "mol_Broker",
+            "mol_SchemaFactory",
+            "mol_Internal"
+        ],
+        "droppedModules": [
+            "mol_Server",
+            "mol_Client",
+            "MoleculerClientServer",
+            "CodeEditor",
+            "CodeEditorClient",
+            "CodeEditorClientServer",
+            "YAML",
+            "YAML1",
+            "YAML2",
+            "YAML3"
+        ],
+        "keptModules": [
+            "mol_Reuse",
+            "mol_ReuseCalls"
+        ],
+        "reportedReferences": [
+            "Catalog.",
+            "Constants.",
+            "Constant.",
+            "Enum.",
+            "FunctionalOption.",
+            "DataProcessor.",
+            "CommonForm."
+        ],
+        "renames": {
+            "mol_Broker": {
+                "this": "BrokerThis",
+                "thismetadata": "BrokerThisMetadata",
+                "call": "BrokerCall",
+                "emit": "BrokerEmit",
+                "broadcast": "BrokerBroadcast"
+            },
+            "mol_ContextFactory": {
+                "this": "ContextFactoryThis",
+                "thismetadata": "ContextFactoryThisMetadata",
+                "broker": "ContextFactoryBroker",
+                "call": "ContextFactoryCall",
+                "emit": "ContextFactoryEmit",
+                "getcurrentcontext": "ContextFactoryGetCurrentContext",
+                "newcontext": "ContextFactoryNewContext",
+                "constructor": "ContextFactoryConstructor"
+            },
+            "mol_Transport": {
+                "this": "TransportThis",
+                "thismetadata": "TransportThisMetadata"
+            },
+            "mol_SchemaFactory": {
+                "this": "SchemaFactoryThis",
+                "thismetadata": "SchemaFactoryThisMetadata",
+                "newcontext": "SchemaFactoryNewContext",
+                "constructor": "SchemaFactoryConstructor"
+            },
+            "mol_Errors": {
+                "this": "ErrorsThis",
+                "thismetadata": "ErrorsThisMetadata",
+                "getcurrenterror": "ErrorsGetCurrentError",
+                "raiseerror": "ErrorsRaiseError",
+                "raisecustomerror": "ErrorsRaiseCustomError"
+            },
+            "mol_Logger": {
+                "this": "LoggerThis",
+                "thismetadata": "LoggerThisMetadata",
+                "error": "LoggerError"
+            },
+            "mol_Internal": {
+                "this": "InternalThis",
+                "thismetadata": "InternalThisMetadata"
+            },
+            "mol_HelpersClientServer": {
+                "isobject": "IsObjectClientServer",
+                "isstructure": "IsStructureClientServer",
+                "ismap": "IsMapClientServer",
+                "isarray": "IsArrayClientServer",
+                "isstring": "IsStringClientServer",
+                "isnumber": "IsNumberClientServer",
+                "isbinarydata": "IsBinaryDataClientServer",
+                "isvaliddate": "IsValidDateClientServer",
+                "isstream": "IsStreamClientServer",
+                "canbenumber": "CanBeNumberClientServer",
+                "getversionedfullname": "GetVersionedFullNameClientServer"
+            }
+        },
+        "removedDefinitions": {
+            "mol_SchemaFactory": [
+                "GetDynamicServiceConstructor",
+                "EvaluateServiceConstructor"
+            ],
+            "mol_Reuse": [
+                "BSPVersion",
+                "BSPVersionAsNumber"
+            ]
+        },
+        "patches": [
+            {
+                "description": "the internal service is a service of the merged module, not a separate module",
+                "pattern": "CompileServiceSchema\\(\\s*\"mol_Internal\"\\s*\\)",
+                "replacement": "CompileServiceSchema(Moleculer)"
+            },
+            {
+                "description": "the local YAML parsers are not part of the variant and the branch was unreachable",
+                "pattern": "Return\\s+YAML\\.ToObject\\(Text\\)\\s*;",
+                "replacement": "// Unreachable in the canonical sources: YAML parsing is delegated to the sidecar."
+            },
+            {
+                "description": "the dynamic-service branch is unreachable without the mol_Services catalog",
+                "pattern": "\\n[ \\t]*ElsIf[ \\t]+Context\\.Type[ \\t]*=[ \\t]*Upper\\(\\\"Dynamic\\\"\\)[ \\t]+Then\\n[ \\t]*EvaluateServiceConstructor\\(Context\\)[ \\t]*;",
+                "replacement": ""
+            },
+            {
+                "description": "the test-connection constant does not exist outside an infobase",
+                "pattern": "Return\\s+String\\(Constants\\.mol_TestConnection\\.Get\\(\\)\\)\\s*;",
+                "replacement": "Return \"\"; // No test-connection constant in the standalone variant."
+            },
+            {
+                "description": "the explicit-connection guidance must name the surviving entry point",
+                "pattern": "Используйте mol_Broker вместо него",
+                "replacement": "Используйте Moleculer.Broker() вместо него"
+            },
+            {
+                "description": "the explicit-connection guidance must name the surviving entry point",
+                "pattern": "Use mol_Broker instead",
+                "replacement": "Use Moleculer.Broker() instead"
+            }
+        ]
     }
 }
