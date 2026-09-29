@@ -46,7 +46,7 @@ Procedure TheComponentLoadsAndReportsItsVersion() Export
 	
 	ЮТест.ОжидаетЧто(ТипЗнч(Версия), "the version comes back as text").Равно(Тип("Строка"));
 	ЮТест.ОжидаетЧто(Не ПустаяСтрока(Версия),
-			"reaching this line already proves the Linux library loaded in the platform")
+		"reaching this line already proves the Linux library loaded in the platform")
 		.ЭтоИстина();
 	
 EndProcedure
@@ -75,7 +75,7 @@ Procedure ReturnsYAMLObjectsAsAMap() Export
 	Документ = yp_YAML.РазобратьYAML(ПредставительныйДокумент());
 	
 	ЮТест.ОжидаетЧто(ТипЗнч(Документ),
-			"a Map is the default because YAML keys may be 'my-key' or '1', which a Structure rejects")
+		"a Map is the default because YAML keys may be 'my-key' or '1', which a Structure rejects")
 		.Равно(Тип("Соответствие"));
 	
 EndProcedure
@@ -109,7 +109,7 @@ Procedure AReadFailureNamesThePosition() Export
 	EndTry;
 	
 	ЮТест.ОжидаетЧто(Не ПустаяСтрока(Описание),
-			"an unparsable document raises rather than returning something half-built")
+		"an unparsable document raises rather than returning something half-built")
 		.ЭтоИстина();
 	ЮТест.ОжидаетЧто(СтрНайти(Описание, "строк") > 0, "and it names the line")
 		.ЭтоИстина();
@@ -127,7 +127,7 @@ Procedure RejectsAnUnknownOptionInsteadOfIgnoringIt() Export
 	EndTry;
 	
 	ЮТест.ОжидаетЧто(Не ПустаяСтрока(Описание),
-			"duplicateKeys=error has to reject the duplicate rather than let the last one win")
+		"duplicateKeys=error has to reject the duplicate rather than let the last one win")
 		.ЭтоИстина();
 	
 EndProcedure
@@ -153,10 +153,10 @@ Procedure ItRefusesToRunInsideASafeModeWindow() Export
 	УстановитьБезопасныйРежим(Ложь);
 	
 	ЮТест.ОжидаетЧто(Не ПустаяСтрока(Описание),
-			"a YAML constructor cannot reach the component while the connector holds safe mode on")
+		"a YAML constructor cannot reach the component while the connector holds safe mode on")
 		.ЭтоИстина();
 	ЮТест.ОжидаетЧто(СтрНайти(Описание, "безопасн") > 0,
-			"and the refusal explains safe mode rather than blaming the document")
+		"and the refusal explains safe mode rather than blaming the document")
 		.ЭтоИстина();
 	
 EndProcedure
@@ -217,19 +217,59 @@ Procedure ReportsWhatAParseCosts() Export
 	JSONМс = ТекущаяУниверсальнаяДатаВМиллисекундах() - Начало;
 	
 	Сообщить(СтрШаблон(
-		"yp_YAML timing, component %1, %2 iterations of a %3-byte document: warm-up %4 ms; "
-		+ "reused instance %5 ms; component call %6 ms; module call %7 ms; platform JSON read %8 ms",
+			"yp_YAML timing, component %1, %2 iterations of a %3-byte document: warm-up %4 ms; "
+		+ "reused instance %5 ms; component call %6 ms; module call %7 ms; platform JSON read %8 ms; %9",
 		yp_YAML.ВерсияКомпоненты(), Итераций, СтрДлина(Текст),
 		Строка(ПрогревМс), Строка(ОднаждыМс), Строка(КомпонентаМс),
-		Строка(МодульМс), Строка(JSONМс)));
-	
-	// Generous ceilings. The point is to catch a pathological change, not to benchmark.
+		Строка(МодульМс), Строка(JSONМс), ТекстОЗагрузкеБиблиотеки()));
 	ЮТест.ОжидаетЧто(МодульМс, "a parse must finish in well under a second, or it is unusable at start-up")
 		.Меньше(Итераций * 1000);
 	ЮТест.ОжидаетЧто(JSONМс, "the shared floor is measured too, so the component's share is interpretable")
 		.Меньше(Итераций * 1000);
 	
 EndProcedure
+
+// Does the time to load the library track its size? The rebuild cut the Linux library from
+// 732 832 to 612 264 bytes (16%), and the per-call figures could not show it. The two builds
+// are compared here in ONE session, from file paths, so build differences are not confounded
+// with session warm-up — and the same two files are read as bytes as a control, because a
+// load cannot be faster than the read that feeds it.
+//
+// Returned as text rather than printed: only the LAST Сообщить of a run reaches the log, which
+// was observed twice, so a suite that prints from two tests silently loses the earlier one.
+Function ТекстОЗагрузкеБиблиотеки()
+	
+	ПутьСтаройСборки = "/tmp/yp/YamlParser_linux_x86_64.so";
+	ПутьНовойСборки = "/tmp/ypnew/YamlParser_linux_x86_64.so";
+	Итераций = 30;
+	
+	// Warm the page cache for both so the first read is not charged to one of them.
+	ПрочитатьФайл(ПутьСтаройСборки);
+	ПрочитатьФайл(ПутьНовойСборки);
+	
+	ЧтениеСтарыйМс = ЗамеритьЧтение(ПутьСтаройСборки, Итераций);
+	ЧтениеНовыйМс = ЗамеритьЧтение(ПутьНовойСборки, Итераций);
+	
+// Both orders are measured. Two images of one component in a session is not an ordinary
+	// situation, so a first-versus-second effect could otherwise be mistaken for a size effect.
+	Отказ = "";
+	НоваяПервой = Новый Массив;
+	СтараяПервой = Новый Массив;
+	Попытка
+		НоваяПервой = ЗамеритьПару(ПутьНовойСборки, "YPNewA", ПутьСтаройСборки, "YPOldA", Итераций);
+		СтараяПервой = ЗамеритьПару(ПутьСтаройСборки, "YPOldB", ПутьНовойСборки, "YPNewB", Итераций);
+	Исключение
+		Отказ = ИнформацияОбОшибке().Описание;
+	КонецПопытки;
+	
+	Возврат СтрШаблон(
+		"library load probe, %1 iterations: read old %2 ms / new %3 ms; "
+		+ "new-then-old %4/%5 ms; old-then-new %6/%7 ms; refused: %8",
+		Итераций, Строка(ЧтениеСтарыйМс), Строка(ЧтениеНовыйМс),
+		Строка(НоваяПервой[0]), Строка(НоваяПервой[1]),
+		Строка(СтараяПервой[0]), Строка(СтараяПервой[1]), Отказ);
+	
+EndFunction
 
 #EndRegion
 
@@ -242,23 +282,65 @@ EndProcedure
 Function ПредставительныйДокумент()
 	
 	Возврат "name: probe
-		|version: 1
-		|settings:
-		|  $noVersionPrefix: true
-		|actions:
-		|  ping:
-		|    handler: PingAction
-		|    params:
-		|      value:
-		|        type: string
-		|        optional: false
-		|  echo:
-		|    handler: EchoAction
-		|events:
-		|  changed: {}
-		|ports:
-		|  - 8080
-		|  - 8443";
+	|version: 1
+	|settings:
+	|  $noVersionPrefix: true
+	|actions:
+	|  ping:
+	|    handler: PingAction
+	|    params:
+	|      value:
+	|        type: string
+	|        optional: false
+	|  echo:
+	|    handler: EchoAction
+	|events:
+	|  changed: {}
+	|ports:
+	|  - 8080
+	|  - 8443";
+	
+EndFunction
+
+Function ПрочитатьФайл(Путь)
+	
+	Возврат Новый ДвоичныеДанные(Путь);
+	
+EndFunction
+
+Function ЗамеритьЧтение(Путь, Итераций)
+	
+	Начало = ТекущаяУниверсальнаяДатаВМиллисекундах();
+	Для Счётчик = 1 По Итераций Цикл
+		ПрочитатьФайл(Путь);
+	КонецЦикла;
+	
+	Возврат ТекущаяУниверсальнаяДатаВМиллисекундах() - Начало;
+	
+EndFunction
+
+Function ЗамеритьПару(ПутьПервый, ИмяПервое, ПутьВторой, ИмяВторой, Итераций)
+	
+	Результат = Новый Массив;
+	Результат.Добавить(ЗамеритьПодключение(ПутьПервый, ИмяПервое, Итераций));
+	Результат.Добавить(ЗамеритьПодключение(ПутьВторой, ИмяВторой, Итераций));
+	
+	Возврат Результат;
+	
+EndFunction
+
+Function ЗамеритьПодключение(Путь, Имя, Итераций)
+	
+	Если Не ПодключитьВнешнююКомпоненту(Путь, Имя, ТипВнешнейКомпоненты.Native) Тогда
+		ВызватьИсключение "the platform refused the component at " + Путь;
+	КонецЕсли;
+	
+	Начало = ТекущаяУниверсальнаяДатаВМиллисекундах();
+	Для Счётчик = 1 По Итераций Цикл
+		ПодключитьВнешнююКомпоненту(Путь, Имя, ТипВнешнейКомпоненты.Native);
+	КонецЦикла;
+	
+	Возврат ТекущаяУниверсальнаяДатаВМиллисекундах() - Начало;
 	
 EndFunction
 

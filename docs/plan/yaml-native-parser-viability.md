@@ -215,10 +215,32 @@ usable: the parse itself is **0.06 ms**, and the 2.4–2.6 ms a caller pays is t
 The first numbers published here (0.03–0.1 ms per parse, 2.3–4.2 ms per reconnect) came from a
 single 30-iteration run and were noise around the same values.
 
-**The rebuild did not move the timings.** The Linux library shrank from 732 832 to 612 264
-bytes, the archive from 1 037 332 to 897 980, the extension from 1 094 101 to 948 193 — and
-none of it shows in the parse, because the parser was never the cost. What the rebuild bought
-is measurement quality: 100 iterations across three runs instead of 30 in one.
+**The rebuild did move the connect — and only the connect.** A first answer here said the rebuild
+"did not move the timings". That was wrong, and it was an artefact of the measurement: two
+sessions rather than one, one order, and a ±0.5 ms spread in per-call figures against a ~0.3 ms
+effect.
+
+Measured properly — both builds loaded from file paths **in one session**, each order measured so a
+first-versus-second effect could not be mistaken for a size effect, 30 connects per figure:
+
+| Build | Bytes | Connect ×30 | Per connect |
+|---|---|---|---|
+| Before rebuild | 732 832 | 67/64, 70/74 ms | ≈ 2.2–2.4 ms |
+| After rebuild | 612 264 | 58/59, 64/63 ms | ≈ 1.9–2.1 ms |
+| Raw file read (control) | — | 3 ms / 2 ms | 0.10 → 0.07 ms |
+
+So the effect is real and roughly proportional: **16% smaller library, 11–12% faster connect**
+(≈0.25 ms per connect). The size reduction is worth having; the first answer was wrong to write
+it off.
+
+It remains true that connecting dominates the per-call cost and that the parse is not the cost:
+0.06 ms of work sitting behind ~2 ms of connecting. Both statements hold at once. What the size
+work buys is a slightly cheaper reconnect — not the main lever. The main lever is holding the
+connection instead of reconnecting: 2.4 ms per call becomes 0.06 ms.
+
+One caveat on the production figure: the module loads from a **template** in an infobase, not from
+a file path, and the archive shrank 13% as well (1 037 332 → 897 980). That path was not measured
+here, so the real gain may be a little larger than the numbers above.
 
 Read plainly: the component is **fast enough held, and fast enough not held**, because
 parsing happens once per service at construction rather than per request. What the numbers
