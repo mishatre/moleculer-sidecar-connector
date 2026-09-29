@@ -201,6 +201,16 @@ echo "==> loading extensions with safe mode off"
 # Passing --active makes vrunner take the ibcmd property path, which also sets safe mode
 # and unsafe-action protection to false. Without it vrunner leaves the platform defaults
 # untouched and YAxUnit fails with "Расширение подключено в безопасном режиме".
+#
+# Cost of this loop, measured 2026-09-29: ~14.3 s per extension, of which ~4.7 s is vrunner's own
+# OneScript start-up and ~5.5 s is the DB configuration update that cfe load performs by default.
+# vrunner has an incremental cache for this (--increment, setting increment.cache-dir, default
+# /tmp/vanessa-runner/cache) and it does its job — with no changes it logs "Инкрементальная
+# загрузка: изменений не найдено, загрузка пропущена" — but it still runs that DB update, so a
+# load only comes down to ~11.6 s. Adding --no-update-db reaches ~6.1 s and is deliberately NOT
+# used: the tool warns that extension properties are then not applied, so the suites could run
+# against the previously loaded extension. Skipping a load entirely when the artifact and the base
+# are unchanged is harness work; the built-in cache is file-level and does not do it.
 extensions=("$CONNECTOR_CFE:$CONNECTOR_NAME" "$YAXUNIT_CFE:$YAXUNIT_NAME")
 # The vendored YAML component is only exercised by the canonical suites, so standalone mode
 # does not pay for loading it.
