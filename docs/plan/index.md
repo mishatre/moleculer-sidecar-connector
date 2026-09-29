@@ -33,6 +33,19 @@ blocker below, which gates T017–T022.
 | T022 | Static quality gate and standalone delivery documentation exist | blocked | T018–T021 | [Task](tasks/T022-static-gate-and-delivery-docs.md) |
 | T023 | Error reporting distinguishes internal, sidecar and end-node failures | draft | T018 | [Task](tasks/T023-error-taxonomy.md) |
 
+### Next cycle — refactoring
+
+Outlines only, collected from evidence gathered while building the harness. Task
+files are written once the cycle is authorised; the reasoning and the acceptance
+for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
+
+| ID | Outcome | Status | Depends on | Where |
+|---|---|---|---|---|
+| T024 | All four YAML modules are deleted | draft | none | [Plan](refactor-backlog.md) |
+| T025 | The inbound transport boundary is covered by an integration test | draft | none | [Plan](refactor-backlog.md) |
+| T026 | Module surface and naming are consistent | draft | T023, T025 | [Plan](refactor-backlog.md) |
+| T027 | The form layer is rebuilt | draft | owner decision | [Plan](refactor-backlog.md) |
+
 ### Blocker: the 1C client has no licence
 
 The client libraries were fixed on 2026-09-29 — `tools/1c-platform/install-client-runtime.sh`
