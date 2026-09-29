@@ -35,7 +35,9 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("TheBuilderRefusesToRunOutsideACompilingService")
 		.ДобавитьСерверныйТест("CompileServiceSchemaRaisesForAnUnknownModule")
 		.ДобавитьСерверныйТест("CompileServiceSchemaRaisesForANonModuleValue")
-		.ДобавитьСерверныйТест("SchemaFailuresUseATypeTheFactoriesDoNotProduce");
+		.ДобавитьСерверныйТест("SchemaFailuresUseATypeTheFactoriesDoNotProduce")
+		.ДобавитьСерверныйТест("FromStringRejectsANonString")
+		.ДобавитьСерверныйТест("FromStringNeedsTheSidecarForAnythingThatIsNotJSON");
 	
 EndProcedure
 
@@ -159,6 +161,47 @@ Procedure TheBuilderRefusesToRunOutsideACompilingService() Export
 	
 	ЮТест.ОжидаетЧто(Raised,
 			"a finished compile must leave no building context, so a stray builder call has to fail")
+		.Равно(Истина);
+	
+EndProcedure
+
+#EndRegion
+
+#Region Parsing
+
+// FromString is the only entry point that reads a text definition, and it is the only
+// place the connector still needs YAML. These two tests pin what that dependency costs:
+// the JSON branch is native and needs nothing, while the YAML branch cannot run at all
+// without a connected sidecar.
+
+Procedure FromStringRejectsANonString() Export
+	
+	Raised = False;
+	Try
+		mol_SchemaFactory.FromString(42);
+	Except
+		Raised = True;
+	EndTry;
+	
+	ЮТест.ОжидаетЧто(Raised, "a definition has to be text").Равно(Истина);
+	
+EndProcedure
+
+Procedure FromStringNeedsTheSidecarForAnythingThatIsNotJSON() Export
+	
+	// No sidecar is connected during a test run, so YAML text cannot be parsed. The
+	// failure is also hard to diagnose: the Try around ParseServiceDefinition turns the
+	// transport failure into "TextDefinition should contain valid YAML or JSON", which
+	// blames the caller's text for a missing parser. Only the raise is asserted here,
+	// because the message is expected to change when the taxonomy is settled.
+	Raised = False;
+	Try
+		mol_SchemaFactory.FromString("name: probe" + Chars.LF + "actions: {}");
+	Except
+		Raised = True;
+	EndTry;
+	
+	ЮТест.ОжидаетЧто(Raised, "without a sidecar there is no parser behind the YAML branch")
 		.Равно(Истина);
 	
 EndProcedure

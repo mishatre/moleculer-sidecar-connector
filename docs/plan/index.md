@@ -46,6 +46,15 @@ for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
 | T026 | Module surface and naming are consistent | draft | T023, T025 | [Plan](refactor-backlog.md) |
 | T027 | The form layer is rebuilt | draft | owner decision | [Plan](refactor-backlog.md) |
 
+### Research notes
+
+- [yaml-native-parser-viability.md](yaml-native-parser-viability.md) — a native YAML
+  parser module is not viable: the platform has no YAML API, safe mode forbids
+  external components around the constructor, and the JSON branch already gives an
+  offline, testable format. Recommends JSON as the documented offline format, fixing
+  the misleading parse error, and parser injection through the overridable module if a
+  consumer genuinely needs YAML offline.
+
 ### Resolved: the 1C client starts and a licence is present
 
 The client libraries were fixed on 2026-09-29 — `tools/1c-platform/install-client-runtime.sh`
