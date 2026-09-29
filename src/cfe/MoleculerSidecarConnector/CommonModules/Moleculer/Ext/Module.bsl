@@ -18,7 +18,7 @@ Function Call(ActionName, Val Params = Undefined, Opts = Undefined) Export
 		Message = NStr("
 		|	ru = 'Opts.Connection не должен использоваться при вызове метода через общий модуль Moleculer!
 		|Используйте mol_Broker вместо него';
-		|	en = 'Opts.Connection should't be used when executing call from Moleculer common module!
+		|	en = 'Opts.Connection should not be used when executing call from Moleculer common module!
 		|Use mol_Broker instead';");
 		mol_Errors.RaiseCustomError("Error", Message);
 	EndIf;
@@ -37,7 +37,7 @@ Procedure Emit(EventName, Data = Undefined, Val Opts = Undefined) Export
 		Message = NStr("
 		|	ru = 'Opts.Connection не должен использоваться при вызове метода через общий модуль Moleculer!
 		|Используйте mol_Broker вместо него';
-		|	en = 'Opts.Connection should't be used when executing call from Moleculer module!
+		|	en = 'Opts.Connection should not be used when executing call from Moleculer module!
 		|Use mol_Broker instead';");
 		mol_Errors.RaiseCustomError("Error", Message);
 	EndIf;
@@ -56,7 +56,7 @@ Procedure Broadcast(EventName, Data = Undefined, Val Opts = Undefined) Export
 		Message = NStr("
 		|	ru = 'Opts.Connection не должен использоваться при вызове метода через общий модуль Moleculer!
 		|Используйте mol_Broker вместо него';
-		|	en = 'Opts.Connection should't be used when executing call from Moleculer module!
+		|	en = 'Opts.Connection should not be used when executing call from Moleculer module!
 		|Use mol_Broker instead';");
 		mol_Errors.RaiseCustomError("Error", Message);
 	EndIf; 
@@ -468,7 +468,7 @@ Function AdaptConnectionParams(Connection) Export
 		EndDo;                                        
 		Template = NStr("
 		|	ru = 'Не удалось найти подключение с идентификатором ""%1""';
-		|	en = 'Couldn't found connection with id ""%1""';");
+		|	en = 'A connection with the id ""%1"" was not found';");
 		mol_Errors.RaiseCustomError("NotFoundError", StrTemplate(Template, Connection)); 
 	EndIf;
 	

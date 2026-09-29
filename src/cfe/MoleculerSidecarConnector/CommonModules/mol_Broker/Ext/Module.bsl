@@ -282,7 +282,7 @@ Function UnregisterPublication(Publication) Export
 		|	ru = 'Не удалось удалить регистрацию сервисной публикации ""%1"" (%2)
 		|По причине:
 		|%3';
-		|	en = 'Couldn't unregister service publication ""%1"" (%2).
+		|	en = 'Cannot unregister service publication ""%1"" (%2).
 		|Reason:
 		|%3';"); 
 		Message = StrTemplate(Template,      

@@ -76,6 +76,41 @@ taxonomy is settled. The three signing keys are Moleculer's own error types
 (`AccessKeyRequired`, `SecretKeyRequired`, `ExpiresParam`) and need an explicit
 decision: give them factories or map them onto `ValidationError`.
 
+### Found and fixed: an empty message that every check missed
+
+While adding facade coverage (T019), two assertions failed on the *message* rather than on the raise,
+and the cause had nothing to do with the factory taxonomy:
+
+```
+{...ОбщийМодуль.mol_Errors.Модуль(205)}: MoleculerError: :
+{...ОбщийМодуль.Moleculer.Модуль(472)}: Ошибка при вызове метода контекста (СтрШаблон): Слишком много фактических параметров
+```
+
+Both come from the same defect: an unescaped apostrophe inside the English fragment of an `NStr(...)`
+literal. `NStr` does not fail; it returns an empty string, so the message disappears. The second line
+proves it independently — `СтрШаблон` reported too many arguments, which is only possible when the
+template it received contains no `%1` at all, that is, when it is empty.
+
+Five sites carried it, all of them user-facing:
+
+| Site | Text |
+|---|---|
+| `Moleculer.Call` guard | `Opts.Connection should't be used … Moleculer common module!` |
+| `Moleculer.Emit` guard | same text, without `common` |
+| `Moleculer.Broadcast` guard | byte-identical to the `Emit` block |
+| `Moleculer.AdaptConnectionParams` | `Couldn't found connection with id ""%1""` |
+| `mol_Broker` unregister-publication path | `Couldn't unregister service publication ""%1"" (%2).` |
+
+Fixed by dropping the contractions — `should not`, `Cannot`, `A connection with the id ""%1"" was not
+found` — rather than by doubling the apostrophes, so the fix does not depend on `NStr`'s escaping
+rules. The apostrophes in `mol_Helpers` sit inside double-quoted BSL strings rather than `NStr`
+fragments, so those were never affected.
+
+Why it belongs here: a taxonomy that distinguishes origins is worth nothing when the message carrying
+the distinction is empty, and nothing in the project could see it. Compilation passes, the raise
+happens, and any assertion that stops at "an error was raised" passes as well. Only asserting the
+message content catches it.
+
 ## Acceptance and consumer example
 
 - [ ] Every factory returns `Code` as a number and a `Name` from a documented set.
@@ -83,7 +118,8 @@ decision: give them factories or map them onto `ValidationError`.
       silently degraded.
 - [ ] A failed HTTP exchange to the sidecar is distinguishable from a business
       rejection returned by an end node.
-- [ ] A suite asserts each origin end to end.
+- [ ] A suite asserts each origin end to end, including the message text and not only the raise. The
+      empty-message defect above passed every check that stopped at "an error was raised".
 
 ## Stop conditions
 
