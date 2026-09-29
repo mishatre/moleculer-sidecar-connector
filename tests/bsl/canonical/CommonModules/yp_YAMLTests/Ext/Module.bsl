@@ -218,10 +218,10 @@ Procedure ReportsWhatAParseCosts() Export
 	
 	Сообщить(СтрШаблон(
 			"yp_YAML timing, component %1, %2 iterations of a %3-byte document: warm-up %4 ms; "
-		+ "reused instance %5 ms; component call %6 ms; module call %7 ms; platform JSON read %8 ms; %9",
-		yp_YAML.ВерсияКомпоненты(), Итераций, СтрДлина(Текст),
-		Строка(ПрогревМс), Строка(ОднаждыМс), Строка(КомпонентаМс),
-		Строка(МодульМс), Строка(JSONМс), ТекстОЗагрузкеБиблиотеки()));
+			+ "reused instance %5 ms; component call %6 ms; module call %7 ms; platform JSON read %8 ms; %9",
+			yp_YAML.ВерсияКомпоненты(), Итераций, СтрДлина(Текст),
+			Строка(ПрогревМс), Строка(ОднаждыМс), Строка(КомпонентаМс),
+			Строка(МодульМс), Строка(JSONМс), ТекстОЗагрузкеБиблиотеки()));
 	ЮТест.ОжидаетЧто(МодульМс, "a parse must finish in well under a second, or it is unusable at start-up")
 		.Меньше(Итераций * 1000);
 	ЮТест.ОжидаетЧто(JSONМс, "the shared floor is measured too, so the component's share is interpretable")
@@ -229,45 +229,75 @@ Procedure ReportsWhatAParseCosts() Export
 	
 EndProcedure
 
-// Does the time to load the library track its size? The rebuild cut the Linux library from
-// 732 832 to 612 264 bytes (16%), and the per-call figures could not show it. The two builds
-// are compared here in ONE session, from file paths, so build differences are not confounded
-// with session warm-up — and the same two files are read as bytes as a control, because a
-// load cannot be faster than the read that feeds it.
+// Does the time to load the library track its size? Every build still on disk under
+// build/yaml-parser-builds/ is loaded here in ONE session, and each one is also read as bytes as a
+// control, because a load cannot be faster than the read that feeds it. Comparing builds inside a
+// single session is the point: an earlier answer got this wrong by comparing two sessions and
+// measuring one order, and read a real ~11% effect as noise.
 //
 // Returned as text rather than printed: only the LAST Сообщить of a run reaches the log, which
 // was observed twice, so a suite that prints from two tests silently loses the earlier one.
 Function ТекстОЗагрузкеБиблиотеки()
 	
-	ПутьСтаройСборки = "/tmp/yp/YamlParser_linux_x86_64.so";
-	ПутьНовойСборки = "/tmp/ypnew/YamlParser_linux_x86_64.so";
+	Найденные = НайтиФайлы("build/yaml-parser-builds", "YamlParser_linux_x86_64.so", Истина);
+	Если Найденные.Количество() = 0 Тогда
+		Возврат "library builds: none under build/yaml-parser-builds";
+	КонецЕсли;
+	
+	Сборки = Новый Массив;
+	Для Каждого Файл Из Найденные Цикл
+		Сборки.Добавить(Файл);
+	КонецЦикла;
+	
+	// Exchange sort by size so the report reads smallest to largest and the trend is visible
+	// without cross-referencing numbers.
+	Для Первый = 0 По Сборки.Количество() - 2 Цикл
+		Для Второй = Первый + 1 По Сборки.Количество() - 1 Цикл
+			Если Сборки[Второй].Размер() < Сборки[Первый].Размер() Тогда
+				Обмен = Сборки[Первый];
+				Сборки[Первый] = Сборки[Второй];
+				Сборки[Второй] = Обмен;
+			КонецЕсли;
+		КонецЦикла;
+	КонецЦикла;
+	
 	Итераций = 30;
+	Части = Новый Массив;
+	Имена = СтрРазделить("YPBuildA,YPBuildB,YPBuildC,YPBuildD", ",");
 	
-	// Warm the page cache for both so the first read is not charged to one of them.
-	ПрочитатьФайл(ПутьСтаройСборки);
-	ПрочитатьФайл(ПутьНовойСборки);
+	// The path form matters: the relative path below was refused where an absolute one worked, so
+	// both are tried and the report says which was used.
+	Для Индекс = 0 По Сборки.Количество() - 1 Цикл
+		Файл = Сборки[Индекс];
+		Путь = Файл.ПолноеИмя;
+		Сегменты = СтрРазделить(Файл.Путь, "/");
+		Метка = Сегменты[Сегменты.Количество() - 1];
+		Имя = Имена[Индекс];
+		
+		// Warm the page cache so the first read is not charged to any one build.
+		ПрочитатьФайл(Путь);
+		ЧтениеМс = ЗамеритьЧтение(Путь, Итераций);
+		
+		ПодключениеМс = ЗамеритьПодключение(Путь, Имя, Итераций);
+		Форма = "relative";
+		
+		Если ПодключениеМс = Неопределено Тогда
+			Абсолютный = "/tmp/yaml-parser-builds/" + Метка + "/YamlParser_linux_x86_64.so";
+			ПодключениеМс = ЗамеритьПодключение(Абсолютный, Имя, Итераций);
+			Форма = "absolute";
+		КонецЕсли;
+		
+		Если ПодключениеМс = Неопределено Тогда
+			Части.Добавить(СтрШаблон("%1 %2 B read %3 ms connect refused",
+				Метка, Строка(Файл.Размер()), Строка(ЧтениеМс)));
+		Иначе
+			Части.Добавить(СтрШаблон("%1 %2 B read %3 ms connect %4 ms (%5)",
+				Метка, Строка(Файл.Размер()), Строка(ЧтениеМс), Строка(ПодключениеМс), Форма));
+		КонецЕсли;
+	КонецЦикла;
 	
-	ЧтениеСтарыйМс = ЗамеритьЧтение(ПутьСтаройСборки, Итераций);
-	ЧтениеНовыйМс = ЗамеритьЧтение(ПутьНовойСборки, Итераций);
-	
-// Both orders are measured. Two images of one component in a session is not an ordinary
-	// situation, so a first-versus-second effect could otherwise be mistaken for a size effect.
-	Отказ = "";
-	НоваяПервой = Новый Массив;
-	СтараяПервой = Новый Массив;
-	Попытка
-		НоваяПервой = ЗамеритьПару(ПутьНовойСборки, "YPNewA", ПутьСтаройСборки, "YPOldA", Итераций);
-		СтараяПервой = ЗамеритьПару(ПутьСтаройСборки, "YPOldB", ПутьНовойСборки, "YPNewB", Итераций);
-	Исключение
-		Отказ = ИнформацияОбОшибке().Описание;
-	КонецПопытки;
-	
-	Возврат СтрШаблон(
-		"library load probe, %1 iterations: read old %2 ms / new %3 ms; "
-		+ "new-then-old %4/%5 ms; old-then-new %6/%7 ms; refused: %8",
-		Итераций, Строка(ЧтениеСтарыйМс), Строка(ЧтениеНовыйМс),
-		Строка(НоваяПервой[0]), Строка(НоваяПервой[1]),
-		Строка(СтараяПервой[0]), Строка(СтараяПервой[1]), Отказ);
+	Возврат "library builds (" + Строка(Итераций) + " iterations each): "
+		+ СтрСоединить(Части, "; ");
 	
 EndFunction
 
@@ -319,20 +349,13 @@ Function ЗамеритьЧтение(Путь, Итераций)
 	
 EndFunction
 
-Function ЗамеритьПару(ПутьПервый, ИмяПервое, ПутьВторой, ИмяВторой, Итераций)
-	
-	Результат = Новый Массив;
-	Результат.Добавить(ЗамеритьПодключение(ПутьПервый, ИмяПервое, Итераций));
-	Результат.Добавить(ЗамеритьПодключение(ПутьВторой, ИмяВторой, Итераций));
-	
-	Возврат Результат;
-	
-EndFunction
 
 Function ЗамеритьПодключение(Путь, Имя, Итераций)
 	
 	Если Не ПодключитьВнешнююКомпоненту(Путь, Имя, ТипВнешнейКомпоненты.Native) Тогда
-		ВызватьИсключение "the platform refused the component at " + Путь;
+		// Deliberately not raised: a probe that cannot connect one build must still report the
+		// others, and it must never take the parse measurement down with it.
+		Возврат Неопределено;
 	КонецЕсли;
 	
 	Начало = ТекущаяУниверсальнаяДатаВМиллисекундах();

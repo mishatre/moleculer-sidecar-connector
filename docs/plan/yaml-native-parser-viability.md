@@ -260,6 +260,40 @@ an instance it holds, or arrange for `CompileServiceSchema` not to hold safe mod
 constructor. The second option changes the sandboxing of every service constructor, so it is
 an owner decision rather than a detail.
 
+### Third build, and a correction to the paragraph above
+
+A third build arrived, aggressively optimised: **255 240 bytes**, 58% smaller than the 612 264 one
+and 65% smaller than the original. It does not support the conclusion above.
+
+Same code path as the comparison above (the module connects through the extension's template),
+four runs of 100 iterations of the same document:
+
+| Build | Bytes | Reused instance | Component call | Module call |
+|---|---|---|---|---|
+| 612 264 (previous) | 612 264 | 6, 6, 6 ms | 262, 244, 237 ms | 258, 238, 271 ms |
+| 255 240 (this one) | 255 240 | 12, 7, 8, 7 ms | 281, 275, 247, 232 ms | 254, 261, 288, 264 ms |
+
+Per call that is a parse of 0.07–0.12 ms against 0.06 ms, and a connect of 2.3–2.8 ms against
+2.4–2.6 ms. **Halving the library again changed nothing measurable.**
+
+So "connect tracks library size" was over-extrapolated from two points, and this third one does not
+confirm it. The controlled file-path comparison that produced it also cannot be repeated now: with
+this build **every file-path connect is refused**, for relative and for absolute paths alike, while
+the same absolute paths connected fine in the earlier session. Until that refusal is understood,
+treat "a smaller library loads faster" as **unsupported** rather than established. The refusal is
+reported by the probe rather than raised, so it can no longer take the parse measurement down with
+it.
+
+What does survive, and is now measured across three builds: connecting dominates the per-call cost
+at ~2.5 ms against ~0.07 ms of parsing, and that ratio is insensitive to the library's size. The
+lever is holding the connection, not shrinking the binary.
+
+**Connecting is not cached by the platform.** There is a one-time cost of 2–5 ms and then a steady
+~2.5 ms on every connect, whether the library is 255 KB or 733 KB. Holding the instance instead
+collapses the same work to 0.06–0.12 ms per parse. `yp_YAML` cannot hold it, because an extension
+common module cannot declare module variables — so a caller that wants the cached form has to
+connect once and keep the instance itself.
+
 ## Recipe to integrate it
 
 1. Add a common module `yp_YAML` to the connector extension and a binary template holding
