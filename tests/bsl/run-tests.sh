@@ -14,6 +14,10 @@
 # modules into Moleculer and keeps only mol_Reuse and mol_ReuseCalls, so the callable
 # surface differs between the canonical extension and the standalone variant.
 #
+# In canonical mode the connector extension is compiled from src on every run, so the
+# suites always exercise current code. In standalone mode the artifact comes from
+# tools/standalone-builder, which must be run first.
+#
 # Requires: java (JDK 21), vrunner, and the vendored YAxUnit and md-sparrow artifacts.
 set -euo pipefail
 
@@ -59,13 +63,16 @@ done
 
 case "$MODE" in
 	canonical)
-		# The designer's own extension build. It cannot currently be rebuilt from XML
-		# sources: the platform rejects its own dump, see tests/README.md.
-		CONNECTOR_CFE="build/out/cfe/MoleculerSidecarConnector.cfe"
+		# Compiled from source on every run, so the suites always exercise current code.
+		CONNECTOR_SRC="src/cfe/MoleculerSidecarConnector"
+		CONNECTOR_CFE="build/test/connector-canonical.cfe"
 		CONNECTOR_NAME="MoleculerSidecarConnector"
 		BASE="build/ib"
 		;;
 	standalone)
+		# Built by tools/standalone-builder, which must be run first:
+		#   python3 tools/standalone-builder/build-standalone.py
+		CONNECTOR_SRC=""
 		CONNECTOR_CFE="build/standalone/MoleculerSidecarConnectorStandalone.cfe"
 		CONNECTOR_NAME="MoleculerSidecarConnectorStandalone"
 		BASE="build/ib-tests"
@@ -79,12 +86,22 @@ esac
 SUITE_ROOTS=("tests/bsl/common/CommonModules" "tests/bsl/$MODE/CommonModules")
 base_connection="/F$REPO_ROOT/$BASE"
 
-for required in "$CONNECTOR_CFE" "$YAXUNIT_CFE" "$MD_SPARROW_JAR"; do
+for required in "$YAXUNIT_CFE" "$MD_SPARROW_JAR"; do
 	if [ ! -e "$required" ]; then
 		echo "missing required file: $required" >&2
 		exit 1
 	fi
 done
+
+if [ -n "$CONNECTOR_SRC" ]; then
+	[ -d "$CONNECTOR_SRC" ] || {
+		echo "missing connector sources: $CONNECTOR_SRC" >&2
+		exit 1
+	}
+elif [ ! -e "$CONNECTOR_CFE" ]; then
+	echo "missing connector artifact: $CONNECTOR_CFE (run the standalone builder first)" >&2
+	exit 1
+fi
 
 for tool in java vrunner; do
 	command -v "$tool" >/dev/null || {
@@ -128,10 +145,21 @@ if [ "$module_count" -eq 0 ]; then
 	exit 1
 fi
 
-echo "==> compiling $TESTS_CFE"
-# Run from a neutral directory: vrunner auto-loads autumn-properties.json, which pins
-# ibconnection to this project's development base.
+# Run vrunner from a neutral directory: it auto-loads autumn-properties.json from the
+# working directory, which pins ibconnection to this project's development base.
 neutral_dir="$(mktemp -d)"
+
+if [ -n "$CONNECTOR_SRC" ]; then
+	echo "==> compiling the connector extension from $CONNECTOR_SRC"
+	(
+		cd "$neutral_dir"
+		vrunner cfe compile --src "$REPO_ROOT/$CONNECTOR_SRC" \
+			--extension-name "$CONNECTOR_NAME" --ibcmd --v8version "$V8VERSION" \
+			"$REPO_ROOT/$CONNECTOR_CFE"
+	) >/dev/null
+fi
+
+echo "==> compiling $TESTS_CFE"
 (
 	cd "$neutral_dir"
 	vrunner cfe compile --src "$REPO_ROOT/$WORK_DIR" \

@@ -148,8 +148,8 @@
 		<Metadata name="DataProcessor.mol_AdminPanel.Command.Services.CommandModule" id="34ac245e-032f-404a-90a7-bfef14dc10f5.2" configVersion="b59565b5406f51f6fa239e9a9c2590eae5f8a739"/>
 		<Metadata name="DataProcessor.mol_AdminPanel.Form.ActionCallForm" id="24643ab7-af7e-47b0-be4c-75a9978c988f" configVersion="abd8d6d731f318653ad9e47478a872ffc4ca74d1"/>
 		<Metadata name="DataProcessor.mol_AdminPanel.Form.ActionCallForm.Form" id="24643ab7-af7e-47b0-be4c-75a9978c988f.0" configVersion="b836db8169bd6a704ca606114b8d86952416add9"/>
-		<Metadata name="DataProcessor.mol_AdminPanel.Form.Configuration" id="6267565d-2f85-412c-a4a3-40c15e2ef284" configVersion="08d0db7f3c5872f02f9229235b50e603539f1f92"/>
-		<Metadata name="DataProcessor.mol_AdminPanel.Form.Configuration.Form" id="6267565d-2f85-412c-a4a3-40c15e2ef284.0" configVersion="759c0b2a4c1f84b3f828322ec5bebcc46179ee72"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.ConfigurationForm" id="6267565d-2f85-412c-a4a3-40c15e2ef284" configVersion="08d0db7f3c5872f02f9229235b50e603539f1f92"/>
+		<Metadata name="DataProcessor.mol_AdminPanel.Form.ConfigurationForm.Form" id="6267565d-2f85-412c-a4a3-40c15e2ef284.0" configVersion="759c0b2a4c1f84b3f828322ec5bebcc46179ee72"/>
 		<Metadata name="DataProcessor.mol_AdminPanel.Form.Form" id="aa8e5cf7-9912-46cf-9468-120798620c60" configVersion="cb1bcb0df02592331cf01fb8dca20e7b2c8e3b34"/>
 		<Metadata name="DataProcessor.mol_AdminPanel.Form.Form.Form" id="aa8e5cf7-9912-46cf-9468-120798620c60.0" configVersion="a8e9d49f4fe96f79e430d559c9233acb157286d3"/>
 		<Metadata name="DataProcessor.mol_AdminPanel.Form.ServiceInfo" id="eadc3d7e-a2d9-46a6-be3f-0dbab60d3e50" configVersion="20aae193c27faf42b16c80e70378d2da760c83c9"/>

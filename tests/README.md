@@ -71,6 +71,7 @@ tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
 |---|---|---|
 | `common/CommonModules/mol_ReuseTests` | `mol_Reuse.*` | оба (модуль сохранён) |
 | `canonical/CommonModules/mol_ErrorsTests` | `mol_Errors.*` | каноническое расширение |
+| `canonical/CommonModules/mol_ContextFactoryTests` | `mol_ContextFactory.*` | каноническое расширение |
 | `standalone/CommonModules/MoleculerTests` | `Moleculer.*` | автономная база |
 
 `run-tests.sh` собирает наборы из `common/` плюс каталога выбранного режима, поэтому
@@ -88,9 +89,9 @@ tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
   тип даёт `Name = "MoleculerError"` и нечисловой `Code`. Не исправлено — поведение
   зафиксировано тестом `CustomErrorFallsBackToAGenericError`.
 
-### Каноническое расширение не собирается из исходников
+### Раскладка, которую платформа не читала
 
-`vrunner cfe compile --src src/cfe/MoleculerSidecarConnector` падает и через `ibcmd`, и
+`vrunner cfe compile --src src/cfe/MoleculerSidecarConnector` падал и через `ibcmd`, и
 через конфигуратор:
 
 ```
@@ -110,13 +111,15 @@ tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
 апреля 2025 имеет тот же расклад. То есть платформа не может прочитать собственную
 выгрузку, а `src/` ей соответствует.
 
-Обход, проверенный на копии: единый расклад `Forms/` плюс переименование формы даёт
-сборку. В исходники пока не внесён — нужен выбор владельца.
+Исправлено в `src/`: все формы процессора лежат единообразно под `Forms/`, а форма
+`Configuration` переименована в `ConfigurationForm` (синоним «Настройка узла» не менялся;
+обновлены две ссылки в `DataProcessors/Commands/Ext/CommandModule.bsl` и записи в
+`ConfigDumpInfo.xml`). Формы всё равно планируется переделать, поэтому переименование
+сделано без оглядки на обратную совместимость.
 
-Пока каноническая база собирается из артефакта конфигуратора
-(`build/out/cfe/MoleculerSidecarConnector.cfe`), а не из `src/`. Поэтому она отражает
-состояние на момент выгрузки: `mol_ContextFactory.Emit` в ней ещё не исправлен.
-Автономный вариант собирается из `src/` и этого недостатка не имеет.
+Каноническая база собирается из `src/` при каждом прогоне, поэтому наборы проверяют
+текущий код. Автономный вариант собирается `tools/standalone-builder` и этого расклада
+не касается.
 
 ## Тесты конструктора
 

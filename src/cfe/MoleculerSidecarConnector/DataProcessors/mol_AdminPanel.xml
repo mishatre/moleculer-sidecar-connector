@@ -33,7 +33,7 @@
 		</Properties>
 		<ChildObjects>
 			<Form>Form</Form>
-			<Form>Configuration</Form>
+			<Form>ConfigurationForm</Form>
 			<Form>ServiceListForm</Form>
 			<Form>ServiceItemForm</Form>
 			<Form>ServiceInfo</Form>
