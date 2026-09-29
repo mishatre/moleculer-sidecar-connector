@@ -214,6 +214,15 @@ vrunner "${run_options[@]}" >"$run_log" 2>&1
 status=$?
 set -e
 
+# YAxUnit leaves a suite that fails to compile out of its counters, so the summary can read
+# "success 41, failed 0, errors 0" while a whole module never ran. The only trace is the
+# log, so the run is only accepted when no module failed to load.
+if grep -qE "Ошибка инициализации модуля|ОшибкаКомпиляцииВстроенногоЯзыка" "$run_log"; then
+	echo "==> a suite did not load, so the counters above understate the run" >&2
+	grep -E "Ошибка инициализации модуля|ОшибкаКомпиляцииВстроенногоЯзыка" "$run_log" >&2 || true
+	status=1
+fi
+
 grep -E "YAxUnit: |^  \[" "$run_log" || true
 
 exit_code="$(cat "$exitcode_path" 2>/dev/null || echo '?')"

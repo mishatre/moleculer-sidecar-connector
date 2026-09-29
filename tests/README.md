@@ -108,6 +108,15 @@ tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
 - **Проверки платформы не компилируют модули.** `vrunner cfe compile`, `ibcmd config check`
   и `/CheckModules` загружают метаданные, не разбирая тела модулей, поэтому
   компиляционная ошибка видна только при реальном исполнении.
+- **Набор, который не скомпилировался, исчезает из счётчиков YAxUnit.** Модуль, упавший
+  на загрузке, не попадает ни в «провалено», ни в «ошибок»: прогон печатал
+  «всего 41, успешно 41, ошибок 0», хотя целый набор не исполнялся, и код возврата был 0.
+  Поэтому `run-tests.sh` теперь сам роняет прогон, если в журнале есть
+  «Ошибка инициализации модуля» или «ОшибкаКомпиляцииВстроенногоЯзыка».
+- **Имя области не может содержать пробелов.** `#Region Compiling a service` даёт
+  «Ошибка в операторе препроцессора» и роняет компиляцию всего набора.
+- **Структуры и Maps читаются по-разному.** `схема.actions` и `схема.metadata` — это
+  `Map` (`.Get(...)`), а `Action.Params` — `Structure` (`.свойство`).
 
 ### Режимность тестов
 
@@ -122,6 +131,9 @@ tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
 | `common/CommonModules/mol_ReuseTests` | `mol_Reuse.*` | оба (модуль сохранён) |
 | `canonical/CommonModules/mol_ErrorsTests` | `mol_Errors.*` | каноническое расширение |
 | `canonical/CommonModules/mol_ContextFactoryTests` | `mol_ContextFactory.*` | каноническое расширение |
+| `canonical/CommonModules/mol_HelpersTests` | `mol_Helpers.*` | каноническое расширение |
+| `canonical/CommonModules/mol_BrokerTests` | `mol_Broker.*` | каноническое расширение |
+| `canonical/CommonModules/mol_SchemaFactoryTests` | `mol_SchemaFactory.*` | каноническое расширение |
 | `standalone/CommonModules/MoleculerTests` | `Moleculer.*` | автономная база |
 
 `run-tests.sh` собирает наборы из `common/` плюс каталога выбранного режима, поэтому
@@ -138,6 +150,20 @@ tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
   `Code`, а не `Name` (сигнатура `Error(Type, Code, Name, Message, ...)`), поэтому такой
   тип даёт `Name = "MoleculerError"` и нечисловой `Code`. Не исправлено — поведение
   зафиксировано тестом `CustomErrorFallsBackToAGenericError`.
+- В `mol_SchemaFactory` покрытие по необходимости неровное: `FromString` разбирает YAML
+  через sidecar (`$sidecar.utils.parseYAML`) и без живого соединения не исполняется.
+  Проверяются конструкторы типов, запрет вызова вне контекста сборки и
+  `CompileServiceSchema` — на реальном серверном модуле `mol_Internal`, а не на
+  специально сделанной заглушке.
+- В `CompileServiceSchema` контекст создаётся **до** `Try`, поэтому неверная ссылка на
+  модуль уходит исключением наружу, а содержится только фаза конструирования. Эта
+  асимметрия зафиксирована тестами `CompileServiceSchemaRaisesForAnUnknownModule` и
+  `CompileServiceSchemaRaisesForANonModuleValue`.
+- Одиннадцать из тридцати вызовов `RaiseCustomError` передают ключ, которого нет в
+  диспетчере `CustomError`, и деградируют до общей ошибки: четыре из них — `ServiceSchema`
+  из `mol_SchemaFactory` при существующем `ServiceSchemaError`. Полный перечень — в
+  [T023](docs/plan/tasks/T023-error-taxonomy.md); текущая классификация закреплена тестом
+  `SchemaFailuresUseATypeTheFactoriesDoNotProduce`.
 
 ### Раскладка, которую платформа не читала
 

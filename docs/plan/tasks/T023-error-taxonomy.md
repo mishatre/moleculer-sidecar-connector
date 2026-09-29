@@ -48,6 +48,34 @@ proper taxonomy has to settle:
   two different things depending on the container. Pinned by the
   `GetOnStructureIgnoresCase` and `GetOnMapIsCaseSensitiveByDefault` tests.
 
+### Measured inventory of the mismatch
+
+`CustomError` dispatches on ten keys: `TypeError`, `ServiceNotFound`,
+`ServiceNotAvailable`, `RequestTimeout`, `RequestSkipped`, `RequestRejected`,
+`ValidationError`, `MaxCallLevel`, `ServiceSchemaError`, `InvalidPacketData`.
+The thirty `RaiseCustomError` call sites in `src/cfe` pass:
+
+| Call-site key | Sites | Dispatched |
+|---|---|---|
+| `Error` | 5 | no |
+| `ServiceSchemaError` | 5 | yes |
+| `TypeError` | 4 | yes |
+| `ServiceSchema` | 4 | no |
+| `SecretKeyRequired` | 2 | no |
+| `ExpiresParam` | 2 | no |
+| `AccessKeyRequired` | 2 | no |
+| `ValidationError` | 1 | yes |
+| `NotFoundError` | 1 | no |
+| `InvalidPacketData` | 1 | yes |
+
+Eleven of thirty sites therefore degrade to the generic fallback. Guarded by
+`mol_SchemaFactoryTests.SchemaFailuresUseATypeTheFactoriesDoNotProduce`, which
+asserts the current classification (`Type = "ServiceSchema"` instead of
+`SERVICE_SCHEMA_ERROR`) and is written to be rewritten, not deleted, once the
+taxonomy is settled. The three signing keys are Moleculer's own error types
+(`AccessKeyRequired`, `SecretKeyRequired`, `ExpiresParam`) and need an explicit
+decision: give them factories or map them onto `ValidationError`.
+
 ## Acceptance and consumer example
 
 - [ ] Every factory returns `Code` as a number and a `Name` from a documented set.

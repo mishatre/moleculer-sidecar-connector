@@ -1,0 +1,225 @@
+// Behavioural tests for mol_SchemaFactory — the module that turns a service definition
+// into the schema the broker publishes.
+//
+// Mode note: the canonical extension keeps mol_SchemaFactory as its own common module, so
+// this suite addresses it directly and is canonical-only. The standalone variant merges it
+// into Moleculer.
+//
+// Why the coverage is shaped this way: FromString() is the headline entry point, but it
+// parses YAML through the sidecar ("$sidecar.utils.parseYAML"), so it cannot run without a
+// live connection. What is reachable in-process is the type builders that service authors
+// declare parameters with, the building-context guard, and CompileServiceSchema itself.
+//
+// CompileServiceSchema is exercised against mol_Internal, which is a real server module
+// with a real Constructor, so the compile pipeline is checked against something the
+// connector actually publishes rather than against a purpose-built fixture.
+//
+// The entry-point name is fixed by the framework: ЮТЧитательСлужебный.ИмяМетодаСценариев()
+// returns the literal "ИсполняемыеСценарии".
+
+#Region Public
+
+Procedure ИсполняемыеСценарии() Export
+	
+	ЮТТесты
+		.ДобавитьТестовыйНабор("mol_SchemaFactory")
+		.ДобавитьСерверныйТест("TypeStringIsRequiredByDefault")
+		.ДобавитьСерверныйТест("TypeStringCanBeOptional")
+		.ДобавитьСерверныйТест("TypeBooleanCarriesDefaultConvertAndOptional")
+		.ДобавитьСерверныйТест("TypeArrayNestsItsItemType")
+		.ДобавитьСерверныйТест("TypeMultiIsOptionalByDefault")
+		.ДобавитьСерверныйТест("CompilesARealServiceModule")
+		.ДобавитьСерверныйТест("QualifiesHandlerNamesWithTheModule")
+		.ДобавитьСерверныйТест("PrefixesTheServiceNameWhenAsked")
+		.ДобавитьСерверныйТест("CarriesActionParamsFromTheConstructor")
+		.ДобавитьСерверныйТест("TheBuilderRefusesToRunOutsideACompilingService")
+		.ДобавитьСерверныйТест("CompileServiceSchemaRaisesForAnUnknownModule")
+		.ДобавитьСерверныйТест("CompileServiceSchemaRaisesForANonModuleValue")
+		.ДобавитьСерверныйТест("SchemaFailuresUseATypeTheFactoriesDoNotProduce");
+	
+EndProcedure
+
+#Region Parameters
+
+Procedure TypeStringIsRequiredByDefault() Export
+	
+	Type = mol_SchemaFactory.TypeString();
+	
+	ЮТест.ОжидаетЧто(Type.type, "a plain parameter is declared as a string").Равно("string");
+	ЮТест.ОжидаетЧто(Type.optional, "TypeString defaults to a required parameter").Равно(Ложь);
+	
+EndProcedure
+
+Procedure TypeStringCanBeOptional() Export
+	
+	Type = mol_SchemaFactory.TypeString(Истина);
+	
+	ЮТест.ОжидаетЧто(Type.optional, "the flag is the only thing that changes").Равно(Истина);
+	ЮТест.ОжидаетЧто(Type.type, "an optional parameter is still a string").Равно("string");
+	
+EndProcedure
+
+Procedure TypeBooleanCarriesDefaultConvertAndOptional() Export
+	
+	Default = mol_SchemaFactory.TypeBoolean();
+	
+	ЮТест.ОжидаетЧто(Default.type, "a flag is declared as a boolean").Равно("boolean");
+	ЮТест.ОжидаетЧто(Default.optional, "TypeBoolean is optional by default").Равно(Истина);
+	ЮТест.ОжидаетЧто(Default.convert, "TypeBoolean converts by default").Равно(Истина);
+	ЮТест.ОжидаетЧто(Default.default, "the default value is False unless given").Равно(Ложь);
+	
+	Overridden = mol_SchemaFactory.TypeBoolean(Истина, Ложь, Ложь);
+	
+	ЮТест.ОжидаетЧто(Overridden.default, "the first argument is the default value").Равно(Истина);
+	ЮТест.ОжидаетЧто(Overridden.optional, "the second argument is the optional flag").Равно(Ложь);
+	ЮТест.ОжидаетЧто(Overridden.convert, "the third argument is the convert flag").Равно(Ложь);
+	
+EndProcedure
+
+Procedure TypeArrayNestsItsItemType() Export
+	
+	Items = mol_SchemaFactory.TypeString(Истина);
+	Type = mol_SchemaFactory.TypeArray(Items);
+	
+	ЮТест.ОжидаетЧто(Type.type, "a list is declared as an array").Равно("array");
+	ЮТест.ОжидаетЧто(Type.optional, "TypeArray defaults to a required parameter").Равно(Ложь);
+	ЮТест.ОжидаетЧто(Type.items.type, "the item descriptor is carried unchanged").Равно("string");
+	ЮТест.ОжидаетЧто(Type.items.optional, "the item descriptor keeps its own flags").Равно(Истина);
+	
+EndProcedure
+
+Procedure TypeMultiIsOptionalByDefault() Export
+	
+	Rules = New Array();
+	Rules.Add(mol_SchemaFactory.TypeString());
+	Type = mol_SchemaFactory.TypeMulti(Rules);
+	
+	ЮТест.ОжидаетЧто(Type.type, "a union is declared as multi").Равно("multi");
+	ЮТест.ОжидаетЧто(Type.optional, "TypeMulti is optional by default").Равно(Истина);
+	ЮТест.ОжидаетЧто(Type.rules.Count(), "the rules are carried through").Равно(1);
+	
+EndProcedure
+
+#EndRegion
+
+#Region Compiling
+
+Procedure CompilesARealServiceModule() Export
+	
+	Schema = mol_SchemaFactory.CompileServiceSchema("mol_Internal");
+	
+	ЮТест.ОжидаетЧто(Schema.Name, "the constructor owns the service name").Равно("$internal");
+	ЮТест.ОжидаетЧто(Schema.Metadata.Get("$dynamic"), "a module service is not a dynamic one").Равно(Ложь);
+	
+EndProcedure
+
+Procedure QualifiesHandlerNamesWithTheModule() Export
+	
+	Schema = mol_SchemaFactory.CompileServiceSchema("mol_Internal");
+	Action = Schema.Actions.Get("list");
+	
+	ЮТест.ОжидаетЧто(Action.Handler,
+			"a handler in a module service is addressed through its module, otherwise the broker could not call it")
+		.Равно("mol_Internal.ListAction");
+	
+EndProcedure
+
+Procedure PrefixesTheServiceNameWhenAsked() Export
+	
+	Schema = mol_SchemaFactory.CompileServiceSchema("mol_Internal", "pfx");
+	
+	ЮТест.ОжидаетЧто(Schema.Name, "the prefix is applied in front of the constructor's name")
+		.Равно("pfx.$internal");
+	
+EndProcedure
+
+Procedure CarriesActionParamsFromTheConstructor() Export
+	
+	Schema = mol_SchemaFactory.CompileServiceSchema("mol_Internal");
+	Params = Schema.Actions.Get("services").Params;
+	
+	ЮТест.ОжидаетЧто(Params.onlyLocal.type, "declared params reach the compiled schema").Равно("boolean");
+	ЮТест.ОжидаетЧто(Params.grouping.default,
+			"Builder.TypeBoolean(True) passes its default through to the schema").Равно(Истина);
+	
+EndProcedure
+
+Procedure TheBuilderRefusesToRunOutsideACompilingService() Export
+	
+	// A compile runs first on purpose: if CompileServiceSchema forgot to pop its context,
+	// the stack would still hold one and the call below would silently succeed.
+	mol_SchemaFactory.CompileServiceSchema("mol_Internal");
+	
+	Raised = False;
+	Try
+		mol_SchemaFactory.Action("probe", "Handler");
+	Except
+		Raised = True;
+	EndTry;
+	
+	ЮТест.ОжидаетЧто(Raised,
+			"a finished compile must leave no building context, so a stray builder call has to fail")
+		.Равно(Истина);
+	
+EndProcedure
+
+#EndRegion
+
+#Region Failing
+
+// Context setup runs before CompileServiceSchema enters its Try block, so a bad reference
+// escapes as an exception. Only the construction phase is contained. These two tests pin
+// that asymmetry; the test below it pins the containment itself.
+
+Procedure CompileServiceSchemaRaisesForAnUnknownModule() Export
+	
+	Raised = False;
+	Try
+		mol_SchemaFactory.CompileServiceSchema("mol_NoSuchModuleAtAll");
+	Except
+		Raised = True;
+	EndTry;
+	
+	ЮТест.ОжидаетЧто(Raised, "an unresolvable module name is raised, not reported as a failed compile")
+		.Равно(Истина);
+	
+EndProcedure
+
+Procedure CompileServiceSchemaRaisesForANonModuleValue() Export
+	
+	Raised = False;
+	Try
+		mol_SchemaFactory.CompileServiceSchema(42);
+	Except
+		Raised = True;
+	EndTry;
+	
+	ЮТест.ОжидаетЧто(Raised, "a value that is not a module or a reference is raised")
+		.Равно(Истина);
+	
+EndProcedure
+
+// KNOWN DEFECT, tracked by the error taxonomy work.
+//
+// mol_SchemaFactory raises its schema failures with the type key "ServiceSchema", but
+// CustomError dispatches on "ServiceSchemaError" (the name of the factory it should reach).
+// Eleven of the thirty RaiseCustomError call sites use a key the dispatcher does not know,
+// so those failures degrade to the generic fallback and a consumer cannot tell a schema
+// failure from any other kind. The assertion below records the current classification; it
+// must be rewritten, not deleted, when the taxonomy is fixed.
+Procedure SchemaFailuresUseATypeTheFactoriesDoNotProduce() Export
+	
+	Intended = mol_Errors.ServiceSchemaError("probe");
+	Actual = mol_Errors.CustomError("ServiceSchema", "probe");
+	
+	ЮТест.ОжидаетЧто(Intended.Type, "the named factory produces the documented code")
+		.Равно("SERVICE_SCHEMA_ERROR");
+	ЮТест.ОжидаетЧто(Actual.Type,
+			"KNOWN DEFECT: the caller's key is not dispatched, so the error keeps the raw key instead of SERVICE_SCHEMA_ERROR")
+		.Равно("ServiceSchema");
+	
+EndProcedure
+
+#EndRegion
+
+#EndRegion
