@@ -60,6 +60,10 @@ decisions, the verification approach and the open questions are in
 
 ### Research notes
 
+- [docs/old-code-version/ANALYSIS.md](../old-code-version/ANALYSIS.md) — the module before the
+  extension rewrite: what the rewrite dropped, the error-taxonomy baseline that T023 compares against,
+  and the specification for the `|`-suffixed parameter vocabulary that T029 needs.
+
 - [yaml-native-parser-viability.md](yaml-native-parser-viability.md) — revised after
   owner review. The requirement (constructors must compile with no sidecar connected)
   is accepted and a local parser is the answer. The platform has no YAML API, so the

@@ -42,11 +42,18 @@ Two type forms appear in the fixtures: a flat `\|`-suffixed string, and a struct
 
 ## Facts the plan rests on
 
-- The `\|`-suffixed vocabulary is the **sidecar's**, not the connector's. The connector has no parser
-  for it; `mol_SchemaFactory` builds structured descriptors such as `Result.Insert("optional",
-  Optional)`, and the only `"any\|optional"` literal in the repo is in
-  `moleculer-sidecar-next/src/services/sidecar.service.ts`. So the target vocabulary's authority is
-  the sidecar's schema conversion, and the mapping table has to be derived from there.
+- The `\|`-suffixed vocabulary belongs to the **sidecar** today, and no current BSL parses it:
+  `mol_SchemaFactory` builds structured descriptors such as `Result.Insert("optional", Optional)`, and
+  the only `"any\|optional"` literal in the repo is in
+  `moleculer-sidecar-next/src/services/sidecar.service.ts`. The oldest version of the connector did
+  parse it in BSL, however, and that parser is the vocabulary's written specification — see
+  [the analysis](../old-code-version/ANALYSIS.md). Derive the mapping table from it instead of
+  reverse-engineering, because it also settles the semantics: a bare flag means `{flag: true}`, `no-X`
+  means `{x: false}`, `key:value` coerces booleans and numbers, and a `[]` suffix means an array.
+- Four behaviours of the old builder have no obvious equivalent in the current one — service
+  dependencies with version constraints, non-parameter settings, schema properties, and the optional
+  `Rest` argument on events. YAML and JSON may cover them where the builder API does not, so each is a
+  check to perform per module rather than an assumption. The same analysis lists them.
 - `ideal.bsl` is not yet a settled contract: it carries TODOs for the parameter descriptions, says
   the constructor type is still undecided, and keeps an `#If Server And Not Server Then` block purely
   to make the editor infer the builder's type.

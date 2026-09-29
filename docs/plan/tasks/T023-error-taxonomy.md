@@ -111,6 +111,25 @@ the distinction is empty, and nothing in the project could see it. Compilation p
 happens, and any assertion that stops at "an error was raised" passes as well. Only asserting the
 message content catches it.
 
+### Historical baseline
+
+The oldest version of the connector, kept in `docs/old-code-version/`, defined this taxonomy before
+the extension rewrite: three classes with fixed defaults (`MoleculerClientError` 400,
+`MoleculerServerError` 500, `MoleculerRetryableError` 500) and fourteen internal factories carrying an
+explicit type and code. That file is the reference for "a documented set of names", and comparing it
+with `mol_Errors` today gives one live defect and one open decision:
+
+- `ServiceNotFound` still reports `SERVICE_NOT_AVAILABLE`, exactly as the oldest version did, so a
+  missing service and an unavailable one cannot be told apart. The rewrite copied that instead of
+  correcting it, and it is the same confusion this task exists to remove.
+- `QueueIsFull`, `BrokerOptions`, `GracefulStopTimeout` and `ProtocolVersionMismatch` were dropped by
+  the rewrite. Decide whether the documented set should be smaller on purpose or whether those origins
+  are needed again.
+
+The old code also shipped six factories with no `name` at all, through a doubled comma, which is why
+"every factory returns a name" is worth asserting rather than assuming. Details in that directory's
+analysis.
+
 ## Acceptance and consumer example
 
 - [ ] Every factory returns `Code` as a number and a `Name` from a documented set.
