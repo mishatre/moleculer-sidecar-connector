@@ -134,11 +134,7 @@
                 "replacement": "CompileServiceSchema(Moleculer)"
             },
             {
-                "description": "the local YAML parsers are not part of the variant and the branch was unreachable",
-                "pattern": "Return\\s+YAML\\.ToObject\\(Text\\)\\s*;",
-                "replacement": "// Unreachable in the canonical sources: YAML parsing is delegated to the sidecar."
-            },
-            {
+
                 "description": "the dynamic-service branch is unreachable without the mol_Services catalog",
                 "pattern": "\\n[ \\t]*ElsIf[ \\t]+Context\\.Type[ \\t]*=[ \\t]*Upper\\(\\\"Dynamic\\\"\\)[ \\t]+Then\\n[ \\t]*EvaluateServiceConstructor\\(Context\\)[ \\t]*;",
                 "replacement": ""

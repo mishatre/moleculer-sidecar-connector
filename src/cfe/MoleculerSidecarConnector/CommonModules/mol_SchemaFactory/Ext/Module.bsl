@@ -511,8 +511,6 @@ Function ParseServiceDefinition(Val Text)
 		Params = New Structure();
 		Params.Insert("string", StrReplace(Text, Chars.Tab, "    "));
 		Return Moleculer.Call("$sidecar.utils.parseYAML", Params);
-		Definition = StrReplace(Text, Chars.Tab, "    ");
-		Return YAML.ToObject(Text);	
 	EndIf;  
 	
 	Return Undefined;

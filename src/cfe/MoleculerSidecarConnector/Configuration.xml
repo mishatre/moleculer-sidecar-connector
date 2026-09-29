@@ -98,10 +98,6 @@
 			<CommonModule>CodeEditor</CommonModule>
 			<CommonModule>CodeEditorClient</CommonModule>
 			<CommonModule>CodeEditorClientServer</CommonModule>
-			<CommonModule>YAML</CommonModule>
-			<CommonModule>YAML1</CommonModule>
-			<CommonModule>YAML2</CommonModule>
-			<CommonModule>YAML3</CommonModule>
 			<HTTPService>mol_Moleculer</HTTPService>
 			<FunctionalOption>mol_UseDynamicServices</FunctionalOption>
 			<FunctionalOption>mol_UseProxy</FunctionalOption>

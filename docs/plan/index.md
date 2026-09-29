@@ -41,7 +41,7 @@ for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
 
 | ID | Outcome | Status | Depends on | Where |
 |---|---|---|---|---|
-| T024 | All four YAML modules are deleted | draft | none | [Plan](refactor-backlog.md) |
+| T024 | All four YAML modules are deleted | verified | none | [Plan](refactor-backlog.md) |
 | T025 | The inbound transport boundary is covered by an integration test | draft | none | [Plan](refactor-backlog.md) |
 | T026 | Module surface and naming are consistent | draft | T023, T025 | [Plan](refactor-backlog.md) |
 | T027 | The form layer is rebuilt | draft | owner decision | [Plan](refactor-backlog.md) |

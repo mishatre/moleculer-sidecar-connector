@@ -47,7 +47,7 @@ Undecided, needs the owner:
 
 | ID | Outcome | Status | Depends on |
 |---|---|---|---|
-| T024 | All four YAML modules are deleted | draft | none |
+| T024 | All four YAML modules are deleted | verified | none |
 | T025 | The inbound transport boundary is covered by an integration test | draft | none |
 | T026 | Module surface and naming are consistent | draft | T023, T025 |
 | T027 | The form layer is rebuilt | draft | owner decision |

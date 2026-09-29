@@ -80,15 +80,11 @@
 				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_SchemaFactory</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Transport</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Internal</xr:Item>
-				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.YAML</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.CodeEditor</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.CodeEditorClient</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.CodeEditorClientServer</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Server</xr:Item>
 				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.mol_Client</xr:Item>
-				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.YAML1</xr:Item>
-				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.YAML2</xr:Item>
-				<xr:Item xsi:type="xr:MDObjectRef">CommonModule.YAML3</xr:Item>
 			</Content>
 		</Properties>
 		<ChildObjects/>

@@ -64,14 +64,6 @@
 		<Metadata name="CommonModule.MoleculerClientServer.Module" id="33d45997-8db7-4d5b-810c-0ddf79fb8871.0" configVersion="6e5996fda7166d3656009498ffc9813b2b2cc6a6"/>
 		<Metadata name="CommonModule.MoleculerOverridable" id="61d9f2cd-4c9d-4dd0-bb97-b0e06619cc02" configVersion="37e6639059e171081894c576ecc5640006156a57"/>
 		<Metadata name="CommonModule.MoleculerOverridable.Module" id="61d9f2cd-4c9d-4dd0-bb97-b0e06619cc02.0" configVersion="57b40841f9d72df2eb3b0216a7c3c36228372a9e"/>
-		<Metadata name="CommonModule.YAML" id="c26b3fd2-1b4d-47d5-8374-55cf1bae36c6" configVersion="50892fb4d3f73ecc3633f72de815d4dd019616a5"/>
-		<Metadata name="CommonModule.YAML.Module" id="c26b3fd2-1b4d-47d5-8374-55cf1bae36c6.0" configVersion="6ac65e3be9454076f8f88aa7fd7a281ba5fcd389"/>
-		<Metadata name="CommonModule.YAML1" id="2d01fac9-4011-4cfd-a03e-74362ccd1851" configVersion="355eae75607bceae54d4d56f1da0549b51b32778"/>
-		<Metadata name="CommonModule.YAML1.Module" id="2d01fac9-4011-4cfd-a03e-74362ccd1851.0" configVersion="e8454fc5965dc233bbe8141e1eedbd7656d56dff"/>
-		<Metadata name="CommonModule.YAML2" id="32099b04-0cfc-4b6d-a7fe-f612980121c2" configVersion="1b28b3726fac713923620f261af7f33964c5c8d9"/>
-		<Metadata name="CommonModule.YAML2.Module" id="32099b04-0cfc-4b6d-a7fe-f612980121c2.0" configVersion="4dde8f8a1e9738204d795bffcbc5ec632d6579c6"/>
-		<Metadata name="CommonModule.YAML3" id="9c2e2179-d65d-41ee-a464-1de8fd28da75" configVersion="1d855e8502711a77be817489b498a783718a0f82"/>
-		<Metadata name="CommonModule.YAML3.Module" id="9c2e2179-d65d-41ee-a464-1de8fd28da75.0" configVersion="d975656d92a0430bebc4a85f46080f936cbfec95"/>
 		<Metadata name="CommonModule.mol_Broker" id="f41e60ad-0f6e-4de3-abe9-300e5a6e385e" configVersion="19c5bafeea45fec0b4c9df7a6729be4c3a757e03"/>
 		<Metadata name="CommonModule.mol_Broker.Module" id="f41e60ad-0f6e-4de3-abe9-300e5a6e385e.0" configVersion="c77459a656a34525b1d54fb4bdbe04ff042b4943"/>
 		<Metadata name="CommonModule.mol_Client" id="06b26ef4-a61a-41a9-b031-aeedcc154c45" configVersion="40bd807159b0bff88d6499ed17000700368bfb27"/>
