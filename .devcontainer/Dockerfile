@@ -11,7 +11,18 @@ RUN apt-get update \
         git \
         openssh-client \
         procps \
+        inetutils-tools \
+        iproute2 \
+        net-tools \
+        dmidecode \
     && rm -rf /var/lib/apt/lists/*
+
+# The 1C licence check shells out to `hostname` and `ip` to collect system
+# information. When they are missing, the platform cannot build that report and
+# rejects the developer licence with "Использование лицензии для разработчиков
+# запрещено", while the launcher logs "/bin/sh: 1: /sbin/ip: not found".
+# inetutils-tools guarantees `hostname`; iproute2 and net-tools provide `ip` and
+# `ifconfig`; dmidecode answers the hardware queries.
 
 # The 1C client binaries link against WebKitGTK 4.0, libsoup 2.4 and
 # javascriptcoregtk 4.0, which Ubuntu 24.04 no longer ships. The script installs
