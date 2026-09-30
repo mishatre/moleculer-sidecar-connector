@@ -36,7 +36,7 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("TheBuilderRefusesToRunOutsideACompilingService")
 		.ДобавитьСерверныйТест("CompileServiceSchemaRaisesForAnUnknownModule")
 		.ДобавитьСерверныйТест("CompileServiceSchemaRaisesForANonModuleValue")
-		.ДобавитьСерверныйТест("SchemaFailuresUseATypeTheFactoriesDoNotProduce")
+		.ДобавитьСерверныйТест("SchemaFailuresUseTheDispatchedType")
 		.ДобавитьСерверныйТест("FromStringRejectsANonString")
 		.ДобавитьСерверныйТест("FromStringNeedsTheSidecarForAnythingThatIsNotJSON")
 		.ДобавитьСерверныйТест("TheSafeModeWindowIsReal")
@@ -319,24 +319,22 @@ Procedure CompileServiceSchemaRaisesForANonModuleValue() Export
 	
 EndProcedure
 
-// KNOWN DEFECT, tracked by the error taxonomy work.
+// The taxonomy work landed, so this test was rewritten rather than deleted, as its own comment asked.
 //
-// mol_SchemaFactory raises its schema failures with the type key "ServiceSchema", but
-// CustomError dispatches on "ServiceSchemaError" (the name of the factory it should reach).
-// Eleven of the thirty RaiseCustomError call sites use a key the dispatcher does not know,
-// so those failures degrade to the generic fallback and a consumer cannot tell a schema
-// failure from any other kind. The assertion below records the current classification; it
-// must be rewritten, not deleted, when the taxonomy is fixed.
-Procedure SchemaFailuresUseATypeTheFactoriesDoNotProduce() Export
-	
-	Intended = mol_Errors.ServiceSchemaError("probe");
-	Actual = mol_Errors.CustomError("ServiceSchema", "probe");
-	
-	ЮТест.ОжидаетЧто(Intended.Type, "the named factory produces the documented code")
-		.Равно("SERVICE_SCHEMA_ERROR");
-	ЮТест.ОжидаетЧто(Actual.Type,
-			"KNOWN DEFECT: the caller's key is not dispatched, so the error keeps the raw key instead of SERVICE_SCHEMA_ERROR")
-		.Равно("ServiceSchema");
+// mol_SchemaFactory raises its schema failures with the type key "ServiceSchema", while the factory is
+// named ServiceSchemaError. CustomError now normalises the short name before its chain, so both spellings
+// reach the same factory and a consumer can tell a schema failure from any other kind.
+Procedure SchemaFailuresUseTheDispatchedType() Export
+
+    Intended = mol_Errors.ServiceSchemaError("probe");
+    Actual = mol_Errors.CustomError("ServiceSchema", "probe");
+
+    ЮТест.ОжидаетЧто(Intended.Type, "the named factory produces the documented code")
+            .Равно("SERVICE_SCHEMA_ERROR");
+    ЮТест.ОжидаетЧто(Actual.Type, "both spellings reach the same factory")
+            .Равно("SERVICE_SCHEMA_ERROR");
+    ЮТест.ОжидаетЧто(Actual.Message, "the caller's message survives the normalisation")
+            .Равно("probe");
 	
 EndProcedure
 

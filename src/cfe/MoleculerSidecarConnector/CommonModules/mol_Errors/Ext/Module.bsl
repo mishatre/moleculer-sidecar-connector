@@ -5,7 +5,14 @@
 
 Function CustomError(Type, Message = "", Data = Undefined, ErrorInfo = Undefined) Export
 
-	Error = Undefined;
+// One concept had two spellings. Normalise before the chain so the taxonomy keeps one row per meaning
+     // instead of two identical branches; the call sites still using the short name are listed in the
+     // protocol document.
+     If Type = "ServiceSchema" Then
+             Type = "ServiceSchemaError";
+     EndIf;
+
+      Error = Undefined;
 	
 	If False Then
 		
@@ -29,14 +36,29 @@ Function CustomError(Type, Message = "", Data = Undefined, ErrorInfo = Undefined
 		Error = ServiceSchemaError(Message, Data, ErrorInfo);
 	ElsIf Type = "InvalidPacketData" Then
 		Error = InvalidPacketData(Message, Data, ErrorInfo);
-	Else        
-		// Unknown type: return a generic Moleculer error that still carries the caller's
-		// type. Code and Name are left to the factory defaults, matching the other generic
-		// errors in this module. The call used to pass the literal "Error" in the Code
-		// position, which produced a non-numeric code and rendered as "Error: Error".
-		Error = Error(Type, , , Message, Data, ErrorInfo);
-	EndIf;     
-	
+    ElsIf Type = "InvalidArgument" Then
+            Error = InvalidArgumentError(Message, Data, ErrorInfo);
+    ElsIf Type = "NotFoundError" Then
+            Error = NotFoundError(Message, Data, ErrorInfo);
+    ElsIf Type = "AccessKeyRequired" Then
+            Error = AccessKeyRequiredError(Message, Data, ErrorInfo);
+    ElsIf Type = "SecretKeyRequired" Then
+            Error = SecretKeyRequiredError(Message, Data, ErrorInfo);
+    ElsIf Type = "ExpiresParam" Then
+            Error = ExpiresParamError(Message, Data, ErrorInfo);
+    ElsIf Type = "Error" Then
+            // The connector's own guards use this name for "the caller asked for something the connector
+            // refuses". It is a documented row rather than a silent fallback, and it keeps the shape those
+            // call sites already produced. Retyping them to "InvalidArgument" is recorded as a follow-up.
+            Error = Error("GENERIC_ERROR", 500, "MoleculerError", Message, Data, ErrorInfo);
+    Else
+            // An unknown type is a mistake in the connector, not a runtime condition, and answering with a
+            // generic error only hid it: eleven of thirty call sites silently degraded that way. Raising
+            // loudly names the offending type so the call site is findable from the message alone.
+            UnknownType = StrTemplate("Unknown error type ""%1""", Type);
+            RaiseError(ClientError("UNKNOWN_ERROR_TYPE", 400, UnknownType, Data, ErrorInfo));
+    EndIf;
+
 	Return Error;
 	
 EndFunction
@@ -48,7 +70,7 @@ EndFunction
 #Region Moleculer
 
 Function ServiceNotFound(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return RetryableError("SERVICE_NOT_AVAILABLE", 404, Message, Data, ErrorInfo);
+	Return RetryableError("SERVICE_NOT_FOUND", 404, Message, Data, ErrorInfo);
 EndFunction
 
 Function ServiceNotAvailable(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
@@ -83,48 +105,54 @@ Function InvalidPacketData(Message = "", Data = Undefined, ErrorInfo = Undefined
 	Return Error("INVALID_PACKET_DATA", 500, "MoleculerError", Message, Data, ErrorInfo);
 EndFunction
 
+Function NotFoundError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
+	// A client asked for something that is not there. The message says what, and the code says 404 so a
+	// caller does not have to read the text to find out.
+	Return ClientError("NOT_FOUND", 404, Message, Data, ErrorInfo);
+EndFunction
+
 #EndRegion 
 
 #Region Minio
 
 Function InvalidArgumentError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return Error("InvalidArgument", , "ValidationError", Message, Data, ErrorInfo);	
+	Return Error("InvalidArgument", 400, "ValidationError", Message, Data, ErrorInfo);	
 EndFunction
 
 Function InvalidObjectNameError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return Error("InvalidObjectName", , "ValidationError", Message, Data, ErrorInfo);	
+	Return Error("InvalidObjectName", 400, "ValidationError", Message, Data, ErrorInfo);	
 EndFunction
 
 Function InvalidPrefixError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return Error("InvalidPrefix", , "ValidationError", Message, Data, ErrorInfo);	
+	Return Error("InvalidPrefix", 400, "ValidationError", Message, Data, ErrorInfo);	
 EndFunction
 
 Function AnonymousRequestError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return Error("AnonymousRequest", , "Error", Message, Data, ErrorInfo);	
+	Return Error("AnonymousRequest", 403, "Error", Message, Data, ErrorInfo);	
 EndFunction
 
 Function InvalidEndpointError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return Error("InvalidEndpoint", , "ValidationError", Message, Data, ErrorInfo);	
+	Return Error("InvalidEndpoint", 400, "ValidationError", Message, Data, ErrorInfo);	
 EndFunction
 
 Function InvalidBucketNameError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return Error("InvalidBucketName", , "ValidationError", Message, Data, ErrorInfo);	
+	Return Error("InvalidBucketName", 400, "ValidationError", Message, Data, ErrorInfo);	
 EndFunction 
 
 Function AccessKeyRequiredError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return Error("AccessKeyRequired", , "Error", Message, Data, ErrorInfo);	
+	Return Error("AccessKeyRequired", 401, "Error", Message, Data, ErrorInfo);	
 EndFunction
 
 Function SecretKeyRequiredError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return Error("SecretKeyRequired", , "Error", Message, Data, ErrorInfo);	
+	Return Error("SecretKeyRequired", 401, "Error", Message, Data, ErrorInfo);	
 EndFunction 
 
 Function InvalidXMLError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return Error("InvalidXML", , "ParseXMLError", Message, Data, ErrorInfo);	
+	Return Error("InvalidXML", 400, "ParseXMLError", Message, Data, ErrorInfo);	
 EndFunction
 
 Function ExpiresParamError(Message = "", Data = Undefined, ErrorInfo = Undefined) Export
-	Return Error("ExpiresParamError", , "ValidationError", Message, Data, ErrorInfo);	
+	Return Error("ExpiresParamError", 403, "ValidationError", Message, Data, ErrorInfo);	
 EndFunction
 
 Function S3Error(Code, Message = "", Data = Undefined, ErrorInfo = Undefined) Export
@@ -223,7 +251,7 @@ Function FromErrorInfo(ErrorInfo) Export
 	Data        = ErrorInfo.AdditionalInformation;
 	
 	If Category = ErrorCategory.NetworkError Then
-		Return Error(Type, ,"NetworkError", Description, Data, ErrorInfo);	
+		Return RetryableError("NETWORK_ERROR", 503, Description, Data, ErrorInfo);	
 	ElsIf Category = ErrorCategory.ExceptionRaisedFromScript Then
 		Name = "ExceptionRaisedFromScript";
 	ElsIf Category = ErrorCategory.AccessViolation Then       
@@ -268,7 +296,10 @@ Function FromErrorInfo(ErrorInfo) Export
 		Name = "OtherError";
 	EndIf;
 	
-	Error = CustomError(Type, Description, Data, ErrorInfo);
+	// A platform error is converted from what the platform reported, not from a type a caller named, so it
+	// is built directly instead of going through the caller-type dispatcher. The dispatcher refuses names it
+	// does not know, and the category names below are not part of the caller-facing taxonomy.
+	Error = Error(Type, 500, Name, Description, Data, ErrorInfo);
 	Error.Name = Name;
 	
 	Return Error;

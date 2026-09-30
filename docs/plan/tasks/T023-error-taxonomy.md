@@ -1,6 +1,7 @@
 # T023 — Error reporting distinguishes internal, sidecar and end-node failures
 
-Status: draft
+Status: in_progress 2026-09-30 — the taxonomy and its dispatcher landed and are green in both modes; the
+end-to-end half of the third and fourth acceptance items is still open.
 Depends on: T018 (the error suites establish current behaviour)
 Recipe: normal
 Coordinator: Sol Medium
@@ -159,6 +160,41 @@ hang. The cheap explanation — a platform dialog waiting for a click in a headl
 out, and that distinction decides the fix, so diagnosing it is the natural first step here. The transport
 does set a timeout (120 s by default, from `Packet.Data.Timeout` in milliseconds) and `mol_Broker.Call`
 contains no retry loop, so neither accounts for 22 minutes on its own.
+
+## Completion evidence / resume point
+
+Landed 2026-09-30, verified by `tools/check.sh --layers static,bsl-canonical,bsl-standalone`: the static gate
+reports 62 diagnostics in 11 recorded rules, canonical is **179/179** and standalone **27/27**.
+
+What changed in `mol_Errors`:
+
+- The dispatcher gained rows for every name callers actually pass — `InvalidArgument`, `NotFoundError`,
+  `AccessKeyRequired`, `SecretKeyRequired`, `ExpiresParam` — plus a normalisation of `ServiceSchema` to
+  `ServiceSchemaError` before the chain, so one concept has one row instead of two identical branches.
+- An unknown type is refused loudly through `RaiseError`, naming the offending type in the message. The test
+  that pinned the silent downgrade is now `CustomErrorRefusesAnUnknownType`.
+- `ServiceNotFound` reports `SERVICE_NOT_FOUND` instead of sharing `SERVICE_NOT_AVAILABLE` with
+  `ServiceNotAvailable`.
+- `FromErrorInfo`'s network branch becomes `RetryableError("NETWORK_ERROR", 503, …)` instead of an error
+  whose `Code` was `Undefined` and whose `Name` said "NetworkError"; and `FromErrorInfo` no longer routes the
+  platform's own category names through the caller dispatcher, which is not what that table is for.
+- Eleven signing and argument factories now return a numeric code.
+- The documented set is the table in [connector-sidecar-protocol.md](../connector-sidecar-protocol.md).
+
+The inventory this task was written from had drifted: re-derived on 2026-09-30 it is **16 of 28** call sites
+passing an undispatched type (`"Error"` 5, `ServiceSchema` 4, the three signing names 6, `NotFoundError` 1),
+not "eleven of thirty".
+
+Still open, and the reason this task is not verified:
+
+- `mol_SchemaFactoryTests.SchemaFailuresUseATypeTheFactoriesDoNotProduce` was rewritten to
+  `SchemaFailuresUseTheDispatchedType` and asserts the fixed classification; the end-to-end half — a suite
+  observing each origin through a real boundary — is not done. The inbound boundary is covered by
+  `tests/bsl/http/test-inbound-transport.sh`; the transport-failure origin cannot be observed today because
+  an unreachable sidecar hangs instead of failing (see the note above), so it stays a recorded gap.
+- The five guard sites still passing `"Error"` should be retyped to `InvalidArgument`; they are documented as
+  a follow-up rather than changed blind, because their shape is pinned by existing suites.
+- Independent review of this diff has not happened yet.
 
 ## Acceptance and consumer example
 

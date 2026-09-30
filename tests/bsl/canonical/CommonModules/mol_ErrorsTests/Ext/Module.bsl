@@ -18,7 +18,7 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("ValidationErrorCarriesCode422")
 		.ДобавитьСерверныйТест("RequestTimeoutCarriesCode504")
 		.ДобавитьСерверныйТест("CustomErrorDispatchesToTheNamedFactory")
-		.ДобавитьСерверныйТест("CustomErrorFallsBackToAGenericError")
+		.ДобавитьСерверныйТест("CustomErrorRefusesAnUnknownType")
 		.ДобавитьСерверныйТест("RaiseCustomErrorRecordsANumericCode")
 		.ДобавитьСерверныйТест("MessageIsPreserved")
 		.ДобавитьСерверныйТест("RegenerateErrorPreservesTheErrorShape")
@@ -76,13 +76,25 @@ EndProcedure
 // The fallback used to call the base factory as Error(Type, "Error", , Message, ...), which
 // put the literal "Error" in the Code position. RaiseError renders the code as Type:Code, so
 // such an error read "Error: Error". Code and Name now come from the factory defaults.
-Procedure CustomErrorFallsBackToAGenericError() Export
+Procedure CustomErrorRefusesAnUnknownType() Export
 
-	Error = mol_Errors.CustomError("SomethingElse", "unexpected");
+	// This test pinned the opposite until T023: an unknown type silently degraded to a generic
+	// MoleculerError, so a caller that named a type the taxonomy does not have never found out. The
+	// fallback now raises through RaiseError and names the type, which is what makes an undocumented type
+	// a defect rather than a quiet downgrade.
+	Thrown = Неопределено;
 
-	ЮТест.ОжидаетЧто(Error.Type, "an unknown type must be kept as-is").Равно("SomethingElse");
-	ЮТест.ОжидаетЧто(Error.Name, "the fallback uses the generic Moleculer class").Равно("MoleculerError");
-	ЮТест.ОжидаетЧто(Error.Code, "the fallback carries the default code").Равно(500);
+	Попытка
+		Error = mol_Errors.CustomError("SomethingElse", "unexpected");
+	Исключение
+		Thrown = mol_Errors.GetCurrentError();
+	КонецПопытки;
+
+	// The refusal is a raised error value, so its text is read back through the ambient error rather than
+	// through ОписаниеОшибки, which describes the exception and not the error the connector built.
+	ЮТест.ОжидаетЧто(Thrown <> Неопределено, "an unknown type must be refused, not degraded").ЭтоИстина();
+	ЮТест.ОжидаетЧто(СтрНайти(Thrown.Message, "SomethingElse") > 0,
+		"the refusal names the offending type").ЭтоИстина();
 
 EndProcedure
 

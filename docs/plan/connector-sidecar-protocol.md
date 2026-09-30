@@ -78,6 +78,47 @@ Context serialization intends to include correlation, hierarchy, caller, meta, t
 
 No cross-language fixture establishes property casing or null/undefined behavior. Stream payload handling exists but has no stated limits, cancellation or backpressure contract.
 
+## Error taxonomy
+
+`mol_Errors` is where every error is built. `CustomError(Type, …)` is the dispatcher for the type a *caller*
+names, and the table below is the documented set. A name that is not a row is refused loudly, with the name
+in the message, because a silent downgrade is what hid sixteen undispatched call sites until T023.
+
+| Caller type | Factory | `Type` on the wire | `Code` |
+|---|---|---|---|
+| `TypeError` | `TypeError` | `TYPE_ERROR` | 400 |
+| `ServiceNotFound` | `ServiceNotFound` | `SERVICE_NOT_FOUND` | 404 |
+| `ServiceNotAvailable` | `ServiceNotAvailable` | `SERVICE_NOT_AVAILABLE` | 404 |
+| `RequestTimeout` | `RequestTimeout` | `REQUEST_TIMEOUT` | 504 |
+| `RequestSkipped` | `RequestSkipped` | `REQUEST_SKIPPED` | 514 |
+| `RequestRejected` | `RequestRejected` | `REQUEST_REJECTED` | 503 |
+| `ValidationError` | `ValidationError` | `VALIDATION_ERROR` | 422 |
+| `MaxCallLevel` | `MaxCallLevel` | `MAX_CALL_LEVEL` | 500 |
+| `ServiceSchema`, `ServiceSchemaError` | `ServiceSchemaError` | `SERVICE_SCHEMA_ERROR` | 500 |
+| `InvalidPacketData` | `InvalidPacketData` | `INVALID_PACKET_DATA` | 500 |
+| `NotFoundError` | `NotFoundError` | `NOT_FOUND` | 404 |
+| `InvalidArgument` | `InvalidArgumentError` | `InvalidArgument` | 400 |
+| `AccessKeyRequired` | `AccessKeyRequiredError` | `AccessKeyRequired` | 401 |
+| `SecretKeyRequired` | `SecretKeyRequiredError` | `SecretKeyRequired` | 401 |
+| `ExpiresParam` | `ExpiresParamError` | `ExpiresParamError` | 403 |
+| `Error` | — | `GENERIC_ERROR` | 500 |
+
+The rules that come with the table:
+
+- A **type a caller names** has to be a row. The connector's own guards still pass `"Error"`, which is a
+  documented row for "the connector refuses this call" and keeps the shape those sites already produced;
+  retyping them to `InvalidArgument` is a recorded follow-up rather than a change to make blind.
+- `ServiceSchema` and `ServiceSchemaError` are normalised to one row *before* the chain, so one concept has
+  one meaning instead of two branches that differ only in spelling.
+- A **platform error** converted by `FromErrorInfo` is not a caller type: it is built from the platform's own
+  category and name, so it does not pass through the dispatcher at all. A transport failure
+  (`ErrorCategory.NetworkError`) becomes a retryable `NETWORK_ERROR` 503, which is what lets a caller tell a
+  failed exchange from a business rejection returned by an end node. It used to omit `Code` entirely.
+- Every factory returns a numeric `Code` and a filled `Name`. The eleven signing and argument factories used
+  to leave the code argument empty, so a caller compared `Undefined`.
+- `ServiceNotFound` and `ServiceNotAvailable` carry different codes: they shared `SERVICE_NOT_AVAILABLE`,
+  which is the confusion the taxonomy exists to remove.
+
 ## Security and operations findings
 
 The sidecar’s verifier accepts `x-amz-content-sha256` as the body hash without recomputing it from raw body. `x-amz-expires` is converted with `Number`; omitted values do not provide a robust expiry policy. The sidecar logs request bodies and errors in [api-gateway.ts](../../moleculer-sidecar-next/src/mixins/api-gateway.ts). Publication username/password/token material is persisted in plaintext SQLite by [sidecar.service.ts](../../moleculer-sidecar-next/src/services/sidecar.service.ts). The data model includes username/password authentication, but the observed outbound request code only emits a Bearer token and does not implement Basic/password authentication.
