@@ -33,11 +33,11 @@
 #     unconditionally. A payload missing `parentID` raises a platform error page rather than
 #     reaching the envelope, so only a complete fixture separates "the payload was rejected"
 #     from "the action has no handler".
-#  4. The connector's own `$internal` actions cannot be reached over HTTP, and the cause is not the
-#     naming: the compiled schema's fullName is the name its constructor declares (`$internal`), which
-#     mol_SchemaFactoryTests pins, so the guard here and the qualifier the resolver builds do agree. What
-#     fails further in is still undetermined - T032 carries the candidates. Recorded as a gap rather
-#     than fixed, because the guard may be deliberate exposure control.
+#  4. The connector's own `$internal` actions depend on `mol_Broker.Delete_FindInternalHandler` compiling
+#     the service module by name. That works in extension mode, where `mol_Internal` is a module, and fails
+#     in the standalone variant, where it has been merged into Moleculer: the compile finds nothing, the
+#     resolver returns Undefined and the request answers 503. Same request, two answers, so the test
+#     asserts each mode separately rather than choosing one expectation for both. See T032.
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
@@ -377,17 +377,22 @@ fi
 assert_contains "$(body_json)" '"message":"Handler is not provided"' "the refusal is about the handler, not the payload"
 
 echo "==> checking the connector's own actions"
-# Known defect, tracked rather than fixed here because the guard may be deliberate. RequestHandler only
-# tries the local resolver when the action starts with "$internal", but the resolver matches names
-# qualified by the compiled schema's fullName, which begins with the module name. The two tests cannot
-# agree, so the connector's own actions are unreachable over HTTP.
+# The connector's own actions work when the service module is addressable by name, which it is in
+# extension mode: the resolver compiles "mol_Internal" and finds the action, so a request comes back with
+# the handler's result. In the standalone variant that module has been merged into Moleculer, so the same
+# lookup finds no module and the request answers 503. The two modes are asserted differently on purpose,
+# and the variant's half is recorded as a defect rather than smoothed over — see T032.
 request POST "$SERVICE_URL" "application/json" "$INTERNAL_PACKET"
-if [ "$STATUS" = "200" ] && printf '%s' "$(body_json)" | grep -qF '"data":"pong"'; then
+if [ "$INBOUND_MODE" = "standalone" ]; then
+	if [ "$STATUS" = "503" ]; then
+		gap "the variant answers $STATUS for its own actions; the module the resolver compiles was merged away"
+	else
+		fail "the variant answers $STATUS, expected 503 until the lookup is fixed"
+	fi
+elif [ "$STATUS" = "200" ] && printf '%s' "$(body_json)" | grep -qF '"data":"pong"'; then
 	pass "the connector's own action runs and returns its handler's result"
-elif [ "$STATUS" = "503" ]; then
-	gap "the connector's own action answers $STATUS without reaching its handler; expected 200 and the result"
 else
-	fail "the connector's own action answers $STATUS with an unexpected body"
+	fail "the connector's own action answers $STATUS, expected 200 and the result"
 fi
 
 echo "==> checking input validation"

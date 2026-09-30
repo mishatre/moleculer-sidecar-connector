@@ -23,7 +23,10 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("EmitWithAGroupStringReachesTheTransport")
 		.ДобавитьСерверныйТест("BroadcastWithoutOptionsReachesTheTransport")
 		.ДобавитьСерверныйТест("BroadcastWithAGroupStringReachesTheTransport")
-		.ДобавитьСерверныйТест("GetPublicationValidationCodeRemovesTheConnectionFromItsArgument");
+		.ДобавитьСерверныйТест("GetPublicationValidationCodeRemovesTheConnectionFromItsArgument")
+		.ДобавитьСерверныйТест("TheInternalResolverFindsAnInternalAction")
+		.ДобавитьСерверныйТест("TheInternalResolverRefusesAnActionItDoesNotHave")
+		.ДобавитьСерверныйТест("TheInternalServiceSchemaIsKeyedByTheBareActionName");
 
 EndProcedure
 
@@ -154,5 +157,45 @@ Function TransportRefusal(IsEmit, Opts)
 	КонецПопытки;
 
 EndFunction
+
+Procedure TheInternalResolverFindsAnInternalAction() Export
+
+	// mol_Broker.Delete_FindInternalHandler — the resolver the inbound transport consults for the
+	// connector's own actions. It is exercised directly because the HTTP path hides which half fails: a
+	// 503 from there is the same whether the resolver returned nothing or the caller mishandled what it
+	// returned. This is the instrumentation T032 asks for.
+	Handler = mol_Broker.Delete_FindInternalHandler("$internal.ping");
+
+	ЮТест.ОжидаетЧто(Handler <> Неопределено,
+		"the resolver finds the ping action of mol_Internal").ЭтоИстина();
+
+	If Handler <> Неопределено Then
+		ЮТест.ОжидаетЧто(СтрНайти(Строка(Handler), "PingAction") > 0,
+			"the resolved handler is PingAction: " + Строка(Handler)).ЭтоИстина();
+	EndIf;
+
+EndProcedure
+
+Procedure TheInternalResolverRefusesAnActionItDoesNotHave() Export
+
+	// mol_Broker.Delete_FindInternalHandler — the negative case, so the positive one cannot pass by
+	// returning something for every name it is given.
+	ЮТест.ОжидаетЧто(mol_Broker.Delete_FindInternalHandler("$internal.noSuchAction") = Неопределено,
+		"an action the schema does not declare resolves to nothing").ЭтоИстина();
+
+EndProcedure
+
+Procedure TheInternalServiceSchemaIsKeyedByTheBareActionName() Export
+
+	// The resolver builds each candidate as `<fullName>.<key>`, so the keys of the schema's Actions map
+	// decide whether `$internal.ping` can be found at all. This test exists to answer that with a run
+	// rather than with another reading of the resolver, which is how T032's original claim went wrong.
+	Schema = mol_SchemaFactory.CompileServiceSchema("mol_Internal");
+
+	ЮТест.ОжидаетЧто(Schema.FullName, "the qualifier the resolver prepends").Равно("$internal");
+	ЮТест.ОжидаетЧто(Schema.Actions.Get("ping") <> Неопределено,
+		"the actions map is keyed by the bare action name").ЭтоИстина();
+
+EndProcedure
 
 #EndRegion

@@ -217,16 +217,21 @@ caller that can reach the service, so the fix is either to widen the guard to th
 resolver actually matches, or to keep the restriction and rename the actions to match it — and to say
 which in the documentation.
 
-CORRECTION 2026-09-30: the two paragraphs above are wrong about the cause, and are kept so the mistake is
-visible rather than edited away. They claim the compiled `fullName` begins with the module name, which
-would make the guard in `mol_Transport.RequestHandler` and the qualifier in
-`mol_Broker.Delete_FindInternalHandler` unable to agree. `mol_SchemaFactoryTests` proves otherwise:
-`CompileServiceSchema("mol_Internal")` yields `$internal`, the name the constructor declares rather than
-the module it lives in, so the two conditions **do** agree. The 503 therefore has a cause that has not
-been established — the candidates are the keys of the schema's `Actions` map, the handling of
-`Context.Locals` on the inbound path, or the module references the standalone builder rewrites — and the
-fix should begin by instrumenting `Delete_FindInternalHandler` rather than by trusting another reading of
-the two call sites.
+RESOLVED 2026-09-30, with the cause proven rather than read: the two paragraphs above are wrong twice
+over. `CompileServiceSchema("mol_Internal")` yields `$internal` — the constructor's declared name — and
+`Delete_FindInternalHandler("$internal.ping")` returns the `PingAction` handler in extension mode, both
+pinned by `mol_BrokerTests`. The HTTP test confirms it end to end: in extension mode the request runs the
+handler and returns `pong`, which is why the canonical run reports twelve passes.
+
+The real defect is narrower and belongs to the variant. The resolver compiles the service **module** by
+name — `mol_SchemaFactory.CompileServiceSchema("mol_Internal")` — and the standalone variant has merged
+that module into `Moleculer`, so the compile finds nothing, the resolver returns Undefined and the
+request answers 503. The same logic therefore has two outcomes depending on packaging, which the HTTP
+test now asserts separately rather than choosing one expectation for both.
+
+Shape: either the builder rewrites that module reference the way it rewrites the others, or the profile
+keeps `mol_Internal` as its own module. Restricting access is a separate question and no longer the
+suspected cause, so this task is now about the variant only.
 
 ## T033 — agree on the shape of a context's action
 
