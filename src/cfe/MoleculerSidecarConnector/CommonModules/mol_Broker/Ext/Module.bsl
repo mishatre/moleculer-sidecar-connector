@@ -63,9 +63,17 @@ Function Call(ActionName, Val Params = Undefined, Opts = Undefined) Export
 	EndIf;      
 	
 	Connection = Moleculer.AdaptConnectionParams(mol_Helpers.Get(Opts, "Connection"));
-	Response   = mol_Transport.ExecuteRequest(Context, Connection);
 	
+	// The outgoing context is ambient while the transport runs, and the pop removes it again on both
+	// paths, so a completed call leaves the ambient stack as it found it.
 	mol_ContextFactory.SetCurrentContext(Context);
+	Try
+		Response = mol_Transport.ExecuteRequest(Context, Connection);
+	Except
+		mol_ContextFactory.PopCurrentContext();
+		Raise;
+	EndTry;
+	mol_ContextFactory.PopCurrentContext();
 	
 	Return Response;
 	
@@ -118,9 +126,17 @@ Procedure Emit(EventName, Payload = Undefined, Val Opts = Undefined) Export
 	);            
 	
 	Connection = Moleculer.AdaptConnectionParams(mol_Helpers.Get(Opts, "Connection"));
-	Response   = mol_Transport.ExecuteRequest(Context, Connection);
 	
+	// The outgoing context is ambient while the transport runs, and the pop removes it again on both
+	// paths, so a completed call leaves the ambient stack as it found it.
 	mol_ContextFactory.SetCurrentContext(Context);
+	Try
+		Response = mol_Transport.ExecuteRequest(Context, Connection);
+	Except
+		mol_ContextFactory.PopCurrentContext();
+		Raise;
+	EndTry;
+	mol_ContextFactory.PopCurrentContext();
 	
 	Return;
 		
@@ -173,9 +189,17 @@ Procedure Broadcast(EventName, Payload = Undefined, Val Opts = Undefined) Export
 	Context.EventGroups = Opts.Groups; 
 	
 	Connection = Moleculer.AdaptConnectionParams(mol_Helpers.Get(Opts, "Connection"));
-	Response   = mol_Transport.ExecuteRequest(Context, Connection);
 	
+	// The outgoing context is ambient while the transport runs, and the pop removes it again on both
+	// paths, so a completed call leaves the ambient stack as it found it.
 	mol_ContextFactory.SetCurrentContext(Context);
+	Try
+		Response = mol_Transport.ExecuteRequest(Context, Connection);
+	Except
+		mol_ContextFactory.PopCurrentContext();
+		Raise;
+	EndTry;
+	mol_ContextFactory.PopCurrentContext();
 	
 	Return;
 	

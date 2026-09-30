@@ -1,21 +1,24 @@
 // Behavioural tests for the ambient-context lifecycle.
 //
-// Mechanism under test: the ambient context is a named stack held by mol_Helpers. PushToStack and
-// PopFromStack are its primitives; mol_ContextFactory.GetCurrentContext reads the top and
-// SetCurrentContext pushes onto it. The lifecycle spans three modules, which is why this suite is
-// named for the lifecycle rather than for any one of them:
+// Mechanism under test: the ambient context and the ambient error are named stacks held by
+// mol_Helpers. PushToStack and PopFromStack are their primitives; mol_ContextFactory.GetCurrentContext
+// reads the context stack's top and SetCurrentContext pushes onto it. The lifecycle spans three
+// modules, which is why this suite is named for the lifecycle rather than for any one of them. T030
+// made every push symmetric:
 //
-//   mol_ContextFactory.Handler  pushes the incoming context and pops it again   (balanced)
-//   mol_Broker.Call/Emit/Broadcast  call SetCurrentContext, which pushes only   (push without pop)
-//   mol_Errors                  pushes the raised error and never pops          (push without pop)
+//   mol_ContextFactory.Handler  pushes the incoming context and pops it in its tail, and pops the
+//                               ambient error there too, so the operation ends with neither
+//   mol_Broker.Call/Emit/Broadcast  publish the outgoing context for the duration of the transport
+//                               call and pop it again on both the success and the failure path
+//   mol_Errors                  pushes the raised error so the Except that handles it can read the
+//                               structured error back; PopCurrentError is its pop
 //
 // Mode note: canonical only. The standalone variant merges mol_ContextFactory, mol_Broker and
 // mol_Errors into Moleculer.
 //
-// What is reachable here and what is not: the broker publishes its context *after* the transport
-// answers, so no sidecar means the push itself cannot be reached. What is reachable is everything
-// around it, and the error stack's staleness, which is triggered by a raise and therefore does not
-// need a sidecar. The push-without-pop sites in mol_Broker are recorded in the task instead.
+// What is reachable here and what is not: the broker's publish and pop straddle the transport, so only
+// a completed call can show that the pair is balanced, and that half lives in LiveSidecarCallTests.
+// What is reachable without a sidecar is the handler boundary and the error stack.
 //
 // The entry-point name is fixed by the framework: ЮТЧитательСлужебный.ИмяМетодаСценариев()
 // returns the literal "ИсполняемыеСценарии".
@@ -29,7 +32,7 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("SetCurrentContextPublishesTheAmbientContext")
 		.ДобавитьСерверныйТест("AFailingCallLeavesTheAmbientContextAlone")
 		.ДобавитьСерверныйТест("ANestedCallStampsTheActionIntoTheCallingContext")
-		.ДобавитьСерверныйТест("TheAmbientErrorOutlivesTheOperationThatRaisedIt");
+		.ДобавитьСерверныйТест("TheAmbientErrorDoesNotOutliveTheOperationThatHandledIt");
 
 EndProcedure
 
@@ -51,9 +54,9 @@ EndProcedure
 
 Procedure AFailingCallLeavesTheAmbientContextAlone() Export
 
-	// A call that never reaches a sidecar must not disturb what was ambient, because the broker
-	// publishes its own context only after the transport answers. Nothing pops here either, so a
-	// failure that published would leave the stack permanently longer.
+	// A call that never reaches a sidecar must not disturb what was ambient. The broker publishes its
+	// context before the transport and pops it on both paths, so a failure restores the stack instead
+	// of leaving one entry behind per attempt.
 	Sentinel = Новый Структура("id", "sentinel");
 	mol_ContextFactory.SetCurrentContext(Sentinel);
 
@@ -90,14 +93,22 @@ Procedure ANestedCallStampsTheActionIntoTheCallingContext() Export
 
 EndProcedure
 
-Procedure TheAmbientErrorOutlivesTheOperationThatRaisedIt() Export
+Procedure TheAmbientErrorDoesNotOutliveTheOperationThatHandledIt() Export
 
-	// Current behaviour, pinned deliberately. Raising pushes the error onto the ambient stack and
-	// nothing pops it, so a later successful operation still reads the previous failure. This is the
-	// staleness the acceptance asks to expose, and the reachable half of the push-without-pop pattern
-	// the broker and mol_Errors share.
+	// This test pinned the opposite until T030. Raising published the error and nothing removed it, so
+	// an unrelated successful operation still read the previous failure; the old assertion said so and
+	// asked to be flipped when the lifecycle changed.
 	//
-	// When the lifecycle is fixed this test must be rewritten to assert the opposite, not deleted.
+	// The raise still publishes the error, because that is how the Except that handles the exception
+	// reads the structured error back. What changed is the pairing: mol_ContextFactory.Handler pops the
+	// ambient error in its tail, next to the ambient context it already popped, so the error ends with
+	// the operation that handled it.
+	//
+	// The comparison is against the error that was current before the raise rather than against
+	// Undefined, because this suite runs in a session shared with every other suite, so an older error
+	// may legitimately sit under this one. Restoring the previous top is the property being asserted.
+	BeforeTheRaise = Moleculer.GetCurrentError();
+
 	Попытка
 		Moleculer.RaiseCustomError("Error", "context probe");
 	Исключение
@@ -106,16 +117,35 @@ Procedure TheAmbientErrorOutlivesTheOperationThatRaisedIt() Export
 
 	AfterTheRaise = Moleculer.GetCurrentError();
 
-	// An unrelated operation that succeeds and raises nothing.
-	Unrelated = mol_Broker.GenerateUid();
+	// An unrelated operation that succeeds and raises nothing: the handler boundary is where an
+	// operation's ambient error ends.
+	Response = mol_ContextFactory.Handler(InboundContext("mol_Internal.PingAction"));
 
-	AfterAnUnrelatedSuccess = Moleculer.GetCurrentError();
+	AfterTheUnrelatedOperation = Moleculer.GetCurrentError();
 
 	ЮТест.ОжидаетЧто(AfterTheRaise = Неопределено, "raising publishes an ambient error").ЭтоЛожь();
-	ЮТест.ОжидаетЧто(AfterAnUnrelatedSuccess = AfterTheRaise,
-		"CURRENT BEHAVIOUR: the ambient error survives an unrelated successful operation").ЭтоИстина();
-	ЮТест.ОжидаетЧто(Unrelated <> Неопределено, "the unrelated operation really did succeed").ЭтоИстина();
+	ЮТест.ОжидаетЧто(AfterTheUnrelatedOperation = BeforeTheRaise,
+		"the ambient error ends with the operation that handled it").ЭтоИстина();
+	ЮТест.ОжидаетЧто(mol_Helpers.IsErrorResponse(Response), "the unrelated operation really did succeed").ЭтоЛожь();
 
 EndProcedure
+
+#EndRegion
+
+#Region Private
+
+// Builds the context mol_Transport.RequestHandler hands to mol_ContextFactory.Handler: a destination
+// and a resolved handler. Only the keys Handler reads are populated, so a failure points at the
+// contract rather than at a fixture that drifted.
+Function InboundContext(HandlerName)
+
+	Context = Новый Структура;
+	Context.Insert("Action", "probe.action");
+	Context.Insert("Event" , Неопределено);
+	Context.Insert("Locals", Новый Структура("Handler", HandlerName));
+
+	Return Context;
+
+EndFunction
 
 #EndRegion

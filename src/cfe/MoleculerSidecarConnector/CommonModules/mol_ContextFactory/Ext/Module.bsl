@@ -264,6 +264,9 @@ Function Handler(Context) Export
 	EndTry;     
 	
 	mol_Helpers.PopFromStack(ThisMetadata().Name);
+	// The operation's ambient error ends with the operation: the push in mol_Errors.RaiseError is read
+	// by the Except above, and this is the first place that runs after that read.
+	mol_Errors.PopCurrentError();
 	
 	Return mol_Helpers.NewResponse(Error, Result);
 	
@@ -276,6 +279,12 @@ EndFunction
 Procedure SetCurrentContext(Context) Export
 	
 	mol_Helpers.PushToStack(ThisMetadata().Name, Context);	
+	
+EndProcedure
+
+Procedure PopCurrentContext() Export
+	
+	mol_Helpers.PopFromStack(ThisMetadata().Name);	
 	
 EndProcedure
 

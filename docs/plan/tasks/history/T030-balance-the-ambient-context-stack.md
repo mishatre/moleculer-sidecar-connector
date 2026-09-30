@@ -1,6 +1,6 @@
 # T030 — make the ambient context stack balanced
 
-Status: draft
+Status: verified 2026-09-30 — implemented and green in both modes.
 Depends on: T020 (closed)
 Recipe: normal
 Coordinator: Sol Medium
@@ -64,3 +64,25 @@ transport call.
 
 Stop if the stack contract has to change shape (for example, if one stack must become per-operation state)
 — that is a design decision, not a fix. After two failed repairs, diagnose before another attempt.
+
+## Completion evidence / resume point
+
+Implemented by a delegated worker, verified by the coordinator from the tree:
+
+- `mol_ContextFactory.PopCurrentContext()` added. `mol_Broker.Call`, `Emit` and `Broadcast` now publish the
+  outgoing context for the duration of the transport call only: a `Try`/`Except` pops it on the failure path
+  and re-raises, and the success path pops it after the call, so the pair is symmetric on both paths.
+- `mol_Errors.PopCurrentError()` added and called from the tail of `mol_ContextFactory.Handler`, the first
+  code that runs after the `Except` has read the structured error back. An operation's ambient error now ends
+  with the operation.
+- `mol_AmbientContextTests` was rewritten rather than deleted. It asserts that the ambient error returns to
+  what was current *before* the raise, and controls that with a second assertion proving the unrelated
+  operation really did succeed; a comment records the assertion it replaced and why. `LiveSidecarCallTests`
+  was rewritten the same way.
+- Full entry point green: static 62 diagnostics in 11 recorded rules, builder 55 tests, canonical **179/179**
+  — the live suite included, so the broker's half is covered by a completed call rather than by reading —
+  standalone **27/27**, syntax check clean.
+
+Still open, recorded from reading rather than observed: an outbound call that *fails* pops the context stack
+and re-raises, and nothing pops the error stack afterwards, so that path can still leave an ambient error.
+It is the same class as the half fixed here, and reaching it needs a failure the sidecar produces.

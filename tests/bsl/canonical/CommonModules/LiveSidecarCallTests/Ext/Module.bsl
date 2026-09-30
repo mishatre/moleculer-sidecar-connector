@@ -29,7 +29,7 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьТестовыйНабор("Live sidecar")
 		.ДобавитьСерверныйТест("TheSidecarAnswersThroughTheBroker")
 		.ДобавитьСерверныйТест("TheSuccessPathRestoresSafeMode")
-		.ДобавитьСерверныйТест("TheBrokerLeavesItsContextOnTheAmbientStack");
+		.ДобавитьСерверныйТест("TheBrokerLeavesTheAmbientStackAsItFoundIt");
 
 EndProcedure
 
@@ -73,18 +73,14 @@ Procedure TheSuccessPathRestoresSafeMode() Export
 
 EndProcedure
 
-Procedure TheBrokerLeavesItsContextOnTheAmbientStack() Export
+Procedure TheBrokerLeavesTheAmbientStackAsItFoundIt() Export
 
-	// CURRENT BEHAVIOUR, pinned deliberately, and the runtime half of T030.
+	// The runtime half of T030, and the counterpart of the assertion this test made before.
 	//
-	// mol_Broker.Call publishes its context with mol_ContextFactory.SetCurrentContext after the transport
-	// answers, and SetCurrentContext only pushes. Nothing pops it. So after one successful call the
-	// ambient stack holds a context nobody will remove — and it sits on top of whatever was there, which
-	// is what a sentinel shows here. The earlier reading of the sources could only assert that the push
-	// exists; with a real sidecar the call completes and the imbalance is observable.
-	//
-	// When the stack is made symmetric this test must be rewritten to assert the sentinel is current
-	// again, not deleted.
+	// It used to pin the imbalance: mol_Broker.Call published its context with SetCurrentContext after
+	// the transport answered, and SetCurrentContext only pushed, so the call's own context stayed on top
+	// of the sentinel. T030 now publishes the context before the transport and pairs it with a pop on
+	// both paths, so the sentinel is current again once the call returns — which is what this asserts.
 	If Not LiveSidecarAvailable() Then
 		Return;
 	EndIf;
@@ -98,10 +94,8 @@ Procedure TheBrokerLeavesItsContextOnTheAmbientStack() Export
 
 	Current = mol_ContextFactory.GetCurrentContext();
 
-	ЮТест.ОжидаетЧто(Current <> Sentinel,
-		"CURRENT BEHAVIOUR: the call pushed a context and did not pop it").ЭтоИстина();
-	ЮТест.ОжидаетЧто(Current.Action.Name,
-		"and what it left there is the context of that call").Равно("$sidecar.utils.parseYAML");
+	ЮТест.ОжидаетЧто(Current.id,
+		"the context that was current before the call is current again").Равно("ambient-sentinel");
 
 EndProcedure
 

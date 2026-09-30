@@ -51,7 +51,7 @@ any task.
 | T026 | Module surface and naming are consistent | draft | T023, T025 | [Task](tasks/T026-module-surface-and-naming.md) |
 | T027 | The form layer is rebuilt | draft | owner decision | [Task](tasks/T027-rebuild-the-form-layer.md) |
 | T028 | Service definitions parse locally instead of through the sidecar | draft | owner decision on safe mode; T025 | [Task](tasks/T028-parse-service-definitions-locally.md) |
-| T030 | The ambient context stack is pushed and popped symmetrically | draft | T020 | [Task](tasks/T030-balance-the-ambient-context-stack.md) |
+| T030 | The ambient context stack is pushed and popped symmetrically | verified | T020 | [Task](tasks/history/T030-balance-the-ambient-context-stack.md) |
 | T031 | The standalone variant keeps the live branch of a standalone guard | verified | T015, T016 | [Task](tasks/history/T031-keep-the-live-branch-when-stripping.md) |
 | T032 | The connector's own actions work in the standalone variant | verified | T035 (same root cause), T015 | [Task](tasks/history/T032-connector-actions-over-http.md) |
 | T033 | Both payload directions agree on the shape of a context's action | verified | T018 | [Task](tasks/history/T033-agree-on-the-shape-of-an-action.md) |

@@ -1,6 +1,12 @@
 # T002 — refactor the installer form module without changing behavior
 
-Status: ready
+Status: in_progress 2026-09-30 — the form module is refactored and the EPF builds; the behavioural smoke
+pass through the form states is outstanding, so this is not verified yet.
+Evidence so far: `vrunner epf compile --ibcmd --v8version 8.3 --out build/epf src/epf/installer` answers
+"✓ Внешняя обработка собрана" and writes `build/epf/installer.epf` (163 280 bytes). The change is one file —
+145 insertions, 135 deletions — with `Form.xml` untouched apart from event bindings, and no other file in the
+tree modified by this task. Note for the next run: `SRC` is positional and must come **after** the options,
+and `vrunner compileepf` from the 2.x line does not exist in the installed 3.0.0.
 Depends on: T000
 Recipe: normal
 Coordinator: Sol Medium

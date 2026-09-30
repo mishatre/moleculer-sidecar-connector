@@ -292,6 +292,16 @@ Function GetCurrentError() Export
 	Return mol_Helpers.LastFromStack(ThisMetadata().Name);	
 EndFunction
 
+// Removes the ambient error the last RaiseError published. The push exists so the Except that handles
+// the exception can read the structured error back, and no pop can run between that push and that read
+// because the read happens while the exception is being handled. The pop therefore belongs to the
+// operation boundary that runs after it, which is mol_ContextFactory.Handler.
+Procedure PopCurrentError() Export
+	
+	mol_Helpers.PopFromStack(ThisMetadata().Name);	
+	
+EndProcedure
+
 Function GenerateStackTrace(OffsetIndex = Undefined, OffsetModule = Undefined) Export
 	
 	If OffsetIndex = Undefined And OffsetModule = Undefined Then

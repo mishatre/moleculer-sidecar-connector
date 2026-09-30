@@ -29,6 +29,7 @@ Rules that keep this folder useful:
 | T025 | The inbound transport boundary is covered by an integration test |
 | T031 | The standalone variant keeps the live branch of a standalone guard |
 | T032 | The connector's own actions work in the standalone variant |
+| T030 | The ambient context stack is pushed and popped symmetrically |
 | T033 | Both payload directions agree on the shape of a context's action |
 | T035 | The standalone merge keeps service identities apart |
 | T036 | The admin panel form stops calling a method that does not exist |
