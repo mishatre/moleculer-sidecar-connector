@@ -1,6 +1,10 @@
 # T015 — Generate a standalone CFE variant from the canonical extension sources
 
-Status: in_progress — implemented and verified headlessly; independent review pending
+Status: verified — 2026-09-30. The generator, the tree and the artifact hold; the independent review is
+done and each of its findings is closed: the generator now refuses an output root inside the sources, the
+manifest records the source revision and a hash per file, the emitted tree includes the `INSTALL.md` this
+task promised, and the acceptance criteria describe the kept reuse modules instead of contradicting them.
+The review also found what the merge breaks at run time; that is T032 and T035, not this task.
 Depends on: T014
 Recipe: normal
 Coordinator: Sol Medium
@@ -18,35 +22,51 @@ implementation, and the compile step.
 Deferred: publishing the artifact, the guided installer path for the variant, and
 any change to the canonical extension sources.
 Success: `build/standalone/<variant>/` contains only `Configuration.xml`,
-`Languages/Русский.xml`, `CommonModules/Moleculer`, `CommonModules/MoleculerOverridable`,
-`HTTPServices/mol_Moleculer`, the manifest and `INSTALL.md`, and
+`Languages/Русский.xml`, the four common modules (`Moleculer`,
+`MoleculerOverridable`, `mol_Reuse`, `mol_ReuseCalls`), the HTTP service
+`mol_Moleculer`, `standalone-manifest.json` and `INSTALL.md`, and
 `vrunner cfe compile` produces a loadable `.cfe`.
 Next: run T016 (builder transformation tests) against this generator; then load
 the artifact in T021.
 
 ## Acceptance and consumer example
 
-- [ ] `tools/standalone-builder/build-standalone.os` reads the canonical sources
+- [x] `tools/standalone-builder/build-standalone.py` reads the canonical sources
       under `src/cfe/MoleculerSidecarConnector/` and writes a variant tree under
-      `build/standalone/<variant>/` without modifying the canonical tree.
-- [ ] The variant declares no constants, catalogs, enums, functional options,
+      `build/standalone/<variant>/` without modifying the canonical tree. The
+      generator now refuses an output root that resolves inside the sources: it
+      replaces an existing output tree before writing, so an ill-chosen `--out-root`
+      was the one input that could have deleted canonical work.
+- [x] The variant declares no constants, catalogs, enums, functional options,
       forms, data processors, roles, subsystems, styles or pictures.
-- [ ] The merged `Moleculer` module contains no `mol_*` qualifier, no
-      `Catalog.`/`Constant.`/`Enum.`/`FunctionalOption.`/`Form.`/`DataProcessor.`
-      reference, and no duplicate symbol definition.
-- [ ] `MoleculerOverridable` carries the injected settings and every provider
+- [x] The merged `Moleculer` module contains no qualifier for a module that was
+      merged into it, no `Catalog.`/`Constant.`/`Enum.`/`FunctionalOption.`/
+      `Form.`/`DataProcessor.` reference, and no duplicate symbol definition. The
+      reuse modules are the deliberate exception: `mol_Reuse` and `mol_ReuseCalls`
+      stay separate and are called qualified, because their per-session and
+      per-request cache lifetimes cannot be expressed in a merged module. An earlier
+      version of this item said "no `mol_*` qualifier"; the design answered that the
+      other way and the item now says so.
+- [x] `MoleculerOverridable` carries the injected settings and every provider
       procedure (`GetConfig`, `GetConnections`, `GetPublications`,
-      `GetServiceModules`, `GetServices`) runs without the standalone
-      early-return guard and without sample placeholder identifiers.
-- [ ] `Moleculer.IsStandalone()` returns `True` in the generated variant.
-- [ ] The compatibility mode is taken from the profile, not hard-coded.
-- [ ] `vrunner cfe compile` produces the artifact, and a manifest records profile
-      values, source revision, generated files and hashes.
+      `GetServiceModules`, `GetServices`) exists without the standalone
+      early-return guard and without sample placeholder identifiers. Static only, and
+      one caveat: `GetServices` is carried but nothing calls it.
+- [x] `Moleculer.IsStandalone()` returns `True` in the generated variant: it
+      returns `Metadata.FindByFullName("Catalog.mol_Services") = Undefined` and the
+      variant declares no such catalog. The runtime half is observed by the inbound
+      transport test's standalone mode, which is answered by the variant artifact.
+- [x] The compatibility mode is taken from the profile, not hard-coded.
+- [x] `vrunner cfe compile` produces the artifact, and a manifest records profile
+      values, source revision, generated files and hashes; the emitted tree also
+      carries the `INSTALL.md` that names the server-only difference. Revision and
+      per-file hashes were added after review — the manifest previously had one hash
+      for the merged module and no revision.
 
 Representative example:
 
 ```bash
-oscript tools/standalone-builder/build-standalone.os \
+python3 tools/standalone-builder/build-standalone.py \
   --profile tools/standalone-builder/profiles/default.json
 # expected: build/standalone/default/ tree + ./build/standalone/MoleculerSidecarConnectorStandalone.cfe
 ```
@@ -64,7 +84,10 @@ Entry point and relevant files/symbols:
   `GetServices` that is never called.
 - Merge inputs: `mol_Broker`, `mol_ContextFactory`, `mol_Transport`,
   `mol_SchemaFactory`, `mol_Errors`, `mol_Helpers`, `mol_HelpersClientServer`,
-  `mol_Logger`, `mol_Reuse`, `mol_ReuseCalls`, `mol_Internal`.
+  `mol_Logger`, `mol_Internal`. `mol_Reuse` and `mol_ReuseCalls` are **not**
+  merge inputs: they stay separate modules, both because their reuse lifetimes
+  cannot be expressed in one module and because merging them would collapse their
+  per-module caches into one (T035).
 - Dropped inputs: `YAML`, `YAML1`, `YAML2`, `YAML3`, `CodeEditor`,
   `CodeEditorClient`, `CodeEditorClientServer`, `mol_Client`,
   `MoleculerClientServer`, `mol_Server`, and
@@ -140,7 +163,7 @@ Use these observed facts directly; do not re-derive them.
 Link: ../environment.md
 
 Commands and expected results:
-- `oscript tools/standalone-builder/build-standalone.os --profile <profile>` —
+- `python3 tools/standalone-builder/build-standalone.py --profile <profile>` —
   exit 0 and the expected tree.
 - `vrunner cfe compile --src <variant tree> --ibcmd --v8version 8.3 <OUT.cfe>` —
   exit 0 and the artifact (options before the positional `OUT`, as verified in
@@ -200,29 +223,36 @@ developer-only tool. It is present in the container.
 
 | Check | Result |
 |---|---|
-| `python3 -m unittest discover -s tests/standalone-builder` | **30 tests, 0 failures** |
-| Merge statistics | 162 renames, 239 local calls, 31 module references, 12 patches |
+| `python3 -m unittest discover -s tests/standalone-builder` | **53 tests, 0 failures** (30 at first recording; the output guard, manifest and install guide added four classes) |
+| Merge statistics | 151 renames, 225 local calls, 30 module references, 9 patches, 8 dead branches, 2 removed definitions |
 | Static checks | passed: no duplicate definition, no removed-module reference, balanced `Procedure`/`Function` |
-| `vrunner cfe compile --src build/standalone/default --extension-name MoleculerSidecarConnectorStandalone --ibcmd` | exit 0, 37 727 bytes, sha256 `4511708c…` |
+| `vrunner cfe compile --src build/standalone/default --extension-name MoleculerSidecarConnectorStandalone --ibcmd` | exit 0, 39 202 bytes, sha256 `b9bdb95a…` |
 | `vrunner infobase init --src src/cf --ext <variant.cfe> --ibcmd` | exit 0, extension loaded and applied |
 | `ibcmd config check --db-path=… --extension=MoleculerSidecarConnectorStandalone` | exit 0, metadata correct |
 
-Generated tree is exactly eight files: `Configuration.xml`,
-`Languages/Русский.xml`, the two module descriptors and bodies, the HTTP service
-descriptor and handler, and `standalone-manifest.json`. No catalog, constant, enum,
-functional option, form, data processor, role, subsystem or style is emitted.
+Generated tree is thirteen files plus the manifest: `Configuration.xml`,
+`Languages/Русский.xml`, the four module descriptors and bodies, the HTTP service
+descriptor and handler, and `INSTALL.md`. No catalog, constant, enum, functional
+option, form, data processor, role, subsystem or style is emitted.
 
-Accepted decisions inside the merge: the internal `$internal` service is compiled
-from the merged module (`CompileServiceSchema(Moleculer)`) and `mol_Internal`'s
-`Constructor` deliberately keeps its discovered name; `ReturnValuesReuse` is
-replaced by explicit module caches with the request-scoped stack reset on inbound
-request; client contexts are dropped, so the merged module is server-only.
+Accepted decisions inside the merge, with one correction dated 2026-09-30: the
+reference to `mol_Internal` is patched to `CompileServiceSchema(Moleculer)` and
+`mol_Internal`'s `Constructor` keeps its name, but the merge does not deliver what
+that patch intended — the surviving constructor is the internal service's own and
+the compile raises before it can be used, so the variant's own actions answer 503
+(T032). `ReturnValuesReuse` is not replaced by module caches: the reuse modules are
+kept, which is also why their stacks stay separate (T035). Client contexts are
+dropped, so the merged module is server-only, and that difference is recorded in
+the emitted `INSTALL.md`.
 
-Unverified work: BSL module syntax (no runnable 1C client), runtime and HTTP
-behaviour (T021), and manual host-configuration migration.
+Unverified work: manual host-configuration migration. The rest is covered now — the
+harness runs in both modes, the artifact loads into a database-free infobase and
+answers an HTTP request (T021), and the HTTP boundary has its own test (T025). What
+the merge breaks at run time is tracked as T032 and T035 rather than described here
+as unverified.
 
-Next action: independent review of the generator and the generated tree, then T016
-extension and T021.
+Next action: none for this task. T032 and T035 fix what the merge breaks; T016,
+T017 and T021 are verified.
 
 ## Optional pilot metrics
 

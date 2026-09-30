@@ -243,12 +243,19 @@ raises on the argument it was handed. Which one happens does not change the conc
 service is uncompilable in the variant and compilable in extension mode, and the HTTP test now asserts
 the two modes separately for that reason.
 
-Root cause, shared with T035 and with the live-branch defect in T031: the merge preserves compilability
-and drops identity. It renames ordinary members (`Error` → `ErrorsError`, `this` → `InternalThis`), but it
-cannot rename an entry point callers reach by a fixed name, and it cannot re-separate a key derived from a
-module's own metadata. So the fix is not a better pattern here: either the profile keeps `mol_Internal` as
-its own module, or the builder grows a notion of which constructor and which metadata belong to which
-service. Exposure control is a separate question and was never the cause.
+SHARPENED 2026-09-30, from the same artifact: the surviving constructor is the internal service's own —
+`build/standalone/default/CommonModules/Moleculer/Ext/Module.bsl:4764` sets `Schema.Name = "$internal"` at
+`:4768` — so the patch is not selecting the wrong service. The lookup fails because the compile **raises**
+and its `Except` branch returns Undefined. The rename map makes that possible and is worth naming: it
+renames `constructor` for `mol_ContextFactory` (`profiles/default.json:78`) and for `mol_SchemaFactory`
+(`:88`) but not for `mol_Internal`, so the internal constructor competes for one name and the merge keeps
+one definition.
+
+Which statement raises is not established, and that is itself the finding: `CompileServiceSchema` builds
+an error message and calls `LoggerError` before returning Undefined, and no log line survives from the
+standalone run, so the reason has to be observed rather than inferred. A resolver that answers `Undefined`
+for both "no such action" and "compiling it threw" is what made this task take three wrong readings
+before the artifact was read instead. Whatever fixes the compile should also stop hiding its reason.
 
 ## T033 — agree on the shape of a context's action
 

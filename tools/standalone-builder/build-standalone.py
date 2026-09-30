@@ -1003,6 +1003,55 @@ def compile_variant(profile: dict, output_dir: Path) -> Path:
 # --------------------------------------------------------------------------------------
 
 
+def write_install_guide(profile: dict, output_dir: Path) -> str:
+    """Write the administrator-facing guide that ships with the variant.
+
+    The variant differs from the canonical extension in a way nobody can read out of
+    the artifact: both common modules are server-only, so nothing connects from an
+    ordinary client context. That difference has to be stated next to the artifact,
+    which is what this file is for.
+    """
+
+    text = f"""# Установка расширения {profile["extensionName"]}
+
+Это автономный (standalone) вариант коннектора, собранный генератором
+`tools/standalone-builder`. От канонического расширения он отличается одним:
+оба общих модуля помечены как серверные, поэтому из клиентского контекста
+ничего не подключается — подключение выполняет серверная сторона.
+
+## Установка как расширения
+
+1. Установите `{profile["extensionName"]}.cfe` на нужную информационную базу.
+2. Константы, справочники, перечисления и формы вариант не использует: каталог
+   `mol_Services` и база-источник ему не нужны, поэтому способ обнаружения
+   автономного режима — отсутствие этого справочника.
+3. Проверьте подключение вызовом серверного метода
+   `{profile["targetModule"]}.Broker().Call(...)`.
+
+## Перенос в конфигурацию-хозяина вручную
+
+1. Перенесите общие модули `{profile["targetModule"]}` и
+   `{profile["providerModule"]}`.
+2. Перенесите общие модули `mol_Reuse` и `mol_ReuseCalls` отдельно: они не
+   объединены с остальными, потому что их время жизни кэша (сессия и запрос) в
+   объединённом модуле не выражается.
+3. Перенесите HTTP-сервис `mol_Moleculer` вместе с его обработчиком.
+4. Задайте параметры окружения в модуле `{profile["providerModule"]}` — в этом
+   варианте они встроены в него, а не хранятся в константах.
+
+## Сведения о сборке
+
+Ревизия исходников, список файлов и хеши записаны в
+`standalone-manifest.json`. Сборка создана для режима совместимости
+`{profile["compatibilityMode"]}`, версия расширения `{profile["version"]}`.
+"""
+
+    relative = "INSTALL.md"
+    write_text(output_dir / relative, text)
+
+    return relative
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--profile", type=Path, default=None, help="JSON profile overriding the defaults")
@@ -1010,6 +1059,48 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--no-compile", action="store_true", help="Emit the source tree without compiling it")
     parser.add_argument("--keep-tree", action="store_true", help="Keep an existing output tree instead of replacing it")
     return parser.parse_args(argv)
+
+
+def ensure_output_is_outside_sources(output_dir: Path, source_root: Path) -> None:
+    """Refuse an output tree that would be written over the sources.
+
+    The generator replaces an existing output tree before it writes the new one, so
+    a redirected output root is the one input that can destroy canonical work. Both
+    the source root and the whole `src/` folder are off limits, because a variant
+    written anywhere under `src/` would be picked up as canonical source later.
+    """
+
+    resolved_output = output_dir.resolve()
+    forbidden_roots = (source_root.resolve(), (REPO_ROOT / "src").resolve())
+
+    for forbidden in forbidden_roots:
+        if resolved_output == forbidden or forbidden in resolved_output.parents:
+            raise BuildError(
+                f"Refusing to write the variant into the sources: {output_dir}\n"
+                f"Choose an output root outside {forbidden}"
+            )
+
+
+def source_revision() -> str:
+    """The repository revision the canonical sources were read at.
+
+    Recorded in the manifest so a built artifact can be traced back to the exact
+    sources it was generated from. A checkout without a revision records "unknown"
+    rather than failing the build.
+    """
+
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+
+    return result.stdout.strip() or "unknown"
 
 
 def main(argv: list[str]) -> int:
@@ -1021,6 +1112,8 @@ def main(argv: list[str]) -> int:
 
     output_root = Path(args.out_root) if args.out_root else REPO_ROOT / profile["outputRoot"]
     output_dir = output_root / profile["variant"]
+
+    ensure_output_is_outside_sources(output_dir, source_root)
 
     if output_dir.exists():
         if not args.keep_tree:
@@ -1047,20 +1140,26 @@ def main(argv: list[str]) -> int:
     print("Static checks: passed")
 
     written = emit_tree(profile, merged_bsl, output_dir, source_root)
+    written.append(write_install_guide(profile, output_dir))
     print(f"Emitted {len(written)} file(s) under {output_dir}")
     for relative in written:
         print(f"  {relative}")
 
     manifest = {
         "profile": profile,
+        "sourceRevision": source_revision(),
         "mergeStats": stats,
         "files": written,
+        "fileHashes": {
+            relative: hashlib.sha256((output_dir / relative).read_bytes()).hexdigest()
+            for relative in written
+        },
         "mergedModuleSha256": hashlib.sha256(merged_bsl.encode("utf-8")).hexdigest(),
         "observations": observations,
         "unverified": [
-            "BSL module syntax is not verified: the container's 1C client cannot start,",
-            "so neither the designer module check nor any test runner can be used.",
-            "Module loading and metadata correctness are verified via ibcmd.",
+            "The static checks prove the generated module's shape, not its runtime behaviour.",
+            "The variant's runtime behaviour is covered by the extension harness and by loading",
+            "the artifact into a database-free infobase; see T021.",
         ],
     }
 

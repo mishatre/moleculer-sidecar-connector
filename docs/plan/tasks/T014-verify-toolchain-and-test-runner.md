@@ -1,9 +1,11 @@
 # T014 — Prove the 1C/OneScript toolchain and choose the BSL test runner
 
-Status: in_progress — the client blocker is resolved, the tooling evidence is recorded below, and the
-test-framework decision is recorded with it: YAxUnit, run through `vrunner` on the harness the task
-T017 built (canonical 163/163, standalone 25/25 at this writing). Remaining: independent review, which
-is the handover this task asked for.
+Status: verified — 2026-09-30. The client blocker is resolved, the tooling evidence is recorded below, and
+the framework decision is recorded with it: YAxUnit, run through the harness T017 built. An independent
+review found two gaps and both are closed here: `epf` was missing from the recorded command set, and the
+runner command, report path and hosting location were not recorded. The review's other finding — that the
+client-blocker section below had gone stale — is annotated rather than deleted, because how it was
+resolved is worth keeping.
 Depends on: none
 Recipe: normal
 Coordinator: Sol Medium
@@ -27,28 +29,34 @@ the decisions recorded here.
 
 ## Acceptance and consumer example
 
-- [ ] `oscript -version`, `opm --version` and the actual `vrunner` version and
+- [x] `oscript -version`, `opm --version` and the actual `vrunner` version and
       top-level CLI groups are recorded, including whether `cfe compile`,
       `epf compile`, `test vanessa`, `test xunit` and `test yaxunit` exist.
-- [ ] A 1C platform executable runs headlessly in this container (licence
+      (`cfe compile` and all three test runners exist; the `epf` group exists with
+      `convert`/`decompile`/`compile` and that row was added after review.)
+- [x] A 1C platform executable runs headlessly in this container (licence
       availability is proven or explicitly reported as absent).
-- [ ] A minimal extension tree containing only `Configuration.xml` and
+      (Both hold: the licence is present and the client starts.)
+- [x] A minimal extension tree containing only `Configuration.xml` and
       `Languages/Русский.xml` compiles to a `.cfe` without a
       `ConfigDumpInfo.xml`, and the exact command is recorded.
-- [ ] The extension `<Version>` element format accepted by the compiler is
+- [x] The extension `<Version>` element format accepted by the compiler is
       determined (canonical `0.2.0 beta 4` versus 4-part `1.0.0.0`).
-- [ ] A second disposable infobase for standalone-mode tests exists, or the
+- [x] A second disposable infobase for standalone-mode tests exists, or the
       reason it cannot be created is recorded.
-- [ ] Exactly one BSL test framework is selected with evidence that it runs and
+      (`build/ib-tests` exists beside `build/ib`.)
+- [x] Exactly one BSL test framework is selected with evidence that it runs and
       produces a machine-readable report; the test-module hosting location is
-      decided.
-- [ ] The compile proof does not modify a consumer or shared infobase.
+      decided. (YAxUnit, `build/test/reports/yaxunit.xml`, hosting described in
+      decision 3.)
+- [x] The compile proof does not modify a consumer or shared infobase.
 
 Representative demonstration:
 
 ```bash
-# minimal tree in a temp dir, then:
-vrunner cfe compile /tmp/spike/MinExt.cfe --src /tmp/spike/MinExt --ibcmd
+# minimal tree in a temp dir, then (options first, artifact last - see the
+# command-shape note in the evidence below):
+vrunner cfe compile --src /tmp/spike/MinExt --ibcmd /tmp/spike/MinExt.cfe
 # expected: /tmp/spike/MinExt.cfe created, exit code 0
 ```
 
@@ -135,11 +143,18 @@ Verified 2026-09-29 in the dev container, cwd `/workspace`.
 | `vrunner` command groups | `infobase`, `cfe`, `cf`, `epf`, `test`, `run`, `validate`, `repo`, `cluster` |
 | `vrunner cfe` subcommands | `compile`, `unload`, `load`, `convert`, `compare`, `decompile` |
 | `vrunner test` subcommands | `xunit`, `vanessa`, `yaxunit` |
+| `vrunner epf` subcommands | `convert`, `decompile`, `compile` — added after review, which noted the earlier table named the command without checking it |
 | Legacy `vrunner compileexttocfe` / `compileepf` | **do not exist** — the commands recorded in `environment.md` and T005 are stale |
 | `ibcmd --version` | `8.3.24.1667`, usable |
-| `1cv8` / `1cv8c` | **cannot launch** |
+| `1cv8` / `1cv8c` | **cannot launch** at the time of writing; resolved later — see the blocker section, and note that the licence is present now and the client starts |
 
-### Platform client blocker (new, critical)
+### Platform client blocker (recorded 2026-09-29, resolved)
+
+Kept because how it was resolved is part of the toolchain story, and because the
+sentences below outlive their truth: the image lacked the 4.0 webkit generation.
+Once the libraries and a licence were in place, `1cv8`/`1cv8c` started and every
+operation this section lists as blocked ran — which is what T017, T018–T020 and
+T021 then did. Read the rest of this section as history, not as current state.
 
 `1cv8` and `1cv8c` fail to start with missing shared libraries:
 
@@ -194,23 +209,34 @@ and all of `vrunner test yaxunit|xunit|vanessa`.
 
 1. **All build and infobase work uses `--ibcmd`.** The designer path is unusable.
 2. **T005 and `environment.md` must be corrected** to the 3.0.0 command set.
-3. **The BSL test framework choice is deferred behind the client blocker.** It
-   cannot be decided by comparing runners until a client can start.
+3. **The BSL test framework is YAxUnit.** It runs through `vrunner test yaxunit`
+   behind `tests/bsl/run-tests.sh --mode canonical|standalone --rebuild-base`, it
+   writes a jUnit report to `build/test/reports/yaxunit.xml` (with
+   `build/test/reports/run.log` beside it, and `exitcode.txt` for the exit code),
+   and a run must not print "a suite did not load". Suites live in
+   `tests/bsl/<mode>/CommonModules/<Suite>/Ext/Module.bsl`, and `tests/bsl/common/`
+   is shared by both modes. The "deferred behind the client blocker" decision this
+   replaces was written when no client could start.
 4. **The container-only test layer is confirmed** and will carry the builder's own
    suite (T016).
 5. `1bdd` is **not usable as installed**: `Библиотека не найдена: 'packageinfo'`.
    `1testrunner` 1.9.2 works and is the container-only runner.
-6. Test hosting and the two test bases are proven feasible with `--ibcmd`; the
-   concrete layout remains T017's decision.
+6. Test hosting is the layout decision 3 describes, and the two test bases are
+   `build/ib` (canonical) and `build/ib-tests` (standalone), both created with
+   `--ibcmd`. The spike base `build/ib-standalone` is still on disk; this task did
+   not remove it.
 
-### Verdict
+### Verdict (rewritten 2026-09-30)
 
-- Container-only and metadata-level verification: **fully available**.
-- Compilation of the standalone variant (T015): **available and unblocked**.
-- BSL behavioural tests (T018–T020) and standalone runtime verification (T021):
-  **blocked** by the missing client libraries.
+- Container-only and metadata-level verification: **available**.
+- Compilation of the standalone variant (T015): **available**.
+- BSL behavioural tests (T018–T020), the extension harness, the HTTP boundary
+  (T025) and standalone runtime verification (T021): **available**. The blocked
+  verdict this replaces was written before the libraries and licence were in place.
 
-Next action: resolve the client-library blocker (container image) before T017 can
-complete, or explicitly re-scope the test workstream. T015 is not blocked and can
-start immediately. Spike fixtures were temporary (`/tmp/spike`) and the spike
-infobase `/workspace/build/ib-standalone` was removed.
+Next action: T014 is done. The follow-ups this task itself created are still open,
+and they are recorded here so they are not mistaken for finished work:
+`environment.md` still carries the pre-3.0.0 command set and a "still blocked"
+line, and `T005`/`T002` still document `vrunner compileexttocfe`/`compileepf`.
+Decision 2 asked for both to be corrected; only `environment.md`'s verified
+section was.

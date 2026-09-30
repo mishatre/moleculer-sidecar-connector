@@ -4,8 +4,9 @@ Container-only: they never launch the 1C platform.  Run with:
 
     python3 -m unittest discover -s tests/standalone-builder -v
 
-The BSL-facing half of the project cannot be tested here because the container has
-no runnable 1C client; see docs/plan/tasks/T014-verify-toolchain-and-test-runner.md.
+The BSL-facing half is exercised elsewhere: the extension harness runs in both
+modes and the artifact is loaded into a database-free infobase, both recorded in
+docs/plan/tasks/T021-standalone-runtime-verification.md.
 """
 
 from __future__ import annotations
@@ -75,6 +76,46 @@ class DefinitionScanTests(unittest.TestCase):
     def test_multiline_signature_is_recognised(self):
         text = "Function Long(Name, Other = 1) Export\nEndFunction\n"
         self.assertEqual([("long", True)], builder.definition_names(text))
+
+
+class OutputSafetyTests(unittest.TestCase):
+    """The generator replaces its output tree, so the target has to be checked."""
+
+    def test_output_inside_the_source_root_is_rejected(self):
+        source_root = REPO_ROOT / "src" / "cfe" / "MoleculerSidecarConnector"
+        with self.assertRaises(builder.BuildError):
+            builder.ensure_output_is_outside_sources(source_root / "build" / "default", source_root)
+
+    def test_output_anywhere_under_src_is_rejected(self):
+        source_root = REPO_ROOT / "src" / "cfe" / "MoleculerSidecarConnector"
+        with self.assertRaises(builder.BuildError):
+            builder.ensure_output_is_outside_sources(REPO_ROOT / "src" / "generated" / "default", source_root)
+
+    def test_output_in_the_build_folder_is_allowed(self):
+        source_root = REPO_ROOT / "src" / "cfe" / "MoleculerSidecarConnector"
+        builder.ensure_output_is_outside_sources(REPO_ROOT / "build" / "standalone" / "default", source_root)
+
+
+class ManifestTests(unittest.TestCase):
+    def test_manifest_records_the_revision_and_every_file_hash(self):
+        manifest_path = REPO_ROOT / "build" / "standalone" / "default" / "standalone-manifest.json"
+        if not manifest_path.is_file():
+            self.skipTest("the variant has not been generated in this checkout")
+
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertIn("sourceRevision", manifest)
+        self.assertIn("fileHashes", manifest)
+        self.assertEqual(len(manifest["files"]), len(manifest["fileHashes"]))
+        self.assertEqual(64, len(manifest["mergedModuleSha256"]))
+
+    def test_variant_tree_ships_the_install_guide(self):
+        manifest_path = REPO_ROOT / "build" / "standalone" / "default" / "standalone-manifest.json"
+        if not manifest_path.is_file():
+            self.skipTest("the variant has not been generated in this checkout")
+
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertIn("INSTALL.md", manifest["files"])
+        self.assertTrue((REPO_ROOT / "build" / "standalone" / "default" / "INSTALL.md").is_file())
 
 
 class ProfileTests(unittest.TestCase):
