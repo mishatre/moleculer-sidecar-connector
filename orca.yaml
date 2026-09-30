@@ -1,0 +1,26 @@
+# Orca project configuration.
+#
+# Everything the container needs is defined in `.devcontainer/`; Orca has no
+# dev-container support of its own, so these hooks are what make an Orca worktree
+# usable: the setup hook builds and starts the worktree's own container, and the
+# default tab opens a shell inside it next to the agent.
+#
+# Read from the primary checkout, which is why this file belongs on `main`.
+# Verified commands and limits: docs/plan/environment.md.
+
+scripts:
+  setup: ./tools/orca/container.sh up
+  archive: ./tools/orca/container.sh down
+
+# The 1C platform, OneScript and the build tools exist only inside the container.
+# Starting the agent before the container is up would give it a host shell that
+# cannot run the project's commands.
+setupAgentStartupPolicy: wait-for-setup
+
+defaultTabs:
+  - title: 1C container
+    command: ./tools/orca/container.sh shell
+
+# Still open: running the workspace itself inside a container, so the agent does not
+# sit on the host and wrap every command. That is TOOLS-002 (issue #46) and needs
+# sshd, a base image and an interactive agent login, so it is not part of this setup.

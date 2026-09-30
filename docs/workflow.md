@@ -19,10 +19,10 @@ Use normal execution mode for a ready task. Goal mode is optional for a bounded 
 ## Create a task versus plan a project
 
 Use “Create a task for…” to capture a new feature or fix in an existing project.
-The coordinator follows `docs/workflow-prompts/05-create-task.md`, checks existing
-tasks for duplicates, picks the domain, assigns the next unused ID in that domain's
-folder, saves a draft and updates that domain's index. Keep acceptance examples,
-relevant code locations and unknowns in the task.
+The coordinator follows `docs/workflow-prompts/05-create-task.md`, checks the tracker
+for duplicates, picks the domain, assigns the next unused ID in that domain, and files
+a `status:draft` issue with the labels and milestone that say where it belongs. Keep
+acceptance examples, relevant code locations and unknowns in the issue.
 Do not elaborate the whole roadmap or implement source changes for this request.
 
 Use “Refine task T001” to settle implementation details later. “Create and refine
@@ -36,23 +36,23 @@ file identifiers, not the required execution order.
 - `docs/plan/project.md`: purpose, current need, architectural boundaries and future direction.
 - `docs/plan/README.md`: routes to the domains and to the global documents. It lists domains, never
   tasks, so it stays out of a task's way.
-- `docs/plan/tasks/<domain>/index.md`: the tasks of one domain — IDs, status, dependencies and the next
-  recommended task. This is the only index a task edits.
-- `docs/plan/tasks/<domain>/<ID>-<short-name>.md`: task card, implementation context and completion
-  evidence in one file. `<domain>` is one of the eight in `docs/plan/conventions/domains.md`.
-- `docs/plan/tasks/<domain>/history/<TASK>.md`: a completed task file that has been moved out of the
-  active folder. A task moves here once its acceptance items are evidenced, so that the active folder
-  answers "what is still open" and this one answers "what was done and how it was proven". The domain
-  index keeps linking these.
-- `docs/plan/conventions/`: `domains.md` (which folder a change belongs to), `tasks.md` (task file,
-  IDs, statuses) and `commits.md` (the commit that finishes a task).
+- **The issue tracker** (`mishatre/moleculer-sidecar-connector`): one issue per task — decision card,
+  implementation context, evidence and comments in one place. ID, status and recipe are the
+  `domain:`/`status:`/`recipe:` labels; the domain is the milestone. See
+  `docs/plan/conventions/tasks.md`.
+- `docs/plan/tasks/<domain>/index.md`: a card that routes to that domain's issues. It holds no state,
+  so it never goes stale.
+- `docs/plan/conventions/`: `domains.md` (which domain a change belongs to), `tasks.md` (issues,
+  IDs, labels, statuses) and `commits.md` (the branch, commit and pull request that finish a task).
+- `.github/ISSUE_TEMPLATE/task.md` and `.github/pull_request_template.md`: the bodies a new issue and
+  a new pull request start from.
 - `docs/plan/environment.md`: working directories, relevant commands and actual validation/deployment capabilities.
 - `docs/plan/notes/`: long-form architecture, research and history. Read-only for routine task work.
 - Existing README or feature docs: current behavior and how to use it, updated alongside delivery.
 
-Use the task file as the single source of truth for scope and evidence. Do not duplicate it into OBJECTIVE, STATUS, HANDOFF and agent-log files. Link important decisions from the project brief; add a dedicated decision document only when it needs a durable explanation.
+Use the issue as the single source of truth for scope and evidence. Do not duplicate it into OBJECTIVE, STATUS, HANDOFF and agent-log files. Link important decisions from the project brief; add a dedicated decision document only when it needs a durable explanation.
 
-Statuses: `draft → ready → in_progress → verified → delivered`. `blocked` records an unmet prerequisite; `deferred` records intentionally later work. Source checked, compiled, runtime checked and deployed are separate evidence fields. A task cannot be verified if required acceptance checks are missing. If checks are unavailable, report that and retain an honest pending/blocked status.
+Statuses: `draft → ready → in-progress → verified → delivered`, as the `status:` label. `blocked` records an unmet prerequisite; `deferred` records intentionally later work. Source checked, compiled, runtime checked and deployed are separate evidence fields. A task cannot be verified if required acceptance checks are missing. If checks are unavailable, report that and retain an honest pending/blocked status.
 
 ## The decision card shown in chat
 
@@ -63,7 +63,7 @@ Aim for 120 words or fewer, unless the user requests detail:
 - How success will be demonstrated.
 - Next action, or one unresolved decision with a recommendation.
 
-Detailed material lives below the card in the task file. Ask ordinary chat questions, preferably one at a time, with no timer. Absence of an answer is not approval. Required unanswered questions remain pending across pauses and resumption. Continue independent safe preparation while a required decision is pending.
+Detailed material lives below the card in the issue. Ask ordinary chat questions, preferably one at a time, with no timer. Absence of an answer is not approval. Required unanswered questions remain pending across pauses and resumption. Continue independent safe preparation while a required decision is pending.
 
 ## Model routing: starting settings
 
@@ -81,7 +81,7 @@ These are hypotheses, not benchmark winners. Use the client's supported model ID
 
 ## Three execution recipes
 
-**Tiny:** one local correction with clear behavior and little interaction. Terra Medium directly implements and verifies it. No compulsory plan artifact or separate reviewer. Use a task file if continuation or release tracking matters.
+**Tiny:** one local correction with clear behavior and little interaction. Terra Medium directly implements and verifies it. No compulsory plan artifact or separate reviewer. File an issue when continuation or release tracking matters.
 
 **Normal — default:** Sol coordinates; one Terra worker implements and tests; a fresh Sol reviewer inspects the resulting diff and acceptance evidence; the worker fixes concrete findings; Sol reports the result. Reviewer reads actual source, tests and relevant surrounding contracts, not just a worker summary. Coordinator resolves findings and confirms required evidence without repeating every successful test.
 
@@ -103,7 +103,7 @@ If subagents are unavailable, a single agent may implement and run an explicitly
 
 ## Scope and future-proofing
 
-Classify new ideas as needed now, later, or undecided. Only needed-now requirements enter the active task. Add future ideas to the index without implementing them. If new information makes the agreed outcome impossible, revise scope explicitly.
+Classify new ideas as needed now, later, or undecided. Only needed-now requirements enter the active task. Capture future ideas as a `status:deferred` issue in their domain, without implementing them. If new information makes the agreed outcome impossible, revise scope explicitly.
 
 Preserve a simple boundary for likely growth: e.g. an async iterable of records between download/parsing and the service. Do not add adapters, hooks, compatibility layers or configuration merely because a future consumer might need them. Record the extension direction and reconsider when a real second use case arrives.
 
@@ -129,14 +129,15 @@ A change touching stock, transactions or inter-system messages gets checks for t
 
 Define delivery in the task: local artifact, consumer integration, package publish, deployment, or manual import. Choose the shortest established route that reaches the real consumer. Public npm publishing is not automatically required for an internal urgent fix. Prepare and verify the concrete artifact; execute publishing/deployment when authorized by the task and allowed by the environment. Otherwise mark it awaiting that action, with exact instructions. Routine in-scope work does not require repeated permission.
 
-## Commits
+## Commits and pull requests
 
-Finishing a task means committing it. Nobody has to ask: the commit is the last step of
-implementation, and its absence is an unfinished task. The subject is `<ID>: <outcome>`, with
-`Task:` and `Verified:` trailers, one commit per task, and the task file's status and evidence
-travel in the same commit. `docs/plan/conventions/commits.md` holds the format and the reasons.
-Never mix two domains in one commit, never commit generated artifacts, and keep unrelated churn
-out.
+Finishing a task means merging its pull request. Nobody has to be asked: the pull request is the
+last step of implementation, and its absence is an unfinished task. One task, one issue, one branch,
+one PR; the subject and the PR title are `<ID>: <outcome>` with `Task: #<N>` and `Verified:` in the
+commit trailers and `Closes #<N>` in the PR body. Squash merge, so `main` carries one commit per
+task, and update the issue's status label and evidence before merging.
+`docs/plan/conventions/commits.md` holds the format and the reasons. Never mix two domains in one
+PR, never commit generated artifacts, secrets or licence files, and keep unrelated churn out.
 
 ## Pauses and measurement
 

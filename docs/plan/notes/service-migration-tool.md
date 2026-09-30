@@ -1,7 +1,7 @@
-# Service module migration — moved to a task file
+# Service module migration — moved to an issue
 
 Status: 2026-09-30. The task definition, its decisions, the two shapes and the open questions now live in
-[tasks/T029-migrate-service-modules.md](../tasks/core/T029-migrate-service-modules.md), so that a delegated worker has
+[T029](https://github.com/mishatre/moleculer-sidecar-connector/issues/8), so that a delegated worker has
 one packet instead of a plan document and a task list to reconcile.
 
 This page survives only because other documents link to it.

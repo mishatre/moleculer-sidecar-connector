@@ -1,26 +1,19 @@
 # FLOW — the working system
 
-Scope: `AGENTS.md`, `docs/workflow.md`, `docs/workflow-prompts/`, and everything under
-`docs/plan/` — this folder, the templates, the routers, the conventions and the notes.
-Next free ID: `FLOW-002`
+Scope: `AGENTS.md`, `docs/workflow.md`, `docs/workflow-prompts/`, `.github/`, and everything under `docs/plan/`.
+Next free ID: allocate inside this domain, per [tasks.md](../../conventions/tasks.md)
+Roadmap: [open](https://github.com/mishatre/moleculer-sidecar-connector/issues?q=is%3Aissue+milestone%3AFLOW+is%3Aopen) · [closed](https://github.com/mishatre/moleculer-sidecar-connector/issues?q=is%3Aissue+milestone%3AFLOW+is%3Aclosed) · [all](https://github.com/mishatre/moleculer-sidecar-connector/issues?q=is%3Aissue+milestone%3AFLOW)
 Rules: [tasks](../../conventions/tasks.md) · [domains](../../conventions/domains.md) · [commits](../../conventions/commits.md)
 
-Next recommended task: none. The domain layout is in place; the follow-ups it deferred have no
-task file yet and would belong here (the link/task-header check) or in
-[STYLE](../style/index.md) (attaching the BSL checklist to edits).
+The tasks of this domain are GitHub issues in the `FLOW` milestone; this card only routes to
+them. Nothing is listed here, so two conversations never edit the same file.
 
-A task belongs here when it changes how work is planned, recorded or committed. Because these
-files are read by every other domain, a normal task never edits them — see
-[domains.md](../../conventions/domains.md).
+```bash
+gh issue list --milestone FLOW --state open
+gh issue list --milestone FLOW --state all
+```
 
-## Open
+Pick the next one with `status:ready`. A finished issue closes with its pull request.
 
-| ID | Outcome | Status | Depends on | File |
-|---|---|---|---|---|
-
-## Closed
-
-| ID | Outcome | Closed | File |
-|---|---|---|---|
-| T000 | Codex can find local workflow files and identify real tooling | verified | [Task](history/T000-verify-workflow.md) |
-| FLOW-001 | Tasks are grouped by domain with per-domain IDs, and every task ends with a commit | verified | [Task](history/FLOW-001-domain-task-structure.md) |
+The retired `T000`–`T040` series and the domain it landed in are mapped in
+[legacy-ids.md](../../notes/legacy-ids.md).

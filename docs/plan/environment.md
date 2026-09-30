@@ -4,7 +4,13 @@
 
 Repository root: current checkout; container root `/workspace`.
 Container: Compose service `dev`, platform `linux/amd64`, remote user `root`.
-Base image: `local/vrunner2:8.3.24.1667` (configured, not runtime-verified).
+Base image: `local/vrunner:8.3.24.1667`, a local build of the
+`pravets/onec-images` runner (the Dockerfile used to name `local/vrunner2`; the
+tag is unchanged and the shorter name is the one that exists).
+Start it from the host with `tools/orca/container.sh up` — the setup hook Orca
+runs for a worktree — or with VS Code's "Reopen in Container". Both use
+`.devcontainer/docker-compose.yml` and the same project name,
+`<worktree>_devcontainer`, so one worktree has one container.
 Platform path in debugger config: `/opt/1C/v8.3/x86_64` (unverified).
 Configured post-create check: `oscript --version && opm --version`.
 Codex extension requested: `openai.chatgpt`.
@@ -43,7 +49,13 @@ Disposable test infobase: `/workspace/build/ib`.
 The user authorizes install, update, removal, and reset of this infobase only for
 implementation tasks whose acceptance checks require those mutations.
 Runtime/integration test: unknown.
-GitHub CLI/authenticated release tooling: unavailable in the current container.
+GitHub CLI inside the container: `gh` 2.45 is installed from Ubuntu noble.
+It authenticates from `GH_TOKEN`, which `docker-compose.yml` passes through from
+the host environment; `tools/orca/container.sh up` resolves it from the host's
+`gh auth token` when it is not exported. For VS Code,
+`devcontainer.json`'s `remoteEnv` supplies it instead, because VS Code does not
+inherit the shell. Verify with `gh auth status`; an empty token is an honest
+unauthenticated state, not a broken container.
 T005 produces a local draft-release directory; creating/publishing a GitHub
 release remains a separate delivery action.
 
@@ -81,7 +93,7 @@ loading of model defaults and model routing remain unverified. Configuration
 requests two concurrent threads; session tools expose three total slots.
 Graft/Serena tools are not exposed. No tools were installed or reconfigured.
 
-Detailed acceptance evidence: [T000](tasks/workflow/history/T000-verify-workflow.md).
+Detailed acceptance evidence: [T000](https://github.com/mishatre/moleculer-sidecar-connector/issues/43).
 The direct runner command shapes and disposable target are identified. Exact
 per-task commands, compilation success, runtime behavior, and deployment remain
 unverified until the applicable implementation task.
@@ -92,7 +104,9 @@ unverified until the applicable implementation task.
 - Connector asset: `MoleculerSidecarConnector-v{semver}.cfe`
 - Installer asset: `MoleculerSidecarConnectorInstaller-v{semver}.epf`
 - Checksums: `SHA256SUMS.txt`
-- GitHub repository: `mishatre/moleculer-ones`
+- GitHub repository: `mishatre/moleculer-sidecar-connector` (renamed from
+  `moleculer-ones`, which GitHub still redirects; the task tracker and the
+  pull requests live there).
 - The installer bundles the exact CFE released beside it.
 - The CFE is **not** byte-reproducible, measured 2026-09-30: two builds of the same tree with the same
   profile produced `sha256 c5a5312c65cb…` and `sha256 9d40771201ec…`. The inputs are reproducible —
@@ -105,7 +119,7 @@ unverified until the applicable implementation task.
 ## Verified toolchain — 2026-09-29
 
 Verified in the dev container from `/workspace`. Full evidence in
-[T014](tasks/tooling/history/T014-verify-toolchain-and-test-runner.md).
+[T014](https://github.com/mishatre/moleculer-sidecar-connector/issues/38).
 
 ### Versions and commands
 
@@ -121,7 +135,7 @@ Verified in the dev container from `/workspace`. Full evidence in
 | `1testrunner` | 1.9.2, container-only, jUnit output |
 | `1bdd` | not usable as installed (`Библиотека не найдена: 'packageinfo'`) |
 
-### 1C client execution: libraries fixed, licence missing
+### 1C client execution: libraries and licence resolved
 
 Originally `1cv8` and `1cv8c` could not start at all: `libwebkit2gtk-4.0.so.37`,
 `libjavascriptcoregtk-4.0.so.18` and `libsoup-2.4.so.1` were missing, and Ubuntu
@@ -135,19 +149,45 @@ than the WebKit libraries require). The script is wired into
 "already installed" and "already the system one" on a second run. `ldd` on `1cv8c`
 now reports no missing libraries.
 
-**Remaining blocker: a 1C licence.** The designer now starts and fails only with:
+**Resolved 2026-09-30: the licence is installed.** Without one, the platform still
+answers:
 
 ```text
 Не найдена лицензия. Не обнаружен ключ защиты программы или полученная программная лицензия!
 ```
 
-There is no command-line licence activation in the platform: the `licenses` entry
-next to the binaries is a documentation directory, not a tool. `login.1c.ru`
-redirects to the `portal.1c.ru` single-page application, so credentials cannot be
-used headlessly. Activation therefore has to be done interactively once, from the
-launcher or the client; the licence is then stored under `~/.1cv8/1C/` (a
-`1Cv8Licence` file in `~/.1cv8/1C/` or `/var/1C/licenses/` also works, as does a
-HASP key).
+There is no command-line licence activation: the `licenses` entry next to the
+binaries is a documentation directory, not a tool, and `login.1c.ru` redirects to the
+`portal.1c.ru` single-page application, so credentials cannot be used headlessly. The
+owner obtains a licence file and installs it from the host instead.
+
+The file is `build/<timestamp>.lic` in the main checkout — 4 804 bytes, UTF-8 with
+CRLF line endings. `build/` is gitignored as a whole, so the licence is never
+committed. The platform reads it from `/var/1C/licenses/`, which
+`.devcontainer/docker-compose.yml` mounts from the named volume `msc-1c-licences`.
+That name is fixed rather than project-scoped, so **every worktree's container sees
+the same licence and it is installed once per machine**:
+
+```bash
+# from the host, with the licence file in the checkout's ignored build/ directory
+docker run --rm --entrypoint /bin/cp \
+  -v msc-1c-licences:/licences \
+  -v "$PWD/build":/src \
+  local/vrunner:8.3.24.1667 /src/<licence>.lic /licences/
+```
+
+Verified 2026-09-30 in this worktree's container, against a disposable infobase
+created for the check with `ibcmd infobase create --db-path=/workspace/build/ib-licence-check`:
+
+| Step | Observed |
+|---|---|
+| `1cv8 DESIGNER /F/workspace/build/ib-licence-check /CheckModules` before the file was installed | `Не найдена лицензия. …`, exit 1 |
+| the same command after `docker cp … /var/1C/licenses/` | `Синтаксических ошибок не обнаружено!`, exit 0 |
+| `docker compose down` then `up --detach` | the file is still in `/var/1C/licenses/` |
+
+A `1Cv8Licence` file in `~/.1cv8/1C/` and a HASP key also work; the `msc-1cv8-home`
+volume already covers root's home for that route.
+
 
 ### Launching the infobases
 
@@ -183,12 +223,67 @@ for example `tools/1c-platform/open-infobase.sh client ib`. Direct equivalents:
 /opt/1cv8/current/1cv8                                   # launcher
 ```
 
-Note: launching needs a display (the container exposes `DISPLAY`), and the licence
-is stored inside the container, so it does not survive a container rebuild unless
-`/root/.1cv8` is mounted as a volume.
+### Display
 
-Until then, still blocked: `vrunner run enterprise`,
-`vrunner validate syntax-check`, and every `vrunner test yaxunit|xunit|vanessa` run.
+Every mode above opens a window, and the container has no screen: the client draws on the
+macOS host's XQuartz server over TCP. `docker-compose.yml` sets
+`DISPLAY=host.docker.internal:0`, plus `GDK_BACKEND=x11`, `LIBGL_ALWAYS_INDIRECT=1` and
+`WEBKIT_DISABLE_COMPOSITING_MODE=1`, because remote X11 has no direct rendering and
+WebKitGTK has no compositing path over it.
+
+Verified 2026-09-30 in a container started by `tools/orca/container.sh up`:
+
+| Check | Observed |
+|---|---|
+| `xdpyinfo -display "$DISPLAY"` in the container | reaches XQuartz 2.8.6 (`vendor release number: 12101023`) |
+| XQuartz listener on the host | `TCP *:6000`, so "Allow connections from network clients" is on |
+| Source address XQuartz sees for container traffic | `127.0.0.1`, so one `xhost +127.0.0.1` covers every worktree |
+| `/tmp/.X11-unix` bind mount | mounts, but `connect()` answers `ECONNREFUSED`; TCP is the only route on macOS |
+| `1cv8c` with no DISPLAY | `Unable to initialize GTK+ or connect to the windowing system` |
+| `1cv8c` with DISPLAY and no `xhost` entry | `Authorization required, but no authorization protocol specified` |
+| `1cv8c` with DISPLAY and the entry | starts and stays up |
+
+The host step, once per X server start — `xhost` entries do not survive a restart of the X
+server:
+
+```bash
+xhost +127.0.0.1
+```
+
+Keep it to `127.0.0.1` rather than a bare `xhost +`, which would open the display to
+everything reachable. `tools/1c-platform/open-infobase.sh` runs `xdpyinfo` before starting
+a client and prints exactly that command when the display is unreachable, so a missing X
+server no longer reads as a broken platform.
+
+**The window renders. Verified 2026-09-30** with the licence installed: the launcher ran
+for twelve seconds without an error and `xwininfo -display "$DISPLAY" -root -tree` listed
+its windows on the host server —
+
+```text
+0x600136 "Запуск 1С:Предприятия": ("1cv8" "1cv8")  490x406+0+0
+0x60014b "1С:Предприятие":        ("1cv8" "1cv8")  347x136+0+0
+```
+
+So the launcher, the client and the designer can open on the Mac. What is still unwatched
+is the drawing quality over a slower link: XQuartz disables indirect GLX by default
+(`defaults read org.xquartz.X11 enable_iglx` is `0`); if a client draws a black or empty
+window, the community workaround is `defaults write org.xquartz.X11 enable_iglx -bool true`
+before starting XQuartz, and the in-client hardware-acceleration option rather than a
+command-line switch — this 8.3.24 build has no `-DisableHWA`. A browser-visible fallback
+(Xvfb + x11vnc + noVNC in the container) is the dependable alternative when remote X11 is
+too slow or GLX fails; it is not configured here.
+
+The licence lives in the shared `msc-1c-licences` volume at `/var/1C/licenses/`, declared
+in `docker-compose.yml`, so it survives a container rebuild and is shared by every
+worktree; the `msc-1cv8-home` volume keeps root's own platform state beside it.
+
+
+
+With the licence in place, `vrunner run enterprise`, `vrunner validate syntax-check` and the
+`vrunner test yaxunit|xunit|vanessa` runs are no longer blocked by licensing. Two limits
+remain: each needs a disposable infobase under the container's own `/workspace/build/`, and a
+container created before the `msc-1c-licences` volume existed does not see the licence until
+it is recreated.
 
 ### Alternative: verify BSL without a licence
 

@@ -1,20 +1,28 @@
-# <ID> — [One demonstrable outcome]
+---
+name: Task
+about: One demonstrable outcome with its acceptance, context and evidence
+title: "<ID>: "
+labels: status:draft
+---
 
-Status: draft
-Depends on: none
-Recipe: normal
-Coordinator: Sol Medium
-Worker: Terra Medium
-Reviewer: Sol Medium
+<!--
+Title: <ID>: <outcome> — for example `CORE-001: parse service definitions locally`.
+The ID is <PREFIX>-<NNN>, counted inside the domain, or a retired `T000`–`T040` number.
+Labels: domain:<glob|style|core|stand|inst|tools|doc|flow>, status:<draft|ready|in-progress|verified|delivered|blocked|deferred|withdrawn>, recipe:<tiny|normal|complex>.
+Milestone: the domain prefix. Rules: docs/plan/conventions/tasks.md.
+Keep the decision card under about 120 words; detail belongs below it.
+-->
 
 ## Decision card
 
 Outcome: [Who can do what after this?]
 Why now: [Immediate need]
-Included: [Necessary behavior]
+Included: [Necessary behaviour]
 Deferred: [Future ideas explicitly excluded]
 Success: [One concrete demonstration]
 Next: [One action or unresolved question]
+
+Depends on: none
 
 ## Acceptance and consumer example
 
@@ -34,7 +42,7 @@ Future extension note (not implementation scope):
 
 ## Environment and verification
 
-Link: ../environment.md
+Link: docs/plan/environment.md
 Commands and expected results:
 Required runtime/manual checks:
 Unavailable checks and who can perform them:
@@ -49,7 +57,9 @@ Reversal/recovery method where relevant:
 
 ## Stop conditions
 
-Stop dependent work for unresolved acceptance semantics, missing required access/tooling, or a necessary scope change. Routine implementation choices are autonomous. After two failed repairs of the same issue, diagnose/replan before another attempt.
+Stop dependent work for unresolved acceptance semantics, missing required access/tooling, or a necessary
+scope change. Routine implementation choices are autonomous. After two failed repairs of the same issue,
+diagnose and replan before another attempt.
 
 ## Completion evidence / resume point
 
@@ -58,12 +68,6 @@ Build:
 Runtime/consumer check:
 Review findings and dispositions:
 Delivered artifact/deployment:
-Commit:
+Pull request:
 Unverified work:
 Next action:
-
-## Optional pilot metrics
-
-Actual models/efforts:
-Elapsed time / repair rounds / human review minutes:
-Quota before/after, observation times, concurrent-work caveat:

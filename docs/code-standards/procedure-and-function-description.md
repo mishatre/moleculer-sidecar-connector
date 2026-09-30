@@ -510,7 +510,7 @@ Function SessionSeparatorUse() Export
 
 #std453 has no marker for the internal API, so this project adds one. An exported
 procedure or function that sits in a module's `Internal` region — named `Protected`
-in some modules until [T040](../plan/tasks/style/T040-refactor-protected-region.md) renames
+in some modules until [T040](https://github.com/mishatre/moleculer-sidecar-connector/issues/3) renames
 it — is not part of the module's public interface. It exists only for other objects of
 the same subsystem, so it carries a single `// @internal` line as the last line of its
 documenting comment:

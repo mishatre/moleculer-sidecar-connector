@@ -31,7 +31,7 @@ Needed for the cycle:
 
 Later, once the two above land:
 
-- 3 and 5 — error taxonomy and its dispatch table; T023 already exists as a task file.
+- 3 and 5 — error taxonomy and its dispatch table; T023 already exists; it is issue #4.
 - 4 — number handling; folded into T026.
 - 6 and 7 — module surface and naming; T026.
 
@@ -58,5 +58,5 @@ T036 and T037 were found by the static gate built in T022, after this cycle's li
 
 - [yaml-native-parser-viability.md](yaml-native-parser-viability.md) — the study behind T028.
 - [connector-architecture-audit.md](connector-architecture-audit.md) — the earlier reading of the same code.
-- [T023](../tasks/core/T023-error-taxonomy.md) — the error taxonomy, which this cycle's evidence table feeds.
-- [tasks/history/README.md](../conventions/tasks.md) — where completed task files go, and the rule for when.
+- [T023](https://github.com/mishatre/moleculer-sidecar-connector/issues/4) — the error taxonomy, which this cycle's evidence table feeds.
+- [the task conventions](../conventions/tasks.md) — how an issue is filed, run and closed.

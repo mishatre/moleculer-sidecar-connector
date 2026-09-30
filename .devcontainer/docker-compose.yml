@@ -8,7 +8,44 @@ services:
 
     volumes:
       - ..:/workspace:cached
-      
+      # Root's home holds the platform licence (a 1Cv8Licence file), the launcher's
+      # infobase list and the per-user caches. The image's own volume covers
+      # /home/usr1cv8/.1cv8, which is not where root writes: without this volume the
+      # licence has to be activated again after every rebuild. It is declared here
+      # rather than in devcontainer.json because a bare Compose start — the one
+      # tools/orca/container.sh uses — applies no devcontainer `mounts`.
+      - msc-1cv8-home:/root/.1cv8
+      # The platform also reads licences from this directory. Unlike the volume
+      # above, its name is fixed rather than project-scoped, so every worktree's
+      # container sees the same licence files and a licence is installed once per
+      # machine — see "Licence" in docs/plan/environment.md.
+      - msc-1c-licences:/var/1C/licenses
+
+    environment:
+      # The 1C client is a GUI program and the container has no screen: it draws on
+      # the macOS host's XQuartz server over TCP. The /tmp/.X11-unix socket does not
+      # cross the macOS Docker VM — measured 2026-09-30, the socket mounts but
+      # connect() answers ECONNREFUSED — so the display is reached by name. The host
+      # authorizes the container once per X server start with `xhost +127.0.0.1`;
+      # see "Display" in docs/plan/environment.md.
+      DISPLAY: "host.docker.internal:0"
+      # Remote X11 has no direct rendering, and WebKitGTK has no compositing path
+      # over it. These keep GTK and the client on the software path.
+      GDK_BACKEND: "x11"
+      LIBGL_ALWAYS_INDIRECT: "1"
+      WEBKIT_DISABLE_COMPOSITING_MODE: "1"
+      # `gh` inside the container reads GH_TOKEN. Export it on the host before
+      # starting the container (`export GH_TOKEN=$(gh auth token)`);
+      # devcontainer.json passes the same variable through for VS Code, which does
+      # not inherit the shell environment. Empty means unauthenticated, which is an
+      # honest state rather than an error.
+      GH_TOKEN: "${GH_TOKEN:-}"
+
+    # Docker Desktop and OrbStack resolve host.docker.internal themselves. The
+    # alias keeps a Linux host working with the same DISPLAY value.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
     cap_add:
       - SYS_ADMIN
     security_opt:
@@ -18,3 +55,8 @@ services:
     working_dir: /workspace
 
     command: sleep infinity
+
+volumes:
+  msc-1cv8-home:
+  msc-1c-licences:
+    name: msc-1c-licences
