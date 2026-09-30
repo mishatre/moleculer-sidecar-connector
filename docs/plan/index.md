@@ -103,7 +103,9 @@ The licence was supplied out of band the same day:
 launches the client and executes the BSL suites (54/54 in canonical mode). Client
 launches are therefore no longer licence-blocked, so `vrunner run enterprise`,
 `vrunner validate syntax-check` and `vrunner test xunit|vanessa` are untried
-rather than blocked — none of them has been run yet.
+rather than blocked. `vrunner validate syntax-check` has since been run — the T022
+static gate reaches the platform check on 2026-09-30 — while `vrunner run enterprise`
+and `vrunner test xunit|vanessa` remain untried.
 
 Still available without a client: `vrunner cfe compile --ibcmd`,
 `vrunner infobase init --ibcmd`, `ibcmd config check`, and the container-only

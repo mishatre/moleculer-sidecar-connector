@@ -423,7 +423,11 @@ taken only while an error is being reported, which is why they have survived.
 
 Shape, to confirm during refinement: either raise the declared compatibility mode — a consumer-visible
 decision, since the extension would then require a newer platform — or stop using the two members on
-those paths. That choice belongs with the platform-support decision, not with the error module.
+those paths. That choice belongs with the platform-support decision, not with the error module. One piece
+of evidence already points at alignment: the generated standalone variant declares `Version8_3_24`
+(`build/standalone/default/INSTALL.md`, "Сборка создана для режима совместимости"), so the two halves of
+the product disagree about the platform they require, and the code the variant shares already assumes the
+newer one.
 
 ## Open decisions
 

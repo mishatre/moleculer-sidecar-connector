@@ -211,6 +211,11 @@ vrunner infobase init --src <CONFIG-SRC> --ext <CFE> \
 # Metadata-correctness check of an extension already applied to a base
 ibcmd config check --db-path=<BASE-PATH> --extension=<NAME>
 
+# Platform syntax check over an infobase that already has the extension applied
+vrunner validate syntax-check --ibconnection /F<BASE-PATH> --v8version 8.3 \
+  --mode ExtendedModulesCheck --junitpath <REPORT.xml> \
+  --exception-file tools/syntax-check-excludes.txt
+
 # Container-only unit tests with a jUnit report
 oscript oscript_modules/1testrunner/src/main.os -runall <TESTS-DIR> xddReportPath <REPORT-DIR>
 ```
@@ -220,6 +225,15 @@ extension source tree needs no `ConfigDumpInfo.xml`; `<Version>` accepts both
 `1.0.0.0` and `0.2.0 beta 4`; an object that exists in the extended configuration
 must declare `<ObjectBelonging>Adopted</ObjectBelonging>` or the extension fails
 to apply.
+
+`syntax-check` was verified on 2026-09-30 (T022) against `build/ib-tests`: it answers
+`Проверка конфигурации завершена: ошибок не обнаружено` in 3 s and writes the JUnit
+report. Two things about it are worth knowing. Its exception file is looked up at
+`tools/syntax-check-excludes.txt` by default — the run only warns `Файл исключений не
+найден` when it is missing, so a recorded command should pass `--exception-file`
+explicitly. And it does not compile module bodies, so it does not see a call to a
+method that does not exist; that is the BSL Language Server layer's job, and the
+division is why both exist.
 
 ### Test bases
 

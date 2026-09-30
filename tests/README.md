@@ -80,6 +80,40 @@ YAxUnit исполняется внутри процесса, поэтому н�
   месте, следующий запуск падает с «Ошибка блокировки каталога данных сервера». Тест
   удаляет замок, только если указанный в нём процесс уже завершён.
 
+## Единая точка входа
+
+```bash
+tools/check.sh                          # все слои
+tools/check.sh --layers static,builder  # только выбранные
+tools/check.sh --skip bsl-standalone
+tools/check.sh --list
+```
+
+Слои в порядке выполнения:
+
+| Слой | Что запускает | Отчёт |
+|---|---|---|
+| `static` | `tools/bsl-checks/bsl-language-server.py`, затем `find-procedure-as-function.py` | `build/test/reports/bsl-ls/bsl-json.json` |
+| `builder` | `python3 -m unittest discover -s tests/standalone-builder` | `build/test/reports/check/builder.log` |
+| `bsl-canonical` | `tests/bsl/run-tests.sh --mode canonical` | `build/test/reports/yaxunit.xml` |
+| `bsl-standalone` | `tests/bsl/run-tests.sh --mode standalone` | то же |
+| `syntax-check` | `vrunner validate syntax-check --mode ExtendedModulesCheck` | `build/test/reports/syntax-check.xml` |
+
+Порядок не случаен: проверка синтаксиса смотрит на информационную базу (`build/ib`), поэтому
+идёт после канонического слоя, который оставляет в ней загруженное расширение, а статический
+слой — первым, потому что он самый дешёвый способ узнать, что дерево не компилируется.
+
+Журнал каждого слоя — `build/test/reports/check/<слой>.log`; сводка печатается в конце, и код
+возврата нулевой только когда прошли все выбранные слои. Слой, который сам сообщает, что
+пропущен — например, языковой сервер без java, — прогон не роняет: это свойство машины, а не
+кода.
+
+`--force`, `--rebuild-base` и `--tests` передаются в оба слоя BSL. Первосторонних наборов на
+OneScript в репозитории нет: контейнерные наборы — это Python, и они составляют слой `builder`.
+
+Разделение слоёв `static` и `syntax-check` намеренное: проверки платформы не компилируют тела
+модулей, поэтому вызов несуществующего метода общего модуля видит только языковой сервер.
+
 ## BSL-тесты (YAxUnit)
 
 ### Запуск
