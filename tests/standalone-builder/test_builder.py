@@ -242,7 +242,10 @@ class CanonicalMergeTests(unittest.TestCase):
             )
 
     def test_platform_facts_are_patched(self):
-        self.assertIn("CompileServiceSchema(Moleculer)", self.merged)
+        # The argument must be the module *name*, not the module itself: CompileServiceSchema
+        # takes a string and raises a TypeError on a metadata object, and the compile turns
+        # that into Undefined, which is how every $internal.* request came to answer 503.
+        self.assertIn('CompileServiceSchema("Moleculer")', self.merged)
         self.assertNotIn("Constants.mol_TestConnection.Get()", self.merged)
         self.assertNotIn("YAML.ToObject(Text);", self.merged)
 

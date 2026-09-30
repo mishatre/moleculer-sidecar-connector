@@ -53,7 +53,7 @@ any task.
 | T028 | Service definitions parse locally instead of through the sidecar | draft | owner decision on safe mode; T025 | [Task](tasks/T028-parse-service-definitions-locally.md) |
 | T030 | The ambient context stack is pushed and popped symmetrically | draft | T020 | [Task](tasks/T030-balance-the-ambient-context-stack.md) |
 | T031 | The standalone variant keeps the live branch of a standalone guard | verified | T015, T016 | [Task](tasks/history/T031-keep-the-live-branch-when-stripping.md) |
-| T032 | The connector's own actions work in the standalone variant | draft | T035 (same root cause), T015 | [Task](tasks/T032-connector-actions-over-http.md) |
+| T032 | The connector's own actions work in the standalone variant | verified | T035 (same root cause), T015 | [Task](tasks/history/T032-connector-actions-over-http.md) |
 | T033 | Both payload directions agree on the shape of a context's action | verified | T018 | [Task](tasks/history/T033-agree-on-the-shape-of-an-action.md) |
 | T034 | A nested call chains to its parent context | withdrawn | T030, T033 | [Task](tasks/T034-nested-call-parent-context.md) |
 | T035 | The standalone merge keeps service identities apart | verified | T015 | [Task](tasks/history/T035-standalone-merge-identities.md) |

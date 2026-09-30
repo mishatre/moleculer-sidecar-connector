@@ -28,11 +28,12 @@ Rules that keep this folder useful:
 | T024 | All four YAML modules are deleted |
 | T025 | The inbound transport boundary is covered by an integration test |
 | T031 | The standalone variant keeps the live branch of a standalone guard |
+| T032 | The connector's own actions work in the standalone variant |
 | T033 | Both payload directions agree on the shape of a context's action |
 | T035 | The standalone merge keeps service identities apart |
 | T036 | The admin panel form stops calling a method that does not exist |
 
 Still active in `docs/plan/tasks/`: T002–T013 (installer roadmap), T023 (its third acceptance item now has
-measured evidence) and the refactoring cycle's open tasks — T026–T030, T032, T034 (withdrawn, kept as a
-record of a wrong finding) and T037. The cycle's rationale and its task index are in
+measured evidence) and the refactoring cycle's open tasks — T026–T030, T034 (withdrawn, kept as a record of a
+wrong finding) and T037. The cycle's rationale and its task index are in
 [refactor-backlog.md](../../refactor-backlog.md).

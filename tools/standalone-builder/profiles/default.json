@@ -154,7 +154,7 @@
             {
                 "description": "the internal service is a service of the merged module, not a separate module",
                 "pattern": "CompileServiceSchema\\(\\s*\"mol_Internal\"\\s*\\)",
-                "replacement": "CompileServiceSchema(Moleculer)"
+                "replacement": "CompileServiceSchema(\"Moleculer\")"
             },
             {
 

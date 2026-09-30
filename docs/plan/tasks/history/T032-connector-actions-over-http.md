@@ -1,6 +1,6 @@
 # T032 — make the connector's own actions reachable over HTTP
 
-Status: draft — the cause is now proven; the fix is not chosen.
+Status: verified 2026-09-30 — the exception was observed, and the fix is the argument type in the profile patch.
 Depends on: T035 (same root cause), T015
 Recipe: normal
 Coordinator: Sol Medium
@@ -76,6 +76,41 @@ error message and calls `LoggerError` before returning Undefined, and no log lin
 standalone run, so the reason has to be observed rather than inferred. A resolver that answers `Undefined`
 for both "no such action" and "compiling it threw" is what made this task take three wrong readings before
 the artifact was read instead. Whatever fixes the compile should also stop hiding its reason.
+
+**OBSERVED AND FIXED 2026-09-30.** The swallowed exception is
+
+```
+MoleculerClientError: ModuleOrReference должна иметь тип "Строка". Передан тип: "Объект метаданных"
+```
+
+and the fix is one pair of quotes in a profile patch. `CompileServiceSchema(ModuleOrRef, Prefix)` takes the
+module **name**; the patch written for the merge passed the merged module object instead —
+`CompileServiceSchema(Moleculer)` — so the factory's constructor raised `TYPE_ERROR` before building anything,
+the `Except` inside `CompileServiceSchema` logged it and returned `Undefined`, and
+`Delete_FindInternalHandler` then raised its own `TypeError` on that `Undefined` from the loop that reads
+`Schema.Actions`. Extension mode passes the string `"mol_Internal"`, which is why only the variant failed.
+
+The patch now emits `CompileServiceSchema("Moleculer")`. The merged module carries the internal constructor,
+and the name resolves to it, so the internal service compiles in the variant and `$internal.ping` is found.
+
+How it was observed, since `Сообщить` from a server context does not reach the harness log: a scratch suite
+called `CompileServiceSchema` inside its own `Try`, read the swallowed error back through
+`mol_Errors.GetCurrentError()` — the same staleness T030 documents — and wrote the result to a file. It also
+confirmed that the event log carries `Не удалось скомпилировать схему сервиса - ОбщийМодуль`, the `LoggerError`
+line no earlier run had looked at. The scratch suite is gone; what replaced it is
+`tests/bsl/standalone/CommonModules/InternalServiceResolverTests`, which asserts that the schema is built and
+that the handler resolves by name, and the builder's proxy assertion was tightened from
+`CompileServiceSchema(Moleculer)` to the string form so the class of defect cannot return silently.
+
+## Completion evidence / resume point
+
+- `tests/bsl/standalone/CommonModules/InternalServiceResolverTests` — 1 test, 0 errors, 0 failures: the
+  internal service compiles, `Schema.Name` is `"$internal"`, and `Delete_FindInternalHandler("$internal.ping")`
+  answers a handler.
+- Builder suite 55 tests green with the tightened assertion; standalone 27/27; the artifact is rebuilt.
+- Not run: the HTTP test in standalone mode, which would show `pong` where the 503 was recorded. The resolver
+  it exercises is the one the transport calls, so the fix is proven at that boundary; an end-to-end HTTP run
+  needs a publication for `build/ib-tests`, which the repository does not carry.
 
 ## Evidence
 
