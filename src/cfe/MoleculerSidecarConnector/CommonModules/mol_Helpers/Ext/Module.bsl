@@ -606,7 +606,7 @@ Function EncodeMultipartData(WritableStream, Parts) Export
 		If TypeOf(Part.Data) = Type("BinaryData") Then
 			Writer.Write(Part.Data);
 		ElsIF TypeOf(Part.Data) = Type("MemoryStream") Then
-			Writer.Write(Part.CloseAndGetBinaryData());
+			Writer.Write(Part.Data.CloseAndGetBinaryData());
 		ElsIF TypeOf(Part.Data) = Type("Stream") Then 
 			MemoryStream = New MemoryStream();
 			Part.Data.CopyTo(MemoryStream);

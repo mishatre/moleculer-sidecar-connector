@@ -170,12 +170,29 @@ tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
 | Каталог | Что вызывает | Режим |
 |---|---|---|
 | `common/CommonModules/mol_ReuseTests` | `mol_Reuse.*` | оба (модуль сохранён) |
-| `canonical/CommonModules/mol_ErrorsTests` | `mol_Errors.*` | каноническое расширение |
-| `canonical/CommonModules/mol_ContextFactoryTests` | `mol_ContextFactory.*` | каноническое расширение |
-| `canonical/CommonModules/mol_HelpersTests` | `mol_Helpers.*` | каноническое расширение |
+| `common/CommonModules/mol_ReuseCachingTests` | `mol_Reuse.*`, `mol_ReuseCalls.*` | оба (оба модуля сохранены) |
+| `canonical/CommonModules/MoleculerFacadeTests` | `Moleculer.*` | каноническое расширение |
+| `canonical/CommonModules/MoleculerOverridableTests` | `MoleculerOverridable.*` | каноническое расширение |
+| `canonical/CommonModules/mol_AmbientContextTests` | `mol_ContextFactory.*`, `mol_Errors.*`, `mol_Helpers.*` | каноническое расширение |
 | `canonical/CommonModules/mol_BrokerTests` | `mol_Broker.*` | каноническое расширение |
+| `canonical/CommonModules/mol_ContextFactoryTests` | `mol_ContextFactory.*` | каноническое расширение |
+| `canonical/CommonModules/mol_ContextFieldsTests` | `mol_ContextFactory.*` | каноническое расширение |
+| `canonical/CommonModules/mol_ErrorShapesTests` | `mol_Errors.*` | каноническое расширение |
+| `canonical/CommonModules/mol_ErrorsTests` | `mol_Errors.*` | каноническое расширение |
+| `canonical/CommonModules/mol_HelpersClientServerTests` | `mol_HelpersClientServer.*` | каноническое расширение |
+| `canonical/CommonModules/mol_HelpersSigningTests` | `mol_Helpers.SignV4` | каноническое расширение |
+| `canonical/CommonModules/mol_HelpersTests` | `mol_Helpers.*` | каноническое расширение |
+| `canonical/CommonModules/mol_InboundDispatchTests` | `mol_ContextFactory.Handler` | каноническое расширение |
+| `canonical/CommonModules/mol_LoggerTests` | `mol_Logger.*` | каноническое расширение |
+| `canonical/CommonModules/mol_PayloadContractTests` | `mol_ContextFactory.ToPayload/FromPayload` | каноническое расширение |
 | `canonical/CommonModules/mol_SchemaFactoryTests` | `mol_SchemaFactory.*` | каноническое расширение |
+| `canonical/CommonModules/mol_TransportTests` | `mol_Transport.*` (кроме сетевого вызова) | каноническое расширение |
+| `canonical/CommonModules/yp_YAMLTests` | компонента `yp_YAML`, к коннектору не относится | каноническое расширение |
 | `standalone/CommonModules/MoleculerTests` | `Moleculer.*` | автономная база |
+| `standalone/CommonModules/StandaloneRuntimeTests` | `Moleculer.*`, провайдер | автономная база |
+
+Таблица пересчитана 2026-09-30 и перечисляет все наборы, которые есть в дереве;
+до этого в ней не было части более поздних наборов.
 
 `run-tests.sh` собирает наборы из `common/` плюс каталога выбранного режима, поэтому
 набор, обращающийся к `mol_Helpers.*` напрямую, должен лежать в `canonical/`, а

@@ -166,7 +166,11 @@ EndFunction
 
 #Region HTTP
 
-Function Transporter_HTTP_Send(Connection, Packet, Val Headers = Undefined) 
+// Assembles everything the transport is about to send: the body from the packet, the header set
+// including the signed subset, and the timeout the connection is cached with. Split out of
+// Transporter_HTTP_Send so the header set can be asserted while no sidecar runs, because a test cannot
+// otherwise see what the transport puts on the wire.
+Function PrepareHTTPRequest(Connection, Packet, Val Headers = Undefined) Export 
 	
 	HTTPRequest = New HTTPRequest();	
 	PackingResult = SetPacketAsRequestResponseBody(HTTPRequest, Packet);
@@ -219,17 +223,38 @@ Function Transporter_HTTP_Send(Connection, Packet, Val Headers = Undefined)
 		Timeout = Packet.Data.Timeout / 1000
 	EndIf;  
 	
-	HTTPConnection = mol_Helpers.GetCachedHTTPConnection(Connection, Timeout);
+	Result = New Structure("Request, Timeout");
+	Result.Request = HTTPRequest;
+	Result.Timeout = Timeout;
+	
+	Return Result;
+	
+EndFunction
+
+Function Transporter_HTTP_Send(Connection, Packet, Val Headers = Undefined) 
+	
+	Prepared = PrepareHTTPRequest(Connection, Packet, Headers);
+	
+	HTTPConnection = mol_Helpers.GetCachedHTTPConnection(Connection, Prepared.Timeout);
 	
 	Response = Undefined;
 	Try
-		Response = HTTPConnection.Post(HTTPRequest);
+		Response = HTTPConnection.Post(Prepared.Request);
 	Except                                
 		mol_Errors.RaiseError(ErrorInfo());
 	EndTry;
 	
 	Packet = GetPacketFromRequestResponseBody(Response);	
-	If Response.StatusCode <> 200 Then 
+	Return ResponseFromStatus(Response.StatusCode, Packet);     
+	
+EndFunction
+
+// Turns a decoded response body into the response the caller sees. Split out of Transporter_HTTP_Send so
+// the non-2xx branch can be asserted from a fixture rather than from a live sidecar: a failed call
+// answers with a bare error object instead of a packet, and that shape is worth pinning.
+Function ResponseFromStatus(StatusCode, Packet) Export
+	
+	If StatusCode <> 200 Then 
 		Error = mol_Errors.RegenerateError(Packet);
 		Return mol_Helpers.NewResponse(Error, Undefined);		
 	EndIf;
@@ -242,7 +267,7 @@ Function Transporter_HTTP_Send(Connection, Packet, Val Headers = Undefined)
 	
 EndFunction
 
-Function SetPacketAsRequestResponseBody(HTTPRequestResponse, Val Packet)
+Function SetPacketAsRequestResponseBody(HTTPRequestResponse, Val Packet) Export
 	
 	Stream = Undefined;
 	If Packet.Stream <> False Then 
@@ -294,15 +319,13 @@ Function GetPacketFromRequestResponseBody(HTTPRequestResponse)
 	// TODO: Parse media types independently of parameters such as charset and boundary.
 	ContentType = mol_Helpers.ParseHeader(HTTPRequestResponse.Headers, "Content-Type");
 	If ContentType.Value = "application/json" Then
-		Body = HTTPRequestResponse.GetBodyAsString();
-		Packet = mol_Helpers.FromJSONString(Body);	
+		Packet = FromJSONPacketBody(HTTPRequestResponse.GetBodyAsString());
 	ElsIf ContentType.Value = "multipart/form-data" Then 		
 		Data = mol_Helpers.DecodeMultipartData(
 			HTTPRequestResponse.GetBodyAsStream(), 
 			HTTPRequestResponse.Headers                              
 		);
-		Packet = mol_Helpers.FromJSONStream(Data.Files.Get("packet")); 
-		Packet.Stream = Data.Files.Get("stream");
+		Packet = FromMultipartPacketBody(Data);
 	Else               
 		Message = NStr("
 		|	ru = 'Неккоректно сформированный запрос/ответ';
@@ -387,7 +410,7 @@ Function SendError(Error)
 	
 EndFunction
 
-Function ToPacket(Payload, Context)
+Function ToPacket(Payload, Context) Export
 	
 	Result = NewPacket();
 	
@@ -397,6 +420,27 @@ Function ToPacket(Payload, Context)
 	Result.stream = ?(IsStream, Context.Options.Stream, False);
 	
 	Return Result;
+	
+EndFunction
+
+// Decodes the two body shapes the transport accepts. Exported because these are the only halves of the
+// wire contract a test can reach without a sidecar: a JSON body is a string, and the multipart data is
+// what DecodeMultipartData returns, so neither needs an HTTP request object.
+//
+// The JSON shape matters beyond packets: a failed call answers with a bare error object, with no packet
+// wrapper, and mol_Errors.RegenerateError is what turns that back into an error.
+Function FromJSONPacketBody(Body) Export
+	
+	Return mol_Helpers.FromJSONString(Body);
+	
+EndFunction
+
+Function FromMultipartPacketBody(MultipartData) Export
+	
+	Packet        = mol_Helpers.FromJSONStream(MultipartData.Files.Get("packet"));
+	Packet.Stream = MultipartData.Files.Get("stream");
+	
+	Return Packet;
 	
 EndFunction
 
