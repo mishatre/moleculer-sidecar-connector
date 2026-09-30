@@ -1,3 +1,12 @@
+////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2026, M.Tregub
+// SPDX-License-Identifier: MIT
+// All rights reserved. This program and its accompanying materials are provided
+// under the terms of the MIT License.
+// The license text is available at:
+// https://opensource.org/licenses/MIT
+////////////////////////////////////////////////////////////////////////////////
+
 // Live tests: the connector talking to a real sidecar process.
 //
 // Mode note: canonical only, and these tests need a sidecar — the one built as

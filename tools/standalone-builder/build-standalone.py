@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+
+################################################################################
+# Copyright (c) 2026, M.Tregub
+# SPDX-License-Identifier: MIT
+# All rights reserved. This program and its accompanying materials are provided
+# under the terms of the MIT License.
+# The license text is available at:
+# https://opensource.org/licenses/MIT
+################################################################################
+
 """Build a standalone, database-free variant of the MoleculerSidecarConnector CFE.
 
 The canonical extension combines runtime code with persistence, administration and

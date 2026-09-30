@@ -1,3 +1,12 @@
+////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2026, M.Tregub
+// SPDX-License-Identifier: MIT
+// All rights reserved. This program and its accompanying materials are provided
+// under the terms of the MIT License.
+// The license text is available at:
+// https://opensource.org/licenses/MIT
+////////////////////////////////////////////////////////////////////////////////
+
 // Behavioural tests for the reuse-caching mechanism.
 //
 // Mechanism under test: the platform's return-value reuse, not a cache written in the connector. The

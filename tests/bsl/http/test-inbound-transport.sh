@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+
+################################################################################
+# Copyright (c) 2026, M.Tregub
+# SPDX-License-Identifier: MIT
+# All rights reserved. This program and its accompanying materials are provided
+# under the terms of the MIT License.
+# The license text is available at:
+# https://opensource.org/licenses/MIT
+################################################################################
+
 #
 # Inbound transport integration test: drives the published HTTP service over real HTTP.
 #

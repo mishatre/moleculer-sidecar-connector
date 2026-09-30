@@ -1,3 +1,12 @@
+////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2026, M.Tregub
+// SPDX-License-Identifier: MIT
+// All rights reserved. This program and its accompanying materials are provided
+// under the terms of the MIT License.
+// The license text is available at:
+// https://opensource.org/licenses/MIT
+////////////////////////////////////////////////////////////////////////////////
+
 // Behavioural tests for the Moleculer facade in extension mode.
 //
 // Mode note: this suite runs against the canonical extension, where Moleculer is a thin facade over

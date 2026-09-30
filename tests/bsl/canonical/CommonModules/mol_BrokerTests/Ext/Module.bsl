@@ -1,3 +1,12 @@
+////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2026, M.Tregub
+// SPDX-License-Identifier: MIT
+// All rights reserved. This program and its accompanying materials are provided
+// under the terms of the MIT License.
+// The license text is available at:
+// https://opensource.org/licenses/MIT
+////////////////////////////////////////////////////////////////////////////////
+
 // Behavioural tests for mol_Broker — the module that routes calls and events.
 //
 // The interesting parts of the broker end in a transport attempt, so this suite covers what is

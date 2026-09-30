@@ -192,3 +192,18 @@ Independent review: a subagent reviewed the tree and returned **SOUND**, with tw
 findings — the stale 76/13 counts (now corrected to 77/14) and the duplicate branch
 above. The review session had no shell, so the diff and the negative tests were confirmed
 by the coordinator rather than by the reviewer.
+
+Committed 2026-09-30 as `T038: give every first-party file one copyright and license block`.
+The 77 headers, the root `LICENSE`, `check-headers.py` and the `headers` layer of
+`tools/check.sh` are on `main`, and `tools/check.sh --layers headers` passed on that tree.
+
+`mol_ContextFactory/Ext/Module.bsl` and `mol_Errors/Ext/Module.bsl` were staged with their header
+hunk only, so the other workstream's edits stay uncommitted and this commit adds no
+`IfElseDuplicatedCodeBlock` regression: the header block is a comment, and the static baseline is
+unchanged by it.
+
+The task stays `in_progress` on one point: the owner has not confirmed MIT and `M.Tregub`.
+Committing the proposed block does not settle that. If the choice changes, the header block, the
+two `<Copyright>` properties and everything `check-headers.py` looks for change with it, in a
+follow-up commit — which is why the decision stays visible here rather than being closed by this
+commit.

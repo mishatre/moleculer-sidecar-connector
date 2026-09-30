@@ -1,4 +1,14 @@
-﻿
+////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2026, M.Tregub
+// SPDX-License-Identifier: MIT
+// All rights reserved. This program and its accompanying materials are provided
+// under the terms of the MIT License.
+// The license text is available at:
+// https://opensource.org/licenses/MIT
+////////////////////////////////////////////////////////////////////////////////
+
+// Builds Moleculer service schemas from 1C service modules.
+
 #Region Public
 
 // Fill service schema from text definition (YAML or JSON)

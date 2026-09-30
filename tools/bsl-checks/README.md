@@ -18,6 +18,22 @@ extension, so the runner looks for it under `~/.vscode-server` rather than a rep
 does run in this container — an earlier note in `docs/plan/environment.md` claimed no JRE was
 available and is corrected there.
 
+## The header check
+
+`check-headers.py` enforces the copyright/license block from
+`docs/code-standards/module-structure.md` section 4.1 on every first-party source file:
+
+```bash
+tools/bsl-checks/check-headers.py                 # scan src/, tests/ and tools/
+tools/bsl-checks/check-headers.py --root <DIR>    # another checkout
+```
+
+It looks only at the top of each file, so a block copied into the middle does not pass. It requires
+the 80-column box as the first line after any shebang, plus the `Copyright (c)`,
+`SPDX-License-Identifier:`, `All rights reserved` and license-URL lines. Exit code is 0 when every
+file carries them, 1 otherwise. `moleculer-sidecar-next/` is a separate Node subproject and is not
+scanned. `tools/check.sh` runs this as the `headers` layer.
+
 ## Why the rule set is selected, not defaulted
 
 With its default set, the connector's 38 modules produce **780** findings:

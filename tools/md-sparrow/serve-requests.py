@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+
+################################################################################
+# Copyright (c) 2026, M.Tregub
+# SPDX-License-Identifier: MIT
+# All rights reserved. This program and its accompanying materials are provided
+# under the terms of the MIT License.
+# The license text is available at:
+# https://opensource.org/licenses/MIT
+################################################################################
+
 """Run md-sparrow commands through one resident process.
 
 `md-sparrow serve` keeps the JVM and the JAXB contexts alive between commands, so a

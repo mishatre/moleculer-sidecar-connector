@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+
+################################################################################
+# Copyright (c) 2026, M.Tregub
+# SPDX-License-Identifier: MIT
+# All rights reserved. This program and its accompanying materials are provided
+# under the terms of the MIT License.
+# The license text is available at:
+# https://opensource.org/licenses/MIT
+################################################################################
+
 """Find calls that use a BSL procedure as a function.
 
 A procedure cannot appear in an expression. This scan collects every top-level

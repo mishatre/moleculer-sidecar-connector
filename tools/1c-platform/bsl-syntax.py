@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+
+################################################################################
+# Copyright (c) 2026, M.Tregub
+# SPDX-License-Identifier: MIT
+# All rights reserved. This program and its accompanying materials are provided
+# under the terms of the MIT License.
+# The license text is available at:
+# https://opensource.org/licenses/MIT
+################################################################################
+
 """Look up platform syntax (1C:Enterprise) from the language extension's dictionary.
 
 The VS Code extension `1c-syntax.language-1c-bsl` ships `lib/bslGlobals.json`, a syntax

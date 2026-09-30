@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+
+################################################################################
+# Copyright (c) 2026, M.Tregub
+# SPDX-License-Identifier: MIT
+# All rights reserved. This program and its accompanying materials are provided
+# under the terms of the MIT License.
+# The license text is available at:
+# https://opensource.org/licenses/MIT
+################################################################################
+
 #
 # One entry point over every check this repository has.
 #
@@ -13,6 +23,7 @@
 #
 # Layers, in the order they run:
 #
+#   headers         copyright/license header present on every first-party source file
 #   static          BSL Language Server diagnostics, then the procedure-as-function scan
 #   builder         the standalone builder's own container-only tests
 #   bsl-canonical   the YAxUnit suites against the canonical extension
@@ -35,7 +46,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT" || exit 1
 
-ALL_LAYERS=(static builder bsl-canonical bsl-standalone syntax-check)
+ALL_LAYERS=(headers static builder bsl-canonical bsl-standalone syntax-check)
 REPORT_DIR="$ROOT/build/test/reports"
 
 SELECTED=("${ALL_LAYERS[@]}")
@@ -155,6 +166,11 @@ run_layer() {
 
         RESULT_NAME+=("$name")
 }
+
+if layer_is_selected headers; then
+        run_layer headers "copyright/license header on every first-party source" \
+                "$ROOT/tools/bsl-checks/check-headers.py"
+fi
 
 if layer_is_selected static; then
         run_layer static "static analysis" run_static_checks

@@ -1,11 +1,21 @@
-﻿
+////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2026, M.Tregub
+// SPDX-License-Identifier: MIT
+// All rights reserved. This program and its accompanying materials are provided
+// under the terms of the MIT License.
+// The license text is available at:
+// https://opensource.org/licenses/MIT
+////////////////////////////////////////////////////////////////////////////////
+
+// Moleculer error classes and the ambient error stack.
+
 #Region Public
 
 #Region PredefinedErrors 
 
 Function CustomError(Type, Message = "", Data = Undefined, ErrorInfo = Undefined) Export
 
-// One concept had two spellings. Normalise before the chain so the taxonomy keeps one row per meaning
+     // One concept had two spellings. Normalise before the chain so the taxonomy keeps one row per meaning
      // instead of two identical branches; the call sites still using the short name are listed in the
      // protocol document.
      If Type = "ServiceSchema" Then

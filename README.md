@@ -116,3 +116,12 @@ git pull bootstrap ваша-текущая-ветка-разработки
 
 <a id="markdown-полезные-ссылки" name="полезные-ссылки"></a>
 ## Полезные ссылки
+
+<a id="markdown-license" name="license"></a>
+## License
+
+MIT. See [LICENSE](LICENSE) for the full text.
+
+Copyright (c) 2026, M.Tregub. Source files carry the same block; the rule is in
+[docs/code-standards](docs/code-standards/README.md). The `moleculer-sidecar-next/` subproject is out
+of scope and keeps its own terms.

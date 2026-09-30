@@ -1,4 +1,14 @@
-﻿
+////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2026, M.Tregub
+// SPDX-License-Identifier: MIT
+// All rights reserved. This program and its accompanying materials are provided
+// under the terms of the MIT License.
+// The license text is available at:
+// https://opensource.org/licenses/MIT
+////////////////////////////////////////////////////////////////////////////////
+
+// Bridges the connector's logging into the 1C event log.
+
 #Region Public
 
 Procedure Debug(EventName, Message, Data = Undefined, Meta = Undefined) Export
