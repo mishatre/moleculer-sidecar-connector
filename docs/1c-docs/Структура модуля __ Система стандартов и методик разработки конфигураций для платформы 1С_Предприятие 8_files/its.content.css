@@ -1,0 +1,242 @@
+a
+{text-decoration-skip-ink:none}
+
+.msocomtxt,
+.iss_disk_only
+{display:none}
+
+@media not all and (any-pointer: coarse) {
+  * a:not([href]),
+  * a:not([href]):hover
+  {color:inherit;text-decoration:inherit}
+  
+  * a:not([href]):focus,
+  a.bookmark:focus
+  {outline:0}
+}
+
+@media (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  * a:not([href]),
+  * a:not([href]):hover
+  {color:inherit;text-decoration:inherit}
+  
+  * a:not([href]):focus,
+  a.bookmark:focus
+  {outline:0}
+}
+
+pre
+{font-family:Courier New, Courier, monospace}
+
+.iss_sch_hl,
+mark
+{background-color:#fff3a9;color:inherit}
+
+.iss_sch_hl.active,
+mark.active
+{background-color:#ffdf16!important}
+
+#w_share,
+#w_webpush
+{margin:12px 0!important;padding:12px 20px!important;border-top:2pt #d7d7d7 solid;border-bottom:2pt #d7d7d7 solid}
+
+#w_share
+{margin:20px}
+
+#w_content #w_share
+{margin-left:0}
+
+#w_share a.share
+{text-decoration:none;width:40px;height:40px;margin:0 5px 0 0;background-image:url('/img/share.gif?v2');background-repeat:no-repeat;display:inline-block}
+
+#w_share a#share_vk
+{background-position:0 0}
+
+#w_share a#share_fb
+{background-position:-45px 0}
+
+#w_share a#share_ok
+{background-position:-90px 0}
+
+#w_share a#share_tw
+{background-position:-135px 0}
+
+#w_share a#share_gp
+{background-position:-180px 0}
+
+#w_share a#share_lj
+{background-position:-225px 0}
+
+#w_webpush
+{display:none!important}
+
+#w_webpush #webpush_button
+{background-image:url('/img/template/button-bcg-grey.gif');background-position:bottom;background-repeat:repeat-x;height:20px;border:1px solid #a0a0a0;color:#404040;font-family:Verdana,Tahoma,sans-serif;font-size:12px;width:auto!important}
+
+@media print { #w_share, #w_webpush, #w_news_footer {display:none!important} }
+
+img.enlargeable
+{
+	max-width: 100%;
+	height: auto;
+	cursor: pointer;
+	cursor: zoom-in;
+	transition: max-width 600ms ease;
+}
+
+img.enlargeable.enlarged
+{
+	max-width: none;
+	cursor: pointer;
+	cursor: zoom-out;
+}
+
+img.enlargeable.incomplete
+{
+	background-image: url('/img_new/spinner-tpt-small.svg');
+	background-position: center center;
+	background-repeat: no-repeat;
+}
+
+@media (-ms-high-contrast: none), (-ms-high-contrast: active)
+{
+	img.enlargeable.incomplete
+	{
+		background-image: none;
+	}
+}
+
+.aspect-ratio-keeper {
+  position: relative;
+  max-height: var(--max-height);
+}
+
+.aspect-ratio-keeper::before {
+  content: "";
+  display: block;
+  padding-bottom: calc(100% / (var(--aspect-ratio)) + var(--height-compensation));
+}
+
+.aspect-ratio-keeper > img.enlargeable,
+.aspect-ratio-keeper > a,
+.aspect-ratio-keeper > span {
+  position: absolute;
+  top: 0;
+  max-height: 100%;
+}
+
+.aspect-ratio-keeper.aspect-ratio-keeper-left > img.enlargeable,
+.aspect-ratio-keeper.aspect-ratio-keeper-left > a,
+.aspect-ratio-keeper.aspect-ratio-keeper-left > span {
+  left: 0;
+}
+
+.aspect-ratio-keeper.aspect-ratio-keeper-right > img.enlargeable,
+.aspect-ratio-keeper.aspect-ratio-keeper-right > a,
+.aspect-ratio-keeper.aspect-ratio-keeper-right > span {
+  right: 0;
+}
+
+.aspect-ratio-keeper.aspect-ratio-keeper-center > img.enlargeable,
+.aspect-ratio-keeper.aspect-ratio-keeper-center > a,
+.aspect-ratio-keeper.aspect-ratio-keeper-center > span {
+  left: 50%;
+  transform: translate(-50%);
+}
+
+p:has(img) {
+	contain: none;
+}
+
+html {
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+@media (any-pointer: coarse) {
+	html,
+	body {
+		scrollbar-gutter: stable;
+	}
+	html::-webkit-scrollbar,
+	body::-webkit-scrollbar {
+		background-color: transparent;
+		--scrollbar-corner: absent;
+	}
+	html::-webkit-scrollbar:corner-present,
+	body::-webkit-scrollbar:corner-present {
+		--scrollbar-corner: present;
+	}
+	html::-webkit-scrollbar-track,
+	body::-webkit-scrollbar-track,
+	html::-webkit-scrollbar-button,
+	body::-webkit-scrollbar-button {
+		background-color: #e7e7e7;
+	}
+	html::-webkit-scrollbar-thumb,
+	body::-webkit-scrollbar-thumb {
+		background-color: #bbbbbb;
+	}
+	html::-webkit-scrollbar:vertical,
+	body::-webkit-scrollbar:vertical,
+	html::-webkit-scrollbar-track:vertical,
+	body::-webkit-scrollbar-track:vertical,
+	html::-webkit-scrollbar-thumb:vertical,
+	body::-webkit-scrollbar-thumb:vertical,
+	html::-webkit-scrollbar-button:vertical,
+	body::-webkit-scrollbar-button:vertical {
+		width: 10px;
+		border-top: 0;
+		border-bottom: 0;
+	}
+	html::-webkit-scrollbar:horizontal,
+	body::-webkit-scrollbar:horizontal,
+	html::-webkit-scrollbar-track:horizontal,
+	body::-webkit-scrollbar-track:horizontal,
+	html::-webkit-scrollbar-thumb:horizontal,
+	body::-webkit-scrollbar-thumb:horizontal,
+	html::-webkit-scrollbar-button:horizontal,
+	body::-webkit-scrollbar-button:horizontal {
+		height: 10px;
+		border-left: 0;
+		border-right: 0;
+	}
+	html::-webkit-scrollbar,
+	body::-webkit-scrollbar,
+	html::-webkit-scrollbar-track,
+	body::-webkit-scrollbar-track,
+	html::-webkit-scrollbar-thumb,
+	body::-webkit-scrollbar-thumb,
+	html::-webkit-scrollbar-button,
+	body::-webkit-scrollbar-button {
+		border-width: 3px;
+		border-style: solid;
+		border-color: transparent;
+		-webkit-background-clip: content-box;
+		background-clip: content-box;
+	}
+	html::-webkit-scrollbar-thumb:vertical,
+	body::-webkit-scrollbar-thumb:vertical {
+		min-height: 66px;
+	}
+	html::-webkit-scrollbar-thumb:horizontal,
+	body::-webkit-scrollbar-thumb:horizontal {
+		min-width: 66px;
+	}
+	html::-webkit-scrollbar-corner,
+	body::-webkit-scrollbar-corner,
+	html::-webkit-resizer,
+	body::-webkit-resizer,
+	html::-webkit-scrollbar-button,
+	body::-webkit-scrollbar-button,
+	html.attached_to_viewport::-webkit-scrollbar-button:vertical:increment:end:corner-present,
+	body.attached_to_viewport::-webkit-scrollbar-button:vertical:increment:end:corner-present,
+	html.attached_to_viewport > body::-webkit-scrollbar-button:vertical:increment:end:corner-present {
+		display: none;
+	}
+	html.attached_to_viewport::-webkit-scrollbar-button:vertical:increment:end,
+	body.attached_to_viewport::-webkit-scrollbar-button:vertical:increment:end,
+	html.attached_to_viewport > body::-webkit-scrollbar-button:vertical:increment:end {
+		display: block;
+		height: 0;
+	}
+}
