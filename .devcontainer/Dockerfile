@@ -15,16 +15,7 @@ RUN apt-get update \
         iproute2 \
         net-tools \
         dmidecode \
-        gh \
-        x11-utils \
     && rm -rf /var/lib/apt/lists/*
-
-# `gh` is how tasks, issues and pull requests are read and written from inside
-# the container; it authenticates from GH_TOKEN, which docker-compose.yml passes
-# through from the host (Ubuntu 24.04 carries 2.45).
-# `x11-utils` carries `xdpyinfo`, the probe `tools/1c-platform/open-infobase.sh` uses
-# to tell "the client cannot draw" from "the licence is missing". The base image
-# already has Xvfb, dbus-x11 and the X11/WebKit libraries the client links against.
 
 # The 1C licence check shells out to `hostname` and `ip` to collect system
 # information. When they are missing, the platform cannot build that report and

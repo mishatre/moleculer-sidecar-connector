@@ -6,7 +6,7 @@
 - Generated artifacts and disposable infobase belong under `build/`; OneScript dependencies belong under `oscript_modules/`. Do not commit generated build output.
 - Working tree contains extensive intentional moves/deletions and editor changes. Preserve unrelated existing changes.
 - Root README is inherited bootstrap guidance and references absent scripts; it is not an authoritative command source.
-- Project workflow/state lives under `docs/workflow.md` and `docs/plan/`; the selected issue is the source of truth for scope and evidence.
+- Project workflow/state lives under `docs/workflow.md` and `docs/plan/`; selected task files are the source of truth for scope and evidence.
 - Read `mem:tech_stack` for platform/tool versions and formats.
 - Read `mem:suggested_commands` for verified environment and build command forms.
 - Read `mem:conventions` before editing source or workflow documents.
