@@ -3,5 +3,22 @@
     "formatting": {
         "useKeywordsFormatting": false,
         "useOnTypeFormatting": false
+    },
+    "diagnostics": {
+        "mode": "only",
+        "parameters": {
+            "MissingCommonModuleMethod": {},
+            "UnreachableCode": {},
+            "UnavailableMemberCall": {},
+            "FunctionShouldHaveReturn": {},
+            "AllFunctionPathMustHaveReturn": {},
+            "FunctionReturnsSamePrimitive": {},
+            "UnusedLocalMethod": {},
+            "UnusedLocalVariable": {},
+            "DeletingCollectionItem": {},
+            "QueryToMissingMetadata": {},
+            "EmptyCodeBlock": {},
+            "IfElseDuplicatedCodeBlock": {}
+        }
     }
 }

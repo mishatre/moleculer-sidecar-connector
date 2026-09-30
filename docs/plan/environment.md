@@ -190,8 +190,13 @@ Until then, still blocked: `vrunner run enterprise`,
 `1c-syntax/bsl-language-server` parses BSL and reports diagnostics, and its jar is
 already on disk (downloaded by the installed VS Code extension) at
 `/root/.vscode-server/data/User/globalStorage/1c-syntax.language-1c-bsl/bsl-language-server/v1.0.7/bsl-language-server/lib/app/bsl-language-server-1.0.7-exec.jar`.
-It needs a headless JRE, which the image does not have. See
-[toolkit research](toolkit-research.md).
+**Corrected 2026-09-30:** this section used to end "it needs a headless JRE, which
+the image does not have". That is wrong — `/usr/bin/java` is OpenJDK 21.0.12 and
+`java -jar <jar> --version` answers `version: 1.0.7`, so the analysis does run here.
+`tools/bsl-checks/bsl-language-server.py` wraps it: with the default rule set the
+connector's 38 modules report 780 findings (35 Error, 133 Warning, 143 Information,
+469 Hint), and with the rule set selected in `.bsl-language-server.json`, 63. See
+[toolkit research](toolkit-research.md) for the original notes.
 
 ### Verified headless commands (use these)
 

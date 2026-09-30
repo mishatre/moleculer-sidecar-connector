@@ -56,6 +56,8 @@ for T024 and T025 live in [refactor-backlog.md](refactor-backlog.md).
 | T033 | Both payload directions agree on the shape of a context's action | verified | T018 | [Plan](refactor-backlog.md) |
 | T034 | A nested call chains to its parent context | withdrawn | T030, T033 | [Plan](refactor-backlog.md) |
 | T035 | The standalone merge keeps service identities apart | verified | T015 | [Plan](refactor-backlog.md) |
+| T036 | The admin panel form stops calling a method that does not exist | draft | none | [Plan](refactor-backlog.md) |
+| T037 | The connector stops calling platform members newer than its compatibility mode | draft | platform-support decision | [Plan](refactor-backlog.md) |
 
 ### Service module migration (new, low priority)
 

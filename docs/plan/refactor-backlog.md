@@ -386,6 +386,45 @@ than by the metadata of the merged module. Same class as T032 (one surviving `Co
 services) and T031 (a strip that took the live branch): each fix teaches the merge a little more about
 identity, and the three should be decided together rather than one at a time.
 
+## T036 — the admin panel form calls a method that does not exist
+
+Outcome: `mol_AdminPanel`'s `ServiceItemForm` works when it is opened, or the call is removed.
+
+Why: `UpdateServiceRegistrationAtServer` calls `mol_Broker.GetActivePublications()` and `mol_Broker`
+declares no such method — its publication surface is `RegisterPublications`, `RegisterPublication`,
+`UnregisterPublications`, `UnregisterPublication` and `GetPublicationValidationCode`. The facade's
+`Moleculer.GetPublications(ForceUpdate)` is what returns the publication list, and the form then reads
+`Publication.Info.Id` and `Publication.Connection`, which is that shape.
+
+Evidence: `tools/bsl-checks/bsl-language-server.py` reports `MissingCommonModuleMethod` at
+`DataProcessors/mol_AdminPanel/Forms/ServiceItemForm/Ext/Form/Module.bsl:60`. Nothing else catches it —
+`vrunner cfe compile` and the designer's `/CheckModules` load metadata without compiling form bodies, so
+the extension loads and every test passes while the call is broken. It surfaces only when the form runs.
+
+Shape, to confirm during refinement: decide whether the form should call the facade
+(`Moleculer.GetPublications()`) or a broker method that does not exist yet, then either implement the
+missing method or repoint the call. The matching entry in `tools/bsl-checks/bsl-ls-baseline.json` is
+deleted in the same change.
+
+## T037 — the connector calls platform members newer than its compatibility mode
+
+Outcome: the code and the declared compatibility mode agree, so no call the connector makes is
+unavailable in the mode the extension declares.
+
+Why: `Configuration.xml` declares `ConfigurationExtensionCompatibilityMode` = `Version8_3_21`, while
+`mol_Errors` calls `ОшибкаРаботыСРечью` and `ОшибкаТабличногоПространстваБазыДанных`, both of which exist
+from 8.3.23. The platform installed here is 8.3.24, so the members exist on the image but are hidden from
+code running under the lower declared mode.
+
+Evidence: two `UnavailableMemberCall` findings — `mol_Errors/Ext/Module.bsl:255` and `:263` — from
+`tools/bsl-checks/bsl-language-server.py`, against the manifest line
+`src/cfe/MoleculerSidecarConnector/Configuration.xml:47`. Both sit inside error-message construction,
+taken only while an error is being reported, which is why they have survived.
+
+Shape, to confirm during refinement: either raise the declared compatibility mode — a consumer-visible
+decision, since the extension would then require a newer platform — or stop using the two members on
+those paths. That choice belongs with the platform-support decision, not with the error module.
+
 ## Open decisions
 
 1. Delivery target for this cycle: smaller/simpler, or more testable? The two pull

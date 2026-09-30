@@ -1,8 +1,8 @@
 # T022 — Static quality gate and standalone delivery documentation
 
-Status: blocked — but no longer on client availability: the designer runs, since `vrunner`
-drives it for compile and load, so the BSL syntax-check half is feasible. What blocks it
-now is its own dependencies: T018–T020 are unfinished suite work. T021 is verified.
+Status: in_progress — the static layer is landed: the rule set is selected and justified, the gate runs and
+is verified in both directions. Remaining: the `vrunner validate syntax-check` command with its exception
+file, the single entry point over every layer, and the `INSTALL.md` rehearsal.
 Depends on: T018, T019, T020, T021
 Recipe: normal
 Coordinator: Sol Medium
@@ -68,6 +68,43 @@ record the counts and propose a bounded rule set instead of disabling the gate.
 
 Record: rule set and rationale, commands, observed output, the combined entry-point
 result, and the `INSTALL.md` validation notes including which step was rehearsed.
+
+## Static layer landed — 2026-09-30
+
+### The rule set is selected and justified, not defaulted
+
+Measured over the connector's 38 modules: the default rule set produces **780** findings (35 Error, 133
+Warning, 143 Information, 469 Hint), the selection in `.bsl-language-server.json` produces **63**. That is
+the stop condition this task names, and the response is the bounded set rather than a disabled gate.
+`tools/bsl-checks/README.md` records which families are excluded and why; the twelve included rules are
+the correctness ones; `bsl-ls-baseline.json` holds the 63 as debt behind a per-rule ratchet.
+
+`tools/bsl-checks/bsl-language-server.py` runs the analysis, applies the ratchet and exits non-zero only
+where a rule exceeds its recorded count. Verified in both directions: the connector passes at 63, and one
+unused local variable injected into a copy of the tree fails the run with
+`UnusedLocalVariable: 14 -> 15`.
+
+The language server is not vendored — its jar ships inside the `1c-syntax.language-1c-bsl` VS Code
+extension, so the runner discovers it under `~/.vscode-server`, with `BSL_LS_JAR` as an override. The work
+also corrects `docs/plan/environment.md`, which claimed a headless JRE was missing: `/usr/bin/java` is
+OpenJDK 21.0.12 and the server answers, so the analysis runs here instead of being reason-only.
+
+### Two defects the rule set found on its first run
+
+Both are recorded as T036 and T037 in the refactor backlog, because fixing either is a source change
+outside this task's deliverable:
+
+* `MissingCommonModuleMethod` — `mol_AdminPanel`'s `ServiceItemForm` calls
+  `mol_Broker.GetActivePublications()`, which does not exist. Invisible to every other check, because the
+  platform loads metadata without compiling form bodies.
+* `UnavailableMemberCall` — `mol_Errors` uses two members added in 8.3.23 while the extension declares
+  `Version8_3_21` compatibility.
+
+### Still to do in this task
+
+This gate is one of the layers the single entry point has to run. Remaining: the
+`vrunner validate syntax-check` command and its exception file, the combined entry point over the
+OneScript suites, the BSL suites in both modes and this gate, and the `INSTALL.md` rehearsal.
 
 ## Optional pilot metrics
 

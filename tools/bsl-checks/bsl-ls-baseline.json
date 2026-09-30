@@ -1,0 +1,22 @@
+{
+    "_about": [
+        "Known debt at the moment the rule set was fixed (2026-09-30).",
+        "A rule may not exceed its recorded count; anything above it fails the gate.",
+        "A rule that comes in below its count is reported so this file can be tightened,",
+        "and a rule that no longer appears should be deleted from this file.",
+        "Counts are per rule rather than per finding, so a fix in one file can hide a new",
+        "occurrence in another. The per-rule table printed by the runner is the audit trail."
+    ],
+    "UnusedLocalMethod": 15,
+    "UnusedLocalVariable": 14,
+    "EmptyCodeBlock": 9,
+    "FunctionShouldHaveReturn": 9,
+    "AllFunctionPathMustHaveReturn": 6,
+    "IfElseDuplicatedCodeBlock": 3,
+    "UnavailableMemberCall": 2,
+    "MissingCommonModuleMethod": 1,
+    "UnreachableCode": 1,
+    "QueryToMissingMetadata": 1,
+    "FunctionReturnsSamePrimitive": 1,
+    "DeletingCollectionItem": 1
+}
