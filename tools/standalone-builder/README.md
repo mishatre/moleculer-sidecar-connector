@@ -182,13 +182,13 @@ and needs no rebuild of the merged module.
 
 ## Known limitations
 
-- **BSL syntax is verified statically, not by the platform.** The container's 1C client can
-  now start — the licence is in `/var/1C/licenses/` and the display reaches the host — but
-  this builder does not run the designer module check or a test runner itself, so the BSL
-  Language Server analysis above is the check it depends on. Loading does not compile module
-  bodies, so a defect it misses would only appear at runtime.
+- **BSL syntax is verified statically, not by the platform.** The container's 1C client
+  cannot start because no licence is present, so the designer module check and every
+  test runner are blocked. The BSL Language Server analysis above is the strongest check
+  available. Loading does not compile module bodies, so a defect it misses would only
+  appear at runtime.
 - **Runtime behaviour is unverified.** No action call or HTTP round-trip has been
-  exercised. See issue #21 (T021).
+  exercised. See `docs/plan/tasks/history/T021-standalone-runtime-verification.md`.
 - **Client contexts are dropped.** The canonical `Moleculer` module is also
   available to thin clients; the variant's merged module is server-only because the
   merged code uses server APIs.

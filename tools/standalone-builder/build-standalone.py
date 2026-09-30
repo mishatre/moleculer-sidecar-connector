@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-
-################################################################################
-# Copyright (c) 2026, M.Tregub
-# SPDX-License-Identifier: MIT
-# All rights reserved. This program and its accompanying materials are provided
-# under the terms of the MIT License.
-# The license text is available at:
-# https://opensource.org/licenses/MIT
-################################################################################
-
 """Build a standalone, database-free variant of the MoleculerSidecarConnector CFE.
 
 The canonical extension combines runtime code with persistence, administration and
@@ -25,7 +15,7 @@ OneScript packages do not expose an XML library and the bundled `json` package h
 no global reader, so a Python generator removes two dependency risks at once.  It
 is a developer tool, not shipped product code.
 
-See issue #19 (T015) for the design and the verified
+See docs/plan/tasks/history/T015-standalone-builder.md for the design and the verified
 compiler commands.
 """
 

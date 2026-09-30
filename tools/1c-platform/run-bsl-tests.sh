@@ -1,14 +1,4 @@
 #!/usr/bin/env bash
-
-################################################################################
-# Copyright (c) 2026, M.Tregub
-# SPDX-License-Identifier: MIT
-# All rights reserved. This program and its accompanying materials are provided
-# under the terms of the MIT License.
-# The license text is available at:
-# https://opensource.org/licenses/MIT
-################################################################################
-
 #
 # Run the BSL test suites against one of the disposable infobases.
 #
@@ -77,7 +67,7 @@ launcher or the client (tools/1c-platform/open-infobase.sh), or place a 1Cv8Lice
 file in ~/.1cv8/1C/ or /var/1C/licenses/.
 
 Everything that executes BSL is blocked until then. Static verification is not:
-see tools/standalone-builder/README.md and docs/plan/notes/toolkit-research.md for the BSL
+see tools/standalone-builder/README.md and docs/plan/toolkit-research.md for the BSL
 Language Server route, which needs no licence.
 MESSAGE
     exit 3

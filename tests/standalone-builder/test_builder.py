@@ -1,12 +1,3 @@
-################################################################################
-# Copyright (c) 2026, M.Tregub
-# SPDX-License-Identifier: MIT
-# All rights reserved. This program and its accompanying materials are provided
-# under the terms of the MIT License.
-# The license text is available at:
-# https://opensource.org/licenses/MIT
-################################################################################
-
 """Tests for the standalone CFE builder.
 
 Container-only: they never launch the 1C platform.  Run with:
@@ -15,7 +6,7 @@ Container-only: they never launch the 1C platform.  Run with:
 
 The BSL-facing half is exercised elsewhere: the extension harness runs in both
 modes and the artifact is loaded into a database-free infobase, both recorded in
-issue #21 (T021).
+docs/plan/tasks/history/T021-standalone-runtime-verification.md.
 """
 
 from __future__ import annotations
