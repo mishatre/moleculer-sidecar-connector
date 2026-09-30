@@ -135,7 +135,7 @@ Verified in the dev container from `/workspace`. Full evidence in
 | `1testrunner` | 1.9.2, container-only, jUnit output |
 | `1bdd` | not usable as installed (`Библиотека не найдена: 'packageinfo'`) |
 
-### 1C client execution: libraries fixed, licence missing
+### 1C client execution: libraries and licence resolved
 
 Originally `1cv8` and `1cv8c` could not start at all: `libwebkit2gtk-4.0.so.37`,
 `libjavascriptcoregtk-4.0.so.18` and `libsoup-2.4.so.1` were missing, and Ubuntu
@@ -149,19 +149,45 @@ than the WebKit libraries require). The script is wired into
 "already installed" and "already the system one" on a second run. `ldd` on `1cv8c`
 now reports no missing libraries.
 
-**Remaining blocker: a 1C licence.** The designer now starts and fails only with:
+**Resolved 2026-09-30: the licence is installed.** Without one, the platform still
+answers:
 
 ```text
 Не найдена лицензия. Не обнаружен ключ защиты программы или полученная программная лицензия!
 ```
 
-There is no command-line licence activation in the platform: the `licenses` entry
-next to the binaries is a documentation directory, not a tool. `login.1c.ru`
-redirects to the `portal.1c.ru` single-page application, so credentials cannot be
-used headlessly. Activation therefore has to be done interactively once, from the
-launcher or the client; the licence is then stored under `~/.1cv8/1C/` (a
-`1Cv8Licence` file in `~/.1cv8/1C/` or `/var/1C/licenses/` also works, as does a
-HASP key).
+There is no command-line licence activation: the `licenses` entry next to the
+binaries is a documentation directory, not a tool, and `login.1c.ru` redirects to the
+`portal.1c.ru` single-page application, so credentials cannot be used headlessly. The
+owner obtains a licence file and installs it from the host instead.
+
+The file is `build/<timestamp>.lic` in the main checkout — 4 804 bytes, UTF-8 with
+CRLF line endings. `build/` is gitignored as a whole, so the licence is never
+committed. The platform reads it from `/var/1C/licenses/`, which
+`.devcontainer/docker-compose.yml` mounts from the named volume `msc-1c-licences`.
+That name is fixed rather than project-scoped, so **every worktree's container sees
+the same licence and it is installed once per machine**:
+
+```bash
+# from the host, with the licence file in the checkout's ignored build/ directory
+docker run --rm --entrypoint /bin/cp \
+  -v msc-1c-licences:/licences \
+  -v "$PWD/build":/src \
+  local/vrunner:8.3.24.1667 /src/<licence>.lic /licences/
+```
+
+Verified 2026-09-30 in this worktree's container, against a disposable infobase
+created for the check with `ibcmd infobase create --db-path=/workspace/build/ib-licence-check`:
+
+| Step | Observed |
+|---|---|
+| `1cv8 DESIGNER /F/workspace/build/ib-licence-check /CheckModules` before the file was installed | `Не найдена лицензия. …`, exit 1 |
+| the same command after `docker cp … /var/1C/licenses/` | `Синтаксических ошибок не обнаружено!`, exit 0 |
+| `docker compose down` then `up --detach` | the file is still in `/var/1C/licenses/` |
+
+A `1Cv8Licence` file in `~/.1cv8/1C/` and a HASP key also work; the `msc-1cv8-home`
+volume already covers root's home for that route.
+
 
 ### Launching the infobases
 
@@ -215,7 +241,7 @@ Verified 2026-09-30 in a container started by `tools/orca/container.sh up`:
 | `/tmp/.X11-unix` bind mount | mounts, but `connect()` answers `ECONNREFUSED`; TCP is the only route on macOS |
 | `1cv8c` with no DISPLAY | `Unable to initialize GTK+ or connect to the windowing system` |
 | `1cv8c` with DISPLAY and no `xhost` entry | `Authorization required, but no authorization protocol specified` |
-| `1cv8c` with DISPLAY and the entry | starts and stays up; the licence check is what stops it next |
+| `1cv8c` with DISPLAY and the entry | starts and stays up |
 
 The host step, once per X server start — `xhost` entries do not survive a restart of the X
 server:
@@ -229,21 +255,35 @@ everything reachable. `tools/1c-platform/open-infobase.sh` runs `xdpyinfo` befor
 a client and prints exactly that command when the display is unreachable, so a missing X
 server no longer reads as a broken platform.
 
-Not verified: an actual 1C window rendering over XQuartz. It needs an activated licence,
-which is interactive. XQuartz disables indirect GLX by default
-(`defaults read org.xquartz.X11 enable_iglx` is `0`); if the client draws a black or empty
+**The window renders. Verified 2026-09-30** with the licence installed: the launcher ran
+for twelve seconds without an error and `xwininfo -display "$DISPLAY" -root -tree` listed
+its windows on the host server —
+
+```text
+0x600136 "Запуск 1С:Предприятия": ("1cv8" "1cv8")  490x406+0+0
+0x60014b "1С:Предприятие":        ("1cv8" "1cv8")  347x136+0+0
+```
+
+So the launcher, the client and the designer can open on the Mac. What is still unwatched
+is the drawing quality over a slower link: XQuartz disables indirect GLX by default
+(`defaults read org.xquartz.X11 enable_iglx` is `0`); if a client draws a black or empty
 window, the community workaround is `defaults write org.xquartz.X11 enable_iglx -bool true`
 before starting XQuartz, and the in-client hardware-acceleration option rather than a
 command-line switch — this 8.3.24 build has no `-DisableHWA`. A browser-visible fallback
 (Xvfb + x11vnc + noVNC in the container) is the dependable alternative when remote X11 is
 too slow or GLX fails; it is not configured here.
 
-The licence lives in root's home, which is the `msc-1cv8-home` volume declared in
-`docker-compose.yml` and mounted at `/root/.1cv8`, so it survives a container rebuild.
+The licence lives in the shared `msc-1c-licences` volume at `/var/1C/licenses/`, declared
+in `docker-compose.yml`, so it survives a container rebuild and is shared by every
+worktree; the `msc-1cv8-home` volume keeps root's own platform state beside it.
 
 
-Until then, still blocked: `vrunner run enterprise`,
-`vrunner validate syntax-check`, and every `vrunner test yaxunit|xunit|vanessa` run.
+
+With the licence in place, `vrunner run enterprise`, `vrunner validate syntax-check` and the
+`vrunner test yaxunit|xunit|vanessa` runs are no longer blocked by licensing. Two limits
+remain: each needs a disposable infobase under the container's own `/workspace/build/`, and a
+container created before the `msc-1c-licences` volume existed does not see the licence until
+it is recreated.
 
 ### Alternative: verify BSL without a licence
 

@@ -15,6 +15,11 @@ services:
       # rather than in devcontainer.json because a bare Compose start — the one
       # tools/orca/container.sh uses — applies no devcontainer `mounts`.
       - msc-1cv8-home:/root/.1cv8
+      # The platform also reads licences from this directory. Unlike the volume
+      # above, its name is fixed rather than project-scoped, so every worktree's
+      # container sees the same licence files and a licence is installed once per
+      # machine — see "Licence" in docs/plan/environment.md.
+      - msc-1c-licences:/var/1C/licenses
 
     environment:
       # The 1C client is a GUI program and the container has no screen: it draws on
@@ -53,3 +58,5 @@ services:
 
 volumes:
   msc-1cv8-home:
+  msc-1c-licences:
+    name: msc-1c-licences
