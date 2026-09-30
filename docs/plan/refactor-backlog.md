@@ -323,6 +323,35 @@ touches the broker should decide whether to keep it or fold it into `parentCtx`.
 
 ## T035 — the standalone merge keeps service identities apart
 
+Status: verified 2026-09-30, implemented through a new profile capability.
+
+How it was fixed: `plan.modulePatches` — optional, `{module: [{description, pattern, replacement}]}` —
+applies replacements to one module's own text while the modules are still separate and before anything is
+renamed. The plan replaces `ThisMetadata().Name` inside `mol_Errors`, `mol_ContextFactory` and
+`mol_SchemaFactory` with that module's own name: twelve sites, which is the identity the merge would
+otherwise erase. The three private stacks keep three keys, so a raised error can no longer land on the
+stack an ambient context was pushed to, and `ClearStack` in the schema factory can no longer clear the
+context stack.
+
+Why a new capability rather than a patch: the global `patches` list runs on the merged text, where that
+expression is identical in all three modules, so one pattern cannot give three modules three answers. This
+step runs before the renames, so its patterns describe the canonical sources. The first attempt did not:
+it matched the tail of the renamed `ErrorsThisMetadata` and emitted
+`PushToStack(Errors"mol_Errors", Error)`, which the builder suite caught. A module patch that stops matching
+fails the build, the same guard the global patches have.
+
+Evidence: `StandaloneRuntimeTests.TheErrorStackDoesNotDisplaceTheContextStack` pushes a context, raises
+through `RaiseError`, and asserts the context is still current. It was **seeded and reverted**: with the
+capability disabled it fails on its own message, `провалено 1`, and the harness exits 1, so it proves the fix
+rather than merely passing. The builder suite asserts that no bare `ThisMetadata().Name` survives the merge
+and that all three modules name their own stack. Builder 54 tests, standalone 26/26, canonical 176/176
+unchanged — this fix touched no canonical source.
+
+Still open, recorded rather than fixed: `ThisMetadata().FullName()` still answers the merged module's full
+name, so the stack-trace offset in `mol_Errors`/`mol_Logger` skips every frame of the merged module. That is
+diagnostic-only — the trace keeps the caller's frame — and the same mechanism would fix it if the traces
+came to matter more than they seem to.
+
 Outcome: in the standalone variant, code that tells two modules apart by name still tells them apart once
 they are merged, so error handling, context stacks and schema compilation stop seeing each other's state.
 

@@ -21,7 +21,29 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("AnOutboundCallWithoutASidecarFailsControlled")
 		.ДобавитьСерверныйТест("TheLevelMappingSurvivesInTheStandaloneVariant")
 		.ДобавитьСерверныйТест("TheAuthTypeMappingSurvivesInTheStandaloneVariant")
-		.ДобавитьСерверныйТест("AnAbsentAuthTypeIsRefusedRatherThanGuessed");
+		.ДобавитьСерверныйТест("AnAbsentAuthTypeIsRefusedRatherThanGuessed")
+		.ДобавитьСерверныйТест("TheErrorStackDoesNotDisplaceTheContextStack");
+
+EndProcedure
+
+Procedure TheErrorStackDoesNotDisplaceTheContextStack() Export
+
+	// T035: the merge folds mol_Errors, mol_ContextFactory and mol_SchemaFactory into one module, and each
+	// of them keys its own private stack by `ThisMetadata().Name`. When that expression answers the merged
+	// module's name for all three, a raised error lands on the stack an ambient context was pushed to and
+	// GetCurrentContext answers with the error instead. The plan now keeps each module's own name, which
+	// is what this asserts: the error goes to its own stack and the context is still current.
+	Context = Новый Структура("id", "context-sentinel");
+	Moleculer.SetCurrentContext(Context);
+
+	Попытка
+		Moleculer.RaiseError(Moleculer.ClientError("ProbeError", 400, "raised on purpose"));
+	Исключение
+		// Expected: RaiseError always raises.
+	КонецПопытки;
+
+	ЮТест.ОжидаетЧто(Moleculer.GetCurrentContext(),
+		"the error stack must not displace the context stack").Равно(Context);
 
 EndProcedure
 

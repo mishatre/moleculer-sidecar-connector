@@ -3,9 +3,9 @@
 Two workstreams share this index: the installer roadmap (T001–T013, unchanged)
 and the standalone-builder/test workstream (T014–T022).
 
-Next: **suite work remains in T018 and T020**; T022 is still blocked, but on its own dependencies rather
-than on the client, which works. T032 and T035 are the merge defects the builder review turned up, and the
-drafts wait on an owner decision.
+Next: **T020 is the last suite task with work left, and its remaining items need a live sidecar.** T022
+stays blocked on it. T032 is the remaining merge defect: the variant cannot build its internal service and
+the reason is swallowed, so it needs that exception observed before a fix is chosen.
 
 Files for completed tasks are moved to `tasks/history/` — see [its README](tasks/history/README.md) — so
 this folder shows only work that is still open. The links below keep working across that move.
@@ -55,7 +55,7 @@ for T024 and T025 live in [refactor-backlog.md](refactor-backlog.md).
 | T032 | The connector's own actions work in the standalone variant | draft | T035 (same root cause), T015 | [Plan](refactor-backlog.md) |
 | T033 | Both payload directions agree on the shape of a context's action | verified | T018 | [Plan](refactor-backlog.md) |
 | T034 | A nested call chains to its parent context | withdrawn | T030, T033 | [Plan](refactor-backlog.md) |
-| T035 | The standalone merge keeps service identities apart | draft | T015 | [Plan](refactor-backlog.md) |
+| T035 | The standalone merge keeps service identities apart | verified | T015 | [Plan](refactor-backlog.md) |
 
 ### Service module migration (new, low priority)
 

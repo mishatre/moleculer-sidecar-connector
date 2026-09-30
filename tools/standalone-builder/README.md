@@ -82,6 +82,7 @@ specific to *these* sources is data in the profile's `plan` section:
 | `renames` | `{module: {lowercase symbol: new name}}` for the collisions |
 | `removedDefinitions` | `{module: [symbol]}` removed wholesale |
 | `patches` | `[{description, pattern, replacement}]` for what a textual merge cannot infer |
+| `modulePatches` | `{module: [{description, pattern, replacement}]}`, optional — replacements applied to one module's own text before anything is renamed, for facts that must differ per module. It exists because step 4 turns every module reference into the merged module, so a module's own identity would be erased: `mol_Errors`, `mol_ContextFactory` and `mol_SchemaFactory` each key a private stack by `ThisMetadata().Name`, and without this all three would answer `Moleculer` (T035) |
 | `reportedReferences` | Substrings that must not survive in code |
 
 So a change in the canonical sources is a **data diff**, not a code change. A patch

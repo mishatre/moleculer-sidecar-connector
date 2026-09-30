@@ -127,6 +127,29 @@
                 "BSPVersionAsNumber"
             ]
         },
+        "modulePatches": {
+            "mol_Errors": [
+                {
+                    "description": "keep the module's own name as its private stack key; the merge would otherwise make it Moleculer, so three modules would share one stack and a raised error would displace an ambient context (T035)",
+                    "pattern": "(?<![.\\w])ThisMetadata\\(\\)\\.Name",
+                    "replacement": "\"mol_Errors\""
+                }
+            ],
+            "mol_ContextFactory": [
+                {
+                    "description": "same as mol_Errors: the ambient-context stack keeps its own key (T035)",
+                    "pattern": "(?<![.\\w])ThisMetadata\\(\\)\\.Name",
+                    "replacement": "\"mol_ContextFactory\""
+                }
+            ],
+            "mol_SchemaFactory": [
+                {
+                    "description": "same as mol_Errors: the schema-factory stack keeps its own key, so ClearStack cannot clear the context stack (T035)",
+                    "pattern": "(?<![.\\w])ThisMetadata\\(\\)\\.Name",
+                    "replacement": "\"mol_SchemaFactory\""
+                }
+            ]
+        },
         "patches": [
             {
                 "description": "the internal service is a service of the merged module, not a separate module",

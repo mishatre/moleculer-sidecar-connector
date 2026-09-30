@@ -236,6 +236,20 @@ class CanonicalMergeTests(unittest.TestCase):
         names = {name for name, _export in builder.definition_names(self.merged)}
         self.assertIn("constructor", names)
 
+    def test_each_module_keeps_its_own_stack_key(self):
+        # T035: `ThisMetadata().Name` answers the merged module's name for every module once step 4 has run,
+        # so three private stacks would share one key and a raised error could displace an ambient context.
+        # The plan replaces that expression with the module's own name while the modules are still separate,
+        # so no such expression should survive and each stack should name itself.
+        self.assertEqual(
+            0,
+            builder.count_outside_strings(self.merged, r"(?<![.\w])ThisMetadata\(\)\.Name"),
+            "a module still keys its stack by the merged module's name",
+        )
+
+        for module in ("mol_Errors", "mol_ContextFactory", "mol_SchemaFactory"):
+            self.assertIn(f'PushToStack("{module}"', self.merged, f"{module} lost its stack key")
+
     def test_blocks_are_balanced(self):
         self.assertEqual(
             builder.count_outside_strings(self.merged, r"\b(?:Procedure|Процедура)\b"),

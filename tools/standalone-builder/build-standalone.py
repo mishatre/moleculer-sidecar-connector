@@ -188,6 +188,10 @@ def plan_of(profile: dict) -> dict:
         renames            {module: {lowercase symbol: new name}}
         removedDefinitions {module: [symbol]}
         patches            [{description, pattern, replacement}]
+        modulePatches      {module: [{description, pattern, replacement}]}  optional;
+                           applied to that module's own text before the merge, for the
+                           facts that must differ per module and that folding them into
+                           one module would otherwise blur
         reportedReferences [str]  substrings that must not survive in code
     """
     plan = profile.get("plan")
@@ -206,6 +210,12 @@ def plan_of(profile: dict) -> dict:
         for field in ("description", "pattern", "replacement"):
             if field not in patch:
                 raise BuildError(f"A plan patch is missing '{field}': {patch}")
+
+    for module, replacements in plan.get("modulePatches", {}).items():
+        for patch in replacements:
+            for field in ("description", "pattern", "replacement"):
+                if field not in patch:
+                    raise BuildError(f"A module patch for {module} is missing '{field}': {patch}")
 
     return plan
 
@@ -539,6 +549,7 @@ def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
         "qualified_calls": 0,
         "module_references": 0,
         "patches": 0,
+        "module_patches": 0,
         "dead_branches": 0,
         "removed_definitions": 0,
     }
@@ -548,6 +559,33 @@ def merge_modules(source_root: Path, profile: dict) -> tuple[str, dict]:
         if module in texts:
             texts[module], removed = remove_definitions(texts[module], names)
             stats["removed_definitions"] += removed
+
+    # 0b. Replacements that must differ per module, applied while each module is still its
+    #     own text and before anything is renamed.  The reason this exists: step 4 turns
+    #     every module reference into the merged module, so a module's own identity — the
+    #     key it files its private stack under — would become "Moleculer" for all of them
+    #     and three stacks would share one name (T035).  The patterns therefore describe
+    #     the canonical sources rather than the renamed output.  A patch that stops
+    #     matching fails the build, like a stale plan patch does.
+    for module, replacements in plan.get("modulePatches", {}).items():
+        if module not in texts:
+            continue
+
+        for patch in replacements:
+            hits = len(re.findall(patch["pattern"], texts[module], re.IGNORECASE))
+
+            if not hits:
+                raise BuildError(
+                    f"module patch no longer applies in {module}: {patch['description']}"
+                )
+
+            texts[module] = re.sub(
+                patch["pattern"],
+                patch["replacement"],
+                texts[module],
+                flags=re.IGNORECASE | re.MULTILINE,
+            )
+            stats["module_patches"] += hits
 
     # 1. Rename the qualified calls that cross a module boundary (Module.Symbol).
     for module, renames in plan["renames"].items():
@@ -1126,7 +1164,8 @@ def main(argv: list[str]) -> int:
     merged_bsl, stats = merge_modules(source_root, profile)
     print(
         "Merge: {renames} rename(s), {qualified_calls} local call(s), "
-        "{module_references} module reference(s), {patches} patch(es)".format(**stats)
+        "{module_references} module reference(s), {patches} patch(es), "
+        "{module_patches} per-module replacement(s)".format(**stats)
     )
 
     problems, observations = validate_merged(merged_bsl, profile)
