@@ -41,7 +41,8 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("FromStringNeedsTheSidecarForAnythingThatIsNotJSON")
 		.ДобавитьСерверныйТест("TheSafeModeWindowIsReal")
 		.ДобавитьСерверныйТест("ASafeModeWindowDoesNotBlockLocalParsing")
-		.ДобавитьСерверныйТест("AnEmptyServiceReferenceIsNotATypeError");
+		.ДобавитьСерверныйТест("AnEmptyServiceReferenceIsNotATypeError")
+		.ДобавитьСерверныйТест("TheQualifiedNameComesFromTheDeclaredName");
 	
 EndProcedure
 
@@ -363,6 +364,24 @@ Procedure AnEmptyServiceReferenceIsNotATypeError() Export
 	ЮТест.ОжидаетЧто(СтрНайти(Failure, "ModuleOrReference") = 0,
 		"a catalog reference is an accepted type, so the type error must not fire: " + Failure).ЭтоИстина();
 	ЮТест.ОжидаетЧто(Raised, "an empty reference is refused rather than compiled silently: " + Failure).ЭтоИстина();
+
+EndProcedure
+
+// The acceptance asks for the prefix and version derivation of a service's fullName. This records both
+// answers, and the first one matters beyond this suite: the qualified name is the name the constructor
+// declares, not the module it lives in, so `mol_Internal` compiles to `$internal` and a service whose
+// constructor declares no version gets no version suffix.
+//
+// That also settles an assumption made while investigating T032: the guard in mol_Transport.RequestHandler
+// and the qualifier mol_Broker builds do agree on `$internal`, so the reason the connector's own actions
+// answer 503 lies further in than the naming.
+Procedure TheQualifiedNameComesFromTheDeclaredName() Export
+
+	Schema = mol_SchemaFactory.CompileServiceSchema("mol_Internal");
+
+	ЮТест.ОжидаетЧто(Schema.FullName, "the qualified name is the declared name: " + Строка(Schema.FullName)).Равно("$internal");
+	ЮТест.ОжидаетЧто(СтрНайти(Строка(Schema.FullName), ".") = 0,
+		"a service declaring no version gets no version suffix: " + Строка(Schema.FullName)).ЭтоИстина();
 
 EndProcedure
 

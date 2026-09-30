@@ -217,6 +217,17 @@ caller that can reach the service, so the fix is either to widen the guard to th
 resolver actually matches, or to keep the restriction and rename the actions to match it — and to say
 which in the documentation.
 
+CORRECTION 2026-09-30: the two paragraphs above are wrong about the cause, and are kept so the mistake is
+visible rather than edited away. They claim the compiled `fullName` begins with the module name, which
+would make the guard in `mol_Transport.RequestHandler` and the qualifier in
+`mol_Broker.Delete_FindInternalHandler` unable to agree. `mol_SchemaFactoryTests` proves otherwise:
+`CompileServiceSchema("mol_Internal")` yields `$internal`, the name the constructor declares rather than
+the module it lives in, so the two conditions **do** agree. The 503 therefore has a cause that has not
+been established — the candidates are the keys of the schema's `Actions` map, the handling of
+`Context.Locals` on the inbound path, or the module references the standalone builder rewrites — and the
+fix should begin by instrumenting `Delete_FindInternalHandler` rather than by trusting another reading of
+the two call sites.
+
 ## T033 — agree on the shape of a context's action
 
 Outcome: a context can be turned back into a payload, so a received request can be forwarded to another

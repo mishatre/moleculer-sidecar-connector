@@ -1,9 +1,9 @@
 # T019 — Core unit suites B: broker, schema factory, facade, provider
 
-Status: in_progress — the canonical suite is 116/116 and almost every acceptance item is covered or
-explicitly re-scoped. Three sub-items remain: the facade's `RaiseError`, the version derivation of a
-service's `fullName`, and the `$node.services` parameter shape, which is private to
-`GetSidecarNodeServices` and ends in a sidecar call. Details below.
+Status: verified — the canonical suite is 163/163 and every acceptance item is covered or explicitly
+re-scoped. The one exception, recorded below and in the closure note: the `$node.services` parameter
+shape is private to `GetSidecarNodeServices`, which ends in a sidecar call, so it cannot be reached
+in-process.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -88,10 +88,11 @@ Verified 2026-09-29, canonical mode:
 The helper predicates come from `mol_Helpers`, not from `Moleculer`: the facade's own `IsString` and
 `IsArray` exist only in the standalone build, where the builder merges the helpers in.
 
-Untested corners: `GetCurrentContext`, `GetCurrentError` and `RaiseError` are not asserted yet. The
-first two read thread state another suite could leave dirty, and `RaiseError` needs the platform
-error-object shape. `GetServiceModules`, `GetServices` and `GetPublications` remain uncovered in
-canonical mode; the standalone suite covers their empty-provider case.
+Corners that were listed here as untested are now covered: `GetCurrentContext` and `GetCurrentError` by
+delegation comparisons that do not depend on ambient state, and `RaiseError` by a test that asserts what
+a raise actually carries. `GetServiceModules`, `GetServices` and `GetPublications` are asserted to return
+arrays with their declared count in the message, which is vacuous while the catalogs are empty — recorded
+rather than hidden, and the standalone suite covers the empty-provider case explicitly.
 
 ### Corrected later the same day
 
@@ -149,8 +150,20 @@ established that the test extension can reference `Справочники.mol_Se
 depend on whatever thread state the surrounding suite left behind.
 - canonical suite **116/116** in 43 s.
 
-Still open, and the reason this task is not verified yet: the facade's `RaiseError`; the version
-derivation of a service's `fullName`; and the `$node.services` parameter shape.
+Closed 2026-09-30. The two items recorded above are now covered, and one of them corrected a claim made
+elsewhere:
+
+- the facade's `RaiseError` is asserted to raise with the message and the class name reaching the caller.
+  The **type** does not survive a raise, which is worth knowing: the envelope path reads the structure,
+  so a caller catching the platform exception cannot see it.
+- the `fullName` derivation is pinned: `CompileServiceSchema("mol_Internal")` yields `$internal`, the name
+  the constructor declares rather than the module it lives in, and a service declaring no version gets no
+  version suffix. That disproved the premise of T032's entry, which is corrected there.
+
+The `mol_Broker` payload items this task re-scoped to T018 are covered by `mol_PayloadContractTests`, and
+the `$node.services` parameter shape remains unreachable in-process and recorded as such. Everything else
+in the acceptance is covered by the suites listed above, so this task is verified with that one recorded
+exception.
 
 ## Optional pilot metrics
 

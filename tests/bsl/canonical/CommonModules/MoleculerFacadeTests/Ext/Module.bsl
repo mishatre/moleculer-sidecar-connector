@@ -37,7 +37,8 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("ProvidedPublicationsAreAnArray")
 		.ДобавитьСерверныйТест("ProvidedServiceModulesAreAnArray")
 		.ДобавитьСерверныйТест("TheFacadeForwardsTheCurrentContext")
-		.ДобавитьСерверныйТест("TheFacadeForwardsTheCurrentError");
+		.ДобавитьСерверныйТест("TheFacadeForwardsTheCurrentError")
+		.ДобавитьСерверныйТест("RaiseErrorSurfacesTheErrorItWasGiven");
 
 EndProcedure
 
@@ -313,6 +314,31 @@ EndProcedure
 Procedure TheFacadeForwardsTheCurrentError() Export
 
 	ЮТест.ОжидаетЧто(Moleculer.GetCurrentError() = mol_Errors.GetCurrentError(), "the facade forwards the current error").ЭтоИстина();
+
+EndProcedure
+
+Procedure RaiseErrorSurfacesTheErrorItWasGiven() Export
+
+	// moleculer.RaiseError — the member a handler calls to reject a request. It takes the structure the
+	// factories build and has to surface it to the caller rather than return it, which is what makes the
+	// error envelope possible on the inbound path.
+	Error = mol_Errors.ClientError("PROBE_REJECTION", 400, "probe rejection message");
+
+	Raised  = Ложь;
+	Failure = "";
+
+	Попытка
+		Moleculer.RaiseError(Error);
+	Исключение
+		Raised  = Истина;
+		Failure = ОписаниеОшибки();
+	КонецПопытки;
+
+	ЮТест.ОжидаетЧто(Raised, "RaiseError raises rather than returns").ЭтоИстина();
+	ЮТест.ОжидаетЧто(СтрНайти(Failure, "probe rejection message") > 0, "the message reaches the caller: " + Failure).ЭтоИстина();
+	// The name is what a raised platform exception carries, and the type is not part of it: the envelope
+	// path reads the structure, so the type survives there but not through a raise.
+	ЮТест.ОжидаетЧто(СтрНайти(Failure, "MoleculerClientError") > 0, "the class name reaches the caller: " + Failure).ЭтоИстина();
 
 EndProcedure
 

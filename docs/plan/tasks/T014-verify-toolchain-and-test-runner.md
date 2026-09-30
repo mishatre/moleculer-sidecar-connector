@@ -1,10 +1,9 @@
 # T014 — Prove the 1C/OneScript toolchain and choose the BSL test runner
 
-Status: in_progress — the client blocker is resolved: the client starts, a licence is
-present, and YAxUnit is the framework the suites run on (T017 verified; the canonical
-suite was 54/54 when this was written and is 68/68 now). Remaining: record the
-test-framework decision and the tooling evidence here, then hand over for independent
-review.
+Status: in_progress — the client blocker is resolved, the tooling evidence is recorded below, and the
+test-framework decision is recorded with it: YAxUnit, run through `vrunner` on the harness the task
+T017 built (canonical 163/163, standalone 25/25 at this writing). Remaining: independent review, which
+is the handover this task asked for.
 Depends on: none
 Recipe: normal
 Coordinator: Sol Medium

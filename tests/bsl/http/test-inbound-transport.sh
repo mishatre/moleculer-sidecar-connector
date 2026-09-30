@@ -33,11 +33,11 @@
 #     unconditionally. A payload missing `parentID` raises a platform error page rather than
 #     reaching the envelope, so only a complete fixture separates "the payload was rejected"
 #     from "the action has no handler".
-#  4. The connector's own `$internal` actions cannot be reached over HTTP: RequestHandler tries
-#     the local resolver only for names beginning with `$internal`, while the resolver matches
-#     names qualified by the compiled schema's fullName, which begins with the module name. The
-#     two conditions cannot agree. Recorded as a gap rather than fixed, because the prefix check
-#     may be deliberate exposure control rather than a naming mistake.
+#  4. The connector's own `$internal` actions cannot be reached over HTTP, and the cause is not the
+#     naming: the compiled schema's fullName is the name its constructor declares (`$internal`), which
+#     mol_SchemaFactoryTests pins, so the guard here and the qualifier the resolver builds do agree. What
+#     fails further in is still undetermined - T032 carries the candidates. Recorded as a gap rather
+#     than fixed, because the guard may be deliberate exposure control.
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
