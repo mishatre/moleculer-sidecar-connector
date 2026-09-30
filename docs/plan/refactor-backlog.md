@@ -154,8 +154,11 @@ operation that produced it has ended.
 
 Evidence: `tests/bsl/canonical/CommonModules/mol_AmbientContextTests` pins the reachable half — an
 ambient error survives an unrelated successful operation — and its header names all four sites. The
-broker's push happens after the transport answers, so reaching it needs a sidecar; the HTTP integration
-test provides that path but does not observe the stack today.
+broker's push happens after the transport answers, so reaching it needs a sidecar, and that gap is now
+closed rather than described: `tests/bsl/canonical/CommonModules/LiveSidecarCallTests` calls the service
+over HTTP and asserts the ambient context left behind is the call's own. The push-without-pop is
+therefore pinned as observed behaviour in the suite that actually reaches it, and the fix below still has
+to change that assertion rather than merely add one.
 
 Shape, to confirm during refinement: either a pop around the transport call in the three broker methods,
 or a scoped helper on `mol_ContextFactory` that pushes and pops around a passed block. The second is

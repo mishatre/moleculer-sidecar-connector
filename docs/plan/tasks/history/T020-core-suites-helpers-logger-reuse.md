@@ -1,8 +1,8 @@
 # T020 — Core unit suites C: helpers, logger, reuse caching, context cleanup
 
-Status: in_progress — the ambient-context lifecycle, the logger mapping and the reuse-caching mechanism are
-covered, in both modes. Remaining: `SignV4` determinism and the serialization round-trips. The context
-leak's fix is T030 and the builder defect's is T031.
+Status: verified 2026-09-30 — every acceptance item is covered, and the two items that required a live
+sidecar are closed by `LiveSidecarCallTests`. The context leak's fix is T030 and the builder defect's was
+T031.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -146,15 +146,35 @@ not load, so the counters above understate the run" instead of showing a green 1
 why that gate exists. The second was the stream idiom above, which produced "insufficient actual
 parameters" and led to checking how the module itself builds a stream rather than guessing again.
 
-### Still open in this task
+### Live sidecar call — verified 2026-09-30
 
-Both remaining items need a live sidecar, so neither can be closed in-process:
+This closes the two items that needed a sidecar. `tests/bsl/canonical/CommonModules/LiveSidecarCallTests`
+holds three tests that call the real service over HTTP; canonical is **179/179** with them present.
 
-- the root-call case of the ambient-context item: a call that completes, rather than one that fails
-  before the transport, is what actually reaches the push in `mol_Broker`. `tests/bsl/http/` owns that
-  path today, but does not observe the stack.
-- pinning the `mol_Broker` push-without-pop with a test rather than a description, for the same reason.
-  The `mol_Errors` half is pinned by `mol_AmbientContextTests`, and T030 owns the fix.
+How it works: the suite reads its connection from `build/test/sidecar-connection.json`. When that file is
+absent it prints `live sidecar tests skipped` and returns, so the ordinary run needs no service running.
+The skip notice is also the control for the result below — its absence in the log is what proves the three
+tests executed rather than being silently passed over.
+
+What it proves, and why each assertion is not satisfiable without a completed round trip:
+
+| Test | Assertion that matters |
+|---|---|
+| `TheSidecarAnswersThroughTheBroker` | `mol_Broker.Call("$sidecar.utils.parseYAML", …)` returns the parsed document, `probe = "ok"`. Only the service can produce that value, so the reply crossed the real transport. |
+| `TheSuccessPathRestoresSafeMode` | the safe-mode flag after a successful call equals its value before. The restore only runs on the success branch. |
+| `TheBrokerLeavesItsContextOnTheAmbientStack` | after the call, the ambient context is the call's own — `Action.Name = "$sidecar.utils.parseYAML"` — and not the sentinel pushed beforehand. `mol_Broker` publishes its context only *after* the transport answers, so a call that failed before reaching the push would leave the sentinel in place and fail instead. |
+
+That last row is what the root-call item was waiting for: it pins the push-without-pop as behaviour, so
+the leak is now a recorded observation rather than a description. The `mol_Errors` half was already pinned,
+and T030 owns the fix for both.
+
+A regression found on the way, worth keeping because of how it hid: a test helper written for the T034
+work called `Новый Соответствие("tenant", "acme")`, which that type has no constructor for, so
+`mol_ContextFieldsTests` stopped compiling. YAxUnit drops a suite that fails to load out of its counters
+entirely, so the run reported a green `173/173` while six tests were missing; the harness's load gate was
+the only thing that failed the run, and the arithmetic is what identified the culprit
+(176 − 6 + 3 = 173). The edit had only been followed by a *standalone* run, which never loads a canonical
+suite — the lesson is that a canonical suite's edit needs a canonical run before it is believed.
 
 Everything else the acceptance lists is covered: the validator family and `GetVersionedFullName` by
 `mol_HelpersClientServerTests` and `mol_HelpersTests`, the round-trips by `JSONRoundTripPreservesValues`,

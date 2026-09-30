@@ -137,12 +137,15 @@ Procedure TheContextFactoryThreadsItsParentIntoTheNewContext() Export
 	ЮТест.ОжидаетЧто(Opts.parentCtx.id, "and it is the ambient one").Равно("parent-sentinel");
 
 	// The derivation half. Create is what the broker calls, so this is the observable end of the chain.
+	ParentMeta = Новый Соответствие;
+	ParentMeta.Вставить("tenant", "acme");
+
 	Parent = Новый Структура;
 	Parent.Insert("id"       , "parent-1");
 	Parent.Insert("requestID", "trace-1");
 	Parent.Insert("tracing"  , Истина);
 	Parent.Insert("level"    , 3);
-	Parent.Insert("meta"     , Новый Соответствие("tenant", "acme"));
+	Parent.Insert("meta"     , ParentMeta);
 
 	Derived = mol_ContextFactory.Create(mol_Broker, Новый Структура, Новый Структура("parentCtx", Parent));
 

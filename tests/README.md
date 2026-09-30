@@ -171,6 +171,7 @@ tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
 |---|---|---|
 | `common/CommonModules/mol_ReuseTests` | `mol_Reuse.*` | оба (модуль сохранён) |
 | `common/CommonModules/mol_ReuseCachingTests` | `mol_Reuse.*`, `mol_ReuseCalls.*` | оба (оба модуля сохранены) |
+| `canonical/CommonModules/LiveSidecarCallTests` | `mol_Broker.Call` по HTTP к живому сайдкару | каноническое расширение, нужен сайдкар |
 | `canonical/CommonModules/MoleculerFacadeTests` | `Moleculer.*` | каноническое расширение |
 | `canonical/CommonModules/MoleculerOverridableTests` | `MoleculerOverridable.*` | каноническое расширение |
 | `canonical/CommonModules/mol_AmbientContextTests` | `mol_ContextFactory.*`, `mol_Errors.*`, `mol_Helpers.*` | каноническое расширение |
@@ -197,6 +198,19 @@ tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
 `run-tests.sh` собирает наборы из `common/` плюс каталога выбранного режима, поэтому
 набор, обращающийся к `mol_Helpers.*` напрямую, должен лежать в `canonical/`, а
 набор для слитой поверхности — в `standalone/`.
+
+### Живой вызов сайдкара
+
+`canonical/CommonModules/LiveSidecarCallTests` — три теста по HTTP к настоящему
+сайдкару. Соединение они читают из `build/test/sidecar-connection.json`; если файла
+нет, печатают «live sidecar tests skipped» и выходят, поэтому обычный прогон не
+требует живого сервиса.
+
+Что доказывается: `mol_Broker.Call` доводит вызов до конца — возвращается разобранный
+YAML (`$sidecar.utils.parseYAML` со `string: "probe: ok"`), успешный путь
+восстанавливает режим безопасности, и на стеке окружения остаётся контекст самого
+вызова с `Action.Name = "$sidecar.utils.parseYAML"`. Последнее достижимо только после
+ответа транспорта, поэтому набор отличает состоявшийся вызов от оборвавшегося.
 
 ### Что уже найдено
 

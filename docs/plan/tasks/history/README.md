@@ -22,8 +22,9 @@ Rules that keep this folder useful:
 | T017 | A BSL suite runs and reports in extension and standalone modes |
 | T018 | Transport, context factory and errors are covered by executable tests |
 | T019 | Broker, schema factory, facade and provider are covered by executable tests |
+| T020 | Helpers, logger, reuse caching and context cleanup are covered by tests |
 | T021 | The generated standalone CFE loads and works in a database-free infobase |
 
-Still active in `docs/plan/tasks/`: T002–T013 (installer roadmap), T020 (suite work), T022 (blocked on
-T019–T021) and T023. The refactoring cycle's drafts, T024–T035, live in
+Still active in `docs/plan/tasks/`: T002–T013 (installer roadmap), T022 (ready — its dependencies closed
+with T020) and T023. The refactoring cycle's drafts, T024–T035, live in
 [refactor-backlog.md](../../refactor-backlog.md).

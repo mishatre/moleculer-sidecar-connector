@@ -3,9 +3,9 @@
 Two workstreams share this index: the installer roadmap (T001–T013, unchanged)
 and the standalone-builder/test workstream (T014–T022).
 
-Next: **T020 is the last suite task with work left, and its remaining items need a live sidecar.** T022
-stays blocked on it. T032 is the remaining merge defect: the variant cannot build its internal service and
-the reason is swallowed, so it needs that exception observed before a fix is chosen.
+Next: **the suite workstream (T014–T021) is finished, so T022 is unblocked and is the next task to pick
+up.** T032 is the remaining merge defect: the variant cannot build its internal service and the reason is
+swallowed, so it needs that exception observed before a fix is chosen.
 
 Files for completed tasks are moved to `tasks/history/` — see [its README](tasks/history/README.md) — so
 this folder shows only work that is still open. The links below keep working across that move.
@@ -32,9 +32,9 @@ this folder shows only work that is still open. The links below keep working acr
 | T017 | A BSL suite can run and report in extension and standalone modes | verified | T014 | [Task](tasks/history/T017-test-harness-foundation.md) |
 | T018 | Transport, context factory and errors are covered by executable tests | verified | T017 | [Task](tasks/history/T018-core-suites-transport-context-errors.md) |
 | T019 | Broker, schema factory, facade and provider are covered by executable tests | verified | T017 | [Task](tasks/history/T019-core-suites-broker-schema-facade.md) |
-| T020 | Helpers, logger, reuse caching and context cleanup are covered by tests | in_progress | T017 | [Task](tasks/T020-core-suites-helpers-logger-reuse.md) |
+| T020 | Helpers, logger, reuse caching and context cleanup are covered by tests | verified | T017 | [Task](tasks/history/T020-core-suites-helpers-logger-reuse.md) |
 | T021 | The generated standalone CFE loads and works in a database-free infobase | verified | T015, T017 | [Task](tasks/history/T021-standalone-runtime-verification.md) |
-| T022 | Static quality gate and standalone delivery documentation exist | blocked | T018–T021 | [Task](tasks/T022-static-gate-and-delivery-docs.md) |
+| T022 | Static quality gate and standalone delivery documentation exist | ready | T018–T021 | [Task](tasks/T022-static-gate-and-delivery-docs.md) |
 | T023 | Error reporting distinguishes internal, sidecar and end-node failures | draft | T018 | [Task](tasks/T023-error-taxonomy.md) |
 
 ### Next cycle — refactoring
