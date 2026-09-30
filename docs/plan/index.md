@@ -3,15 +3,17 @@
 Two workstreams share this index: the installer roadmap (T001–T013, unchanged)
 and the standalone-builder/test workstream (T014–T022).
 
-Next: **nothing is blocked any more, and no task is left needing an independent review.** T014 and T015
-were reviewed on 2026-09-30; their findings are closed in the task files. What remains is unfinished suite
-work in T018–T020, the merge defects the review of the builder turned up (T032 and T035), and the drafts
-that wait on an owner decision.
+Next: **suite work remains in T018 and T020**; T022 is still blocked, but on its own dependencies rather
+than on the client, which works. T032 and T035 are the merge defects the builder review turned up, and the
+drafts wait on an owner decision.
+
+Files for completed tasks are moved to `tasks/history/` — see [its README](tasks/history/README.md) — so
+this folder shows only work that is still open. The links below keep working across that move.
 
 | ID | Outcome | Status | Depends on | File |
 |---|---|---|---|---|
-| T000 | Codex can find local workflow files and identify real tooling | verified | Open project in dev container | [Task](tasks/T000-verify-workflow.md) |
-| T001 | Installer refinement is decomposed into bounded outcomes | verified | T000 | [Task](tasks/T001-refine-sidecar-connector-installer.md) |
+| T000 | Codex can find local workflow files and identify real tooling | verified | Open project in dev container | [Task](tasks/history/T000-verify-workflow.md) |
+| T001 | Installer refinement is decomposed into bounded outcomes | verified | T000 | [Task](tasks/history/T001-refine-sidecar-connector-installer.md) |
 | T002 | Installer form module follows official structure without behavior change | ready | T000 | [Task](tasks/T002-refactor-installer-form-module.md) |
 | T003 | Installer reports installed connector presence, state, and version | draft | T002 | [Task](tasks/T003-detect-installed-connector.md) |
 | T004 | Explicit GitHub source selection returns available connector versions | draft | T003, T005 | [Task](tasks/T004-fetch-github-connector-versions.md) |
@@ -24,14 +26,14 @@ that wait on an owner decision.
 | T011 | Optional SSL/BSP role-protection extension is specified | deferred | User details; T005, T008 | [Task](tasks/T011-optional-ssl-role-protection-extension.md) |
 | T012 | Installed connector receives deeper compatibility validation | deferred | Concrete failure cases; T003, T008 | [Task](tasks/T012-validate-installed-connector.md) |
 | T013 | Installer removes only the connector after destructive confirmation | draft | T003 | [Task](tasks/T013-remove-sidecar-connector.md) |
-| T014 | Container toolchain, test runner and test hosting are verified | verified | none | [Task](tasks/T014-verify-toolchain-and-test-runner.md) |
-| T015 | Standalone CFE variant is generated from the canonical sources | verified | T014 | [Task](tasks/T015-standalone-builder.md) |
-| T016 | Builder transformation and output shape are guarded by container-only tests | verified | T015 | [Task](tasks/T016-builder-transformation-tests.md) |
-| T017 | A BSL suite can run and report in extension and standalone modes | verified | T014 | [Task](tasks/T017-test-harness-foundation.md) |
+| T014 | Container toolchain, test runner and test hosting are verified | verified | none | [Task](tasks/history/T014-verify-toolchain-and-test-runner.md) |
+| T015 | Standalone CFE variant is generated from the canonical sources | verified | T014 | [Task](tasks/history/T015-standalone-builder.md) |
+| T016 | Builder transformation and output shape are guarded by container-only tests | verified | T015 | [Task](tasks/history/T016-builder-transformation-tests.md) |
+| T017 | A BSL suite can run and report in extension and standalone modes | verified | T014 | [Task](tasks/history/T017-test-harness-foundation.md) |
 | T018 | Transport, context factory and errors are covered by executable tests | in_progress | T017 | [Task](tasks/T018-core-suites-transport-context-errors.md) |
-| T019 | Broker, schema factory, facade and provider are covered by executable tests | verified | T017 | [Task](tasks/T019-core-suites-broker-schema-facade.md) |
+| T019 | Broker, schema factory, facade and provider are covered by executable tests | verified | T017 | [Task](tasks/history/T019-core-suites-broker-schema-facade.md) |
 | T020 | Helpers, logger, reuse caching and context cleanup are covered by tests | in_progress | T017 | [Task](tasks/T020-core-suites-helpers-logger-reuse.md) |
-| T021 | The generated standalone CFE loads and works in a database-free infobase | verified | T015, T017 | [Task](tasks/T021-standalone-runtime-verification.md) |
+| T021 | The generated standalone CFE loads and works in a database-free infobase | verified | T015, T017 | [Task](tasks/history/T021-standalone-runtime-verification.md) |
 | T022 | Static quality gate and standalone delivery documentation exist | blocked | T018–T021 | [Task](tasks/T022-static-gate-and-delivery-docs.md) |
 | T023 | Error reporting distinguishes internal, sidecar and end-node failures | draft | T018 | [Task](tasks/T023-error-taxonomy.md) |
 
@@ -39,7 +41,7 @@ that wait on an owner decision.
 
 Outlines only, collected from evidence gathered while building the harness. Task
 files are written once the cycle is authorised; the reasoning and the acceptance
-for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
+for T024 and T025 live in [refactor-backlog.md](refactor-backlog.md).
 
 | ID | Outcome | Status | Depends on | Where |
 |---|---|---|---|---|

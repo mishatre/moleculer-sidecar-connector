@@ -46,7 +46,7 @@ Outside the active sequence:
   the user selects it; there is no separate network toggle.
 - Arbitrary local CFE selection is removed from the active installer design.
 - Releases use canonical SemVer tags and deterministic asset names defined in
-  [environment](../environment.md). Prereleases remain visible and labeled.
+  [environment](../../environment.md). Prereleases remain visible and labeled.
 - The newest stable release is recommended, falling back to the newest
   prerelease when no stable release exists.
 - Only `MoleculerSidecarConnector` is detected or removed. Legacy

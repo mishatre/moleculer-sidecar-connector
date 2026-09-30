@@ -25,7 +25,7 @@ Next: implement after T002; publish only as the separately reviewed delivery ste
 > first. Two further verified changes apply: the positional `OUT` argument must
 > follow the options, and `1cv8` cannot start in this container, so
 > `--ibcmd` is mandatory. See
-> [T014](T014-verify-toolchain-and-test-runner.md) and
+> [T014](history/T014-verify-toolchain-and-test-runner.md) and
 > [environment](../environment.md).
 
 ## Acceptance and consumer example

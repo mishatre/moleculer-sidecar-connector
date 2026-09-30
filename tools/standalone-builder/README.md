@@ -187,7 +187,7 @@ and needs no rebuild of the merged module.
   available. Loading does not compile module bodies, so a defect it misses would only
   appear at runtime.
 - **Runtime behaviour is unverified.** No action call or HTTP round-trip has been
-  exercised. See `docs/plan/tasks/T021-standalone-runtime-verification.md`.
+  exercised. See `docs/plan/tasks/history/T021-standalone-runtime-verification.md`.
 - **Client contexts are dropped.** The canonical `Moleculer` module is also
   available to thin clients; the variant's merged module is server-only because the
   merged code uses server APIs.

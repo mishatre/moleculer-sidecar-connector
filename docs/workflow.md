@@ -35,6 +35,9 @@ file identifiers, not the required execution order.
 - `docs/plan/project.md`: purpose, current need, architectural boundaries and future direction.
 - `docs/plan/index.md`: task IDs, status, dependencies and the next recommended task.
 - `docs/plan/tasks/T001-short-name.md`: task card, implementation context and completion evidence in one file.
+- `docs/plan/tasks/history/<TASK>.md`: a completed task file that has been moved out of the active folder.
+  A task moves here once its acceptance items are evidenced, so that the active folder answers "what is
+  still open" and this one answers "what was done and how was it proven". The index keeps linking these.
 - `docs/plan/environment.md`: working directories, relevant commands and actual validation/deployment capabilities.
 - Existing README or feature docs: current behavior and how to use it, updated alongside delivery.
 

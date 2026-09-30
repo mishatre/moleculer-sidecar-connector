@@ -69,7 +69,7 @@ Relevant existing evidence:
   `compileexttocfe`/`compileepf`; the installed runner appears to be 3.0.0.
 - `docs/plan/tasks/T005-build-and-bundle-installer.md` — uses the same legacy
   syntax and must be corrected by whichever command set is verified here.
-- `docs/plan/tasks/T000-verify-workflow.md` — verified `oscript -version` 2.1.0,
+- `docs/plan/tasks/history/T000-verify-workflow.md` — verified `oscript -version` 2.1.0,
   `opm --version` 1.4.1, platform binaries under `/opt/1cv8/current`.
 
 Reference implementation to reuse:

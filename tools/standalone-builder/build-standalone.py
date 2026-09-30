@@ -15,7 +15,7 @@ OneScript packages do not expose an XML library and the bundled `json` package h
 no global reader, so a Python generator removes two dependency risks at once.  It
 is a developer tool, not shipped product code.
 
-See docs/plan/tasks/T015-standalone-builder.md for the design and the verified
+See docs/plan/tasks/history/T015-standalone-builder.md for the design and the verified
 compiler commands.
 """
 

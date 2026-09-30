@@ -203,7 +203,7 @@ tests/bsl/run-tests.sh --tests mol_ErrorsTests.MessageIsPreserved
 - Одиннадцать из тридцати вызовов `RaiseCustomError` передают ключ, которого нет в
   диспетчере `CustomError`, и деградируют до общей ошибки: четыре из них — `ServiceSchema`
   из `mol_SchemaFactory` при существующем `ServiceSchemaError`. Полный перечень — в
-  [T023](docs/plan/tasks/T023-error-taxonomy.md); текущая классификация закреплена тестом
+  [T023](../docs/plan/tasks/T023-error-taxonomy.md); текущая классификация закреплена тестом
   `SchemaFailuresUseATypeTheFactoriesDoNotProduce`.
 
 ### Раскладка, которую платформа не читала

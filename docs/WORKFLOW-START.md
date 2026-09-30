@@ -16,7 +16,7 @@ llm-manager repository inside the container.
 5. Send this exact first request:
 
 ```text
-Read /workspace/AGENTS.md and docs/plan/tasks/T000-verify-workflow.md.
+Read /workspace/AGENTS.md and docs/plan/tasks/history/T000-verify-workflow.md.
 Implement T000 only. Verify the workspace, instructions, tools and model/agent
 configuration without changing application source or building/updating an
 infobase. Save results in the task. Ask ordinary untimed questions if needed.
