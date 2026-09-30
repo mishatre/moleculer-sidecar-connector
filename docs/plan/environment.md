@@ -94,6 +94,11 @@ unverified until the applicable implementation task.
 - Checksums: `SHA256SUMS.txt`
 - GitHub repository: `mishatre/moleculer-ones`
 - The installer bundles the exact CFE released beside it.
+- The CFE is **not** byte-reproducible, measured 2026-09-30: two builds of the same tree with the same
+  profile produced `sha256 c5a5312c65cb…` and `sha256 9d40771201ec…`. The inputs are reproducible —
+  `standalone-manifest.json` records `sourceRevision`, 13 file hashes and 64 merged-module hashes — so the
+  difference comes from `vrunner cfe compile`. Trace an artifact through the manifest, never through the
+  CFE hash. T005 owns the outcome this affects.
 - Artifact file names must not contain spaces: a space breaks `vrunner --src` and
   `--ext` argument handling (observed 2026-09-29).
 

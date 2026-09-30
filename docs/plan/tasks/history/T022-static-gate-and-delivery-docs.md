@@ -1,8 +1,9 @@
 # T022 — Static quality gate and standalone delivery documentation
 
-Status: in_progress — the static layer and the single entry point are landed and verified; the syntax-check
-command is recorded. One acceptance item is still open: `INSTALL.md` has been checked against the emitted
-tree but the manual-migration route has not been rehearsed against a real host configuration.
+Status: verified 2026-09-30 — the rule set is selected and justified, the gate and the entry point are
+verified in both directions, the syntax-check command is recorded, and the manual-migration route has been
+rehearsed against a real host configuration. The one thing left unverified is a run-time call from a
+migrated host; that is recorded below and is not an acceptance item.
 Depends on: T018, T019, T020, T021
 Recipe: normal
 Coordinator: Sol Medium
@@ -135,15 +136,40 @@ The platform's checks do not compile module bodies, so this layer cannot see T03
 does not exist loads and passes here exactly as it passes `vrunner cfe compile`. That is why the static
 layer is not redundant with it, and `tests/README.md` says so where it lists the layers.
 
-### Not done in this task
+### The manual-migration route, rehearsed
 
-`INSTALL.md` was read and checked against the emitted tree: the two merged modules, the two reuse modules
-kept separate, the HTTP service `mol_Moleculer`, the absence of constants, dictionaries and forms, and the
-compatibility-mode statement are all present and match what the builder emits. It was **not** rehearsed as
-a real migration into a host configuration, which is what the success criterion asks for. That needs a base
-built from a consumer's configuration with the connector's dependencies; the container's `src/cf` is the
-product's own, not a consumer's. The install-as-an-extension route is already proven by T021. The rehearsal
-is the remaining work in this task.
+The guide's claim was rehearsed in the form the XML-source workflow allows:
+
+1. `src/cf` — the reference host configuration, which carries no common modules and no HTTP services of its
+   own — was copied to `/tmp/host-migration`.
+2. The generated tree's four common modules and its HTTP service were copied in:
+   `CommonModules/{Moleculer, MoleculerOverridable, mol_Reuse, mol_ReuseCalls}` and
+   `HTTPServices/mol_Moleculer`. No XML editing was needed: the emitted `mol_Reuse.xml` has the same shape
+   and the same uuid as the connector's own.
+3. The five objects were registered in the host's `Configuration.xml` `ChildObjects`.
+4. A base was built from the migrated host,
+   `vrunner infobase init --src /tmp/host-migration --ibcmd --v8version 8.3 --ibconnection /F/workspace/build/ib-migration`,
+   which answered `Конфигурация успешно загружена из файлов через ibcmd`, `Конфигурация БД обновлена` and
+   `Инициализация информационной базы завершена`, exit 0.
+
+Step 3 is what the rehearsal was worth. The guide did not mention it. In the Designer the registration
+happens by itself when a module is added to the tree, but a host that lives as files does not see a module
+its `Configuration.xml` does not list. The step is in the guide now, and
+`tests/standalone-builder/test_builder.py` asserts the manual route still names it together with all five
+objects, so the omission cannot creep back.
+
+Not rehearsed: the run-time call the guide suggests as the final check (`Moleculer.Broker().Call(...)` from
+the migrated host). The migration's mechanics and the base it produces are verified; that the migrated host
+can then reach a sidecar is not, and the install-as-an-extension route is covered at run time by T021.
+
+### A finding for the release contract: the artifact is not byte-reproducible
+
+Building the same tree twice with the same profile produced two different artifacts —
+`sha256 c5a5312c65cb…` and `sha256 9d40771201ec…`. The inputs are reproducible: the manifest records
+`sourceRevision c220d80df831`, 13 file hashes and 64 merged-module hashes. The difference therefore comes
+from `vrunner cfe compile`, not from the builder. This matters to the release contract in
+`docs/plan/environment.md`, which promises a reproducibly traceable artifact: the manifest is the
+traceability anchor, the CFE hash is not. Recorded there and on T005, whose outcome covers this.
 
 ## Optional pilot metrics
 

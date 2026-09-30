@@ -3,11 +3,10 @@
 Two workstreams share this index: the installer roadmap (T001–T013, unchanged)
 and the standalone-builder/test workstream (T014–T022).
 
-Next: **T022 is the active task and has one item left — an `INSTALL.md` rehearsal against a real host
-configuration.** Its static layer and single entry point are landed and verified. Then T032, the remaining
-merge defect: the variant cannot build its internal service and the reason is swallowed, so it needs that
-exception observed before a fix is chosen. T036 and T037 are new, both found by the T022 gate, and both are
-small source changes.
+Next: **the suite workstream and its gate (T014–T022) are finished.** What is open splits three ways: the
+installer roadmap, where T002 and T005 are ready; the refactor cycle, where T032 is the remaining merge
+defect and T036 and T037 are small source changes the new gate found; and T023, whose third acceptance item
+now has measured evidence — an unreachable sidecar hangs instead of failing.
 
 Files for completed tasks are moved to `tasks/history/` — see [its README](tasks/history/README.md) — so
 this folder shows only work that is still open. The links below keep working across that move.
@@ -36,7 +35,7 @@ this folder shows only work that is still open. The links below keep working acr
 | T019 | Broker, schema factory, facade and provider are covered by executable tests | verified | T017 | [Task](tasks/history/T019-core-suites-broker-schema-facade.md) |
 | T020 | Helpers, logger, reuse caching and context cleanup are covered by tests | verified | T017 | [Task](tasks/history/T020-core-suites-helpers-logger-reuse.md) |
 | T021 | The generated standalone CFE loads and works in a database-free infobase | verified | T015, T017 | [Task](tasks/history/T021-standalone-runtime-verification.md) |
-| T022 | Static quality gate and standalone delivery documentation exist | ready | T018–T021 | [Task](tasks/T022-static-gate-and-delivery-docs.md) |
+| T022 | Static quality gate and standalone delivery documentation exist | verified | T018–T021 | [Task](tasks/history/T022-static-gate-and-delivery-docs.md) |
 | T023 | Error reporting distinguishes internal, sidecar and end-node failures | draft | T018 | [Task](tasks/T023-error-taxonomy.md) |
 
 ### Next cycle — refactoring
@@ -47,7 +46,7 @@ for T024 and T025 live in [refactor-backlog.md](refactor-backlog.md).
 
 | ID | Outcome | Status | Depends on | Where |
 |---|---|---|---|---|
-| T024 | All four YAML modules are deleted | verified | none | [Plan](refactor-backlog.md) |
+| T024 | All four YAML modules are deleted | verified | none | [Task](tasks/history/T024-drop-yaml-modules.md) |
 | T025 | The inbound transport boundary is covered by an integration test | verified | none | [Plan](refactor-backlog.md) |
 | T026 | Module surface and naming are consistent | draft | T023, T025 | [Plan](refactor-backlog.md) |
 | T027 | The form layer is rebuilt | draft | owner decision | [Plan](refactor-backlog.md) |

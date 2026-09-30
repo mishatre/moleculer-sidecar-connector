@@ -117,6 +117,20 @@ class ManifestTests(unittest.TestCase):
         self.assertIn("INSTALL.md", manifest["files"])
         self.assertTrue((REPO_ROOT / "build" / "standalone" / "default" / "INSTALL.md").is_file())
 
+    def test_install_guide_registers_the_moved_objects(self):
+        # Rehearsing the manual route showed that copying the modules is not enough: the
+        # host configuration has to list them. The step is easy to drop again, so the
+        # guide is asserted to still name it.
+        guide_path = REPO_ROOT / "build" / "standalone" / "default" / "INSTALL.md"
+        if not guide_path.is_file():
+            self.skipTest("the variant has not been generated in this checkout")
+
+        guide = guide_path.read_text(encoding="utf-8")
+        manual = guide.split("## Перенос в конфигурацию-хозяина вручную", 1)[1]
+        self.assertIn("ChildObjects", manual)
+        for name in ("Moleculer", "MoleculerOverridable", "mol_Reuse", "mol_ReuseCalls", "mol_Moleculer"):
+            self.assertIn(name, manual, f"the manual route does not mention {name}")
+
 
 class ProfileTests(unittest.TestCase):
     def test_default_profile_is_valid(self):

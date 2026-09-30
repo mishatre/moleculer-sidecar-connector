@@ -24,7 +24,9 @@ Rules that keep this folder useful:
 | T019 | Broker, schema factory, facade and provider are covered by executable tests |
 | T020 | Helpers, logger, reuse caching and context cleanup are covered by tests |
 | T021 | The generated standalone CFE loads and works in a database-free infobase |
+| T022 | Static quality gate and standalone delivery documentation exist |
+| T024 | All four YAML modules are deleted |
 
-Still active in `docs/plan/tasks/`: T002–T013 (installer roadmap), T022 (ready — its dependencies closed
-with T020) and T023. The refactoring cycle's drafts, T024–T035, live in
+Still active in `docs/plan/tasks/`: T002–T013 (installer roadmap) and T023 (its third acceptance item now has
+measured evidence). The refactoring cycle's drafts live in
 [refactor-backlog.md](../../refactor-backlog.md).

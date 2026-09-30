@@ -1,9 +1,11 @@
 # T024 — Delete the four dead YAML modules
 
-Status: ready
-Depends on: none
-Recipe: simple
-Coordinator: Sol Medium
+Status: verified 2026-09-30 — the four modules are gone. This line said `ready` while both the index and
+[refactor-backlog.md](../refactor-backlog.md) already said `verified`; the tree settles it. `src/**` matches
+no `*yaml*` file, and the connector's `CommonModules` lists none of `YAML`, `YAML1`, `YAML2`, `YAML3`. The
+acceptance holds as of the T022 entry-point run: the canonical extension compiles and its suites are green
+(`tools/check.sh --layers bsl-canonical`, 179/179), and `tools/bsl-checks/find-procedure-as-function.py`
+reports no candidates. The file is moved to history now that the disagreement is resolved.
 Worker: Terra Medium
 Reviewer: Sol Medium
 

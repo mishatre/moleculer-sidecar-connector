@@ -110,3 +110,15 @@ source-review diff, or the staged/bundled/released connector hashes disagree.
 Record source revision, metadata version, exact commands, tool versions, artifact
 paths and hashes, embedded-artifact proof, clean rebuild comparison, reviewer
 findings, and whether GitHub delivery remains pending.
+
+### Measured 2026-09-30, from the T022 rehearsal
+
+The "clean rebuild comparison" this task asks for cannot be a byte comparison of the
+CFE. Building the same standalone tree twice with the same profile produced
+`sha256 c5a5312c65cb…` and `sha256 9d40771201ec…`, while the inputs were identical:
+`standalone-manifest.json` recorded the same `sourceRevision`, the same 13 file
+hashes and the same 64 merged-module hashes. The difference comes from
+`vrunner cfe compile`, not from the builder. The comparison has to be made on the
+manifest — source revision plus file and module hashes — and on the version the
+artifact reports, not on the produced bytes. The same note is in the release
+contract in `docs/plan/environment.md`.
