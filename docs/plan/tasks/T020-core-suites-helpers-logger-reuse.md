@@ -122,13 +122,44 @@ region empty, so the mapping exists only in extension mode. The test branches on
 pins the variant's shape — the call fails rather than answering a version it cannot know — instead of
 assuming the extension's behaviour.
 
+### Signing and stream reading — verified 2026-09-30
+
+`tests/bsl/canonical/CommonModules/mol_HelpersSigningTests`, six tests. Canonical **134/134**.
+
+`SignV4` builds the AWS4 authorization header, and determinism is the property worth pinning: a
+signature that drifted between two identical calls would break every signed request, while one that
+ignored an input would not be a signature at all. The suite asserts identical output for identical
+inputs, a different output when the region changes, that the ignored headers stay out of
+`SignedHeaders` — they are the ones proxies and browsers rewrite, so signing them would make the
+signature depend on something the sender does not control — and that an empty credential and a non-`Map`
+header collection are refused with the argument named.
+
+The stream reader is covered only for its failure contract: a failed read is caught, logged at Info
+level and reported as *nothing*, so a caller cannot tell it from an empty document. That is pinned as
+current behaviour and written to be rewritten. The successful path is not asserted, because building a
+stream from text needs a `BinaryDataBuffer` — the idiom `mol_Helpers` itself uses — and the round-trip
+item is already satisfied through the string reader.
+
+Two things went wrong on the way, and both are worth keeping. The suite first failed to compile because
+the framework's collection is `ЮТТесты`, not `ЮТесты`; the harness's load gate then reported "a suite did
+not load, so the counters above understate the run" instead of showing a green 128/128, which is exactly
+why that gate exists. The second was the stream idiom above, which produced "insufficient actual
+parameters" and led to checking how the module itself builds a stream rather than guessing again.
+
 ### Still open in this task
 
-- `mol_Helpers` — `SignV4` determinism for fixed inputs, and the serialization round-trips.
-- The validator family is already covered, which is worth recording because the acceptance places it
-  here: `mol_HelpersClientServerTests` asserts the provider's ten predicates and that `mol_Helpers`
-  forwards to it, so the duplication the acceptance cares about is pinned, and only `SignV4` and the
-  round-trips remain.
+Both remaining items need a live sidecar, so neither can be closed in-process:
+
+- the root-call case of the ambient-context item: a call that completes, rather than one that fails
+  before the transport, is what actually reaches the push in `mol_Broker`. `tests/bsl/http/` owns that
+  path today, but does not observe the stack.
+- pinning the `mol_Broker` push-without-pop with a test rather than a description, for the same reason.
+  The `mol_Errors` half is pinned by `mol_AmbientContextTests`, and T030 owns the fix.
+
+Everything else the acceptance lists is covered: the validator family and `GetVersionedFullName` by
+`mol_HelpersClientServerTests` and `mol_HelpersTests`, the round-trips by `JSONRoundTripPreservesValues`,
+`SignV4` and the stream reader by `mol_HelpersSigningTests`, the logger by `mol_LoggerTests`, the caching
+mechanism by `mol_ReuseCachingTests`, and the lifecycle by `mol_AmbientContextTests`.
 
 ### Logger level mapping — verified 2026-09-29
 
