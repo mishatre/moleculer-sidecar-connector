@@ -264,7 +264,7 @@ Function Handler(Context) Export
 		ElsIf Context.Event <> Undefined Then
 			mol_Helpers.ExecuteModuleProcedure(HandlerParts[0], HandlerParts[1], Parameters);
 		Else
-			mol_Errors.RaiseCustomError("Error", "Malformed context");	
+			mol_Errors.RaiseCustomError("InvalidPacketData", "Malformed context");	
 		EndIf;
 	Except              		
 		Error = mol_Errors.GetCurrentError();

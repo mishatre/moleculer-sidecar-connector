@@ -195,8 +195,10 @@ Still open, and the reason this task is not verified:
 - The end-to-end half of the third and fourth acceptance items is not done: only the inbound boundary has a
   real-boundary suite (`tests/bsl/http/test-inbound-transport.sh`), and the transport-failure origin cannot
   be observed today because an unreachable sidecar hangs instead of failing (see the note above).
-- The five guard sites still pass `"Error"`; it is a documented row now, and retyping them to
-  `InvalidArgument` is a follow-up rather than a change to make blind.
+- Four guard sites still pass `"Error"` (three of them byte-identical in `Moleculer`, so they cannot be
+  retyped one at a time); it is a documented row now, and retyping them to `InvalidArgument` is a follow-up
+  rather than a change to make blind. The fifth passed `"Malformed context"`, which is a unique line and is
+  the caller's own bad packet, so it is retyped and no longer part of this list.
 - `Moleculer.RaiseCustomError` passes a computed name through the dispatcher, and nothing tests that path.
 - `CustomError` is an exported, documented entry point that used to answer with a structure for any name and
   now raises for an unknown one. No in-tree path breaks — every literal site is a row and `FromErrorInfo` no
@@ -206,6 +208,14 @@ Closed after the review: `mol_ErrorShapesTests` now walks all twenty-one factori
 codes that changed are covered by a suite rather than by reading; and the network branch no longer invents
 `NETWORK_ERROR` for an origin the platform already names, which was the duplication the review flagged as the
 same kind of defect the task exists to remove.
+
+Closed while finishing the task: the malformed-context guard in `mol_ContextFactory` no longer answers with
+the generic row. A context that carries neither `Name` nor `Event` is the caller's bad packet, so it
+dispatches as `InvalidPacketData`, the client row the taxonomy already defines. Resuming that edit left two
+`ElsIf Type = "Error"` rows in the dispatcher for one step; the static gate's `IfElseDuplicatedCodeBlock`
+caught the duplicate pair, and the shipped file has exactly one row.
+
+Commit: `T023: report a malformed context as a bad packet, not an internal error`
 
 ## Independent review
 

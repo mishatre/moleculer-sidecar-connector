@@ -59,7 +59,9 @@ Function CustomError(Type, Message = "", Data = Undefined, ErrorInfo = Undefined
     ElsIf Type = "Error" Then
             // The connector's own guards use this name for "the caller asked for something the connector
             // refuses". It is a documented row rather than a silent fallback, and it keeps the shape those
-            // call sites already produced. Retyping them to "InvalidArgument" is recorded as a follow-up.
+            // call sites already produced, which the review of T023 recorded as a wire-visible value.
+            // Retyping them to "InvalidArgument" is a follow-up: the three guards in Moleculer are
+            // byte-identical, so they cannot be retyped one at a time.
             Error = Error("GENERIC_ERROR", 500, "MoleculerError", Message, Data, ErrorInfo);
     Else
             // An unknown type is a mistake in the connector, not a runtime condition, and answering with a
