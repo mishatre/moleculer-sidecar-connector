@@ -101,7 +101,7 @@ a removed module, or whose `Procedure`/`Function` blocks are unbalanced.
    (`YAML`, `YAML1`–`YAML3`) are left out, together with every catalog, constant,
    enum, functional option, form, data processor, role, subsystem and style.
 2. **Merges.** `Moleculer`, `mol_Errors`, `mol_Logger`, `mol_Helpers`,
-   `mol_HelpersClientServer`, `mol_Reuse`, `mol_ReuseCalls`, `mol_Transport`,
+   `mol_HelpersClientServer`, `mol_Transport`,
    `mol_ContextFactory`, `mol_Broker`, `mol_SchemaFactory` and `mol_Internal` are
    folded into the target module.
 3. **Renames.** Symbol names defined in more than one module are renamed in the

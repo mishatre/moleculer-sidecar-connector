@@ -34,10 +34,11 @@
 #     reaching the envelope, so only a complete fixture separates "the payload was rejected"
 #     from "the action has no handler".
 #  4. The connector's own `$internal` actions depend on `mol_Broker.Delete_FindInternalHandler` compiling
-#     the service module by name. That works in extension mode, where `mol_Internal` is a module, and fails
-#     in the standalone variant, where it has been merged into Moleculer: the compile finds nothing, the
-#     resolver returns Undefined and the request answers 503. Same request, two answers, so the test
-#     asserts each mode separately rather than choosing one expectation for both. See T032.
+#     the internal service. Extension mode compiles `mol_Internal` and finds the action. The variant
+#     patches that reference to the merged `Moleculer` module, but `CompileServiceSchema` dispatches on the
+#     literal name "Constructor", and the merged module has one constructor — the outer service's — so the
+#     internal schema cannot be built, the resolver returns Undefined and the request answers 503. Same
+#     request, two outcomes by packaging, so each mode is asserted separately. See T032 and T035.
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
@@ -385,7 +386,7 @@ echo "==> checking the connector's own actions"
 request POST "$SERVICE_URL" "application/json" "$INTERNAL_PACKET"
 if [ "$INBOUND_MODE" = "standalone" ]; then
 	if [ "$STATUS" = "503" ]; then
-		gap "the variant answers $STATUS for its own actions; the module the resolver compiles was merged away"
+		gap "the variant answers $STATUS for its own actions; the merged module's one constructor replaces the internal service's"
 	else
 		fail "the variant answers $STATUS, expected 503 until the lookup is fixed"
 	fi

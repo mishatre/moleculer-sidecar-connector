@@ -223,15 +223,32 @@ over. `CompileServiceSchema("mol_Internal")` yields `$internal` — the construc
 pinned by `mol_BrokerTests`. The HTTP test confirms it end to end: in extension mode the request runs the
 handler and returns `pong`, which is why the canonical run reports twelve passes.
 
-The real defect is narrower and belongs to the variant. The resolver compiles the service **module** by
-name — `mol_SchemaFactory.CompileServiceSchema("mol_Internal")` — and the standalone variant has merged
-that module into `Moleculer`, so the compile finds nothing, the resolver returns Undefined and the
-request answers 503. The same logic therefore has two outcomes depending on packaging, which the HTTP
-test now asserts separately rather than choosing one expectation for both.
+SETTLED 2026-09-30, from the artifact: the paragraph above is wrong as well, and for a different reason.
+The variant does not fail to find a module. The profile already carries a patch for exactly this call
+(`tools/standalone-builder/profiles/default.json`, described as "the internal service is a service of the
+merged module, not a separate module"), rewriting it to `CompileServiceSchema(Moleculer)` — and the
+emitted module proves the patch ran: `build/standalone/default/CommonModules/Moleculer/Ext/Module.bsl:4119`.
 
-Shape: either the builder rewrites that module reference the way it rewrites the others, or the profile
-keeps `mol_Internal` as its own module. Restricting access is a separate question and no longer the
-suspected cause, so this task is now about the variant only.
+The compile therefore succeeds, and that is the defect. `CompileServiceSchema` dispatches on the literal
+name `"Constructor"` (`Moleculer/Ext/Module.bsl:4354-4365`), and the merged module has exactly one such
+entry point (`:4764`) — the outer service's. `mol_Internal`'s own constructor
+(`mol_Internal/Ext/Module.bsl:11`) is gone, because a module can hold only one procedure of that name and
+the profile's rename map for `mol_Internal` renames `this`/`thismetadata` but not `constructor`. The
+internal schema can no longer be built in the variant, `Delete_FindInternalHandler` returns Undefined,
+and the request answers 503.
+
+Both possible outcomes end the same way: either the surviving constructor builds the outer service, so
+the loop over `Schema.FullName + "." + Key` finds only `moleculer.*` and never `$internal.ping`, or it
+raises on the argument it was handed. Which one happens does not change the conclusion — the internal
+service is uncompilable in the variant and compilable in extension mode, and the HTTP test now asserts
+the two modes separately for that reason.
+
+Root cause, shared with T035 and with the live-branch defect in T031: the merge preserves compilability
+and drops identity. It renames ordinary members (`Error` → `ErrorsError`, `this` → `InternalThis`), but it
+cannot rename an entry point callers reach by a fixed name, and it cannot re-separate a key derived from a
+module's own metadata. So the fix is not a better pattern here: either the profile keeps `mol_Internal` as
+its own module, or the builder grows a notion of which constructor and which metadata belong to which
+service. Exposure control is a separate question and was never the cause.
 
 ## T033 — agree on the shape of a context's action
 
@@ -271,6 +288,39 @@ into the caller's context.
 Shape: either make the broker read `parentCtx`, or make the factory set `Context`. The second is smaller;
 the first keeps the documented name. Whichever is chosen, the option list in `MoleculerClientServer`
 should stop advertising a key nothing consumes.
+
+## T035 — the standalone merge keeps service identities apart
+
+Outcome: in the standalone variant, code that tells two modules apart by name still tells them apart once
+they are merged, so error handling, context stacks and schema compilation stop seeing each other's state.
+
+Why: the builder rewrites every `Metadata.CommonModules.mol_X` reference to
+`Metadata.CommonModules.Moleculer` (step 4 of `tools/standalone-builder/build-standalone.py`). That is
+right for a reference to the module object and wrong for a key derived from a module's own metadata.
+`mol_ReuseCalls.GetCacheStack()` is keyed by `ThisMetadata().Name`, and three modules use it as their own
+private stack: `mol_Errors` (`mol_Errors/Ext/Module.bsl:195`, `:292`), `mol_ContextFactory`
+(`mol_ContextFactory/Ext/Module.bsl:239`, `:265`) and `mol_SchemaFactory`
+(`mol_SchemaFactory/Ext/Module.bsl:161`, `:189`, `:386`). In the variant all three keys are the string
+`"Moleculer"` — `ErrorsThisMetadata()` is emitted as `Return Metadata.CommonModules.Moleculer`
+(`build/standalone/default/CommonModules/Moleculer/Ext/Module.bsl:842-843`), and twelve references
+collapse the same way — so three private stacks become one shared stack.
+
+What that breaks, in the variant only: `mol_Errors.GetCurrentError()` can return a build context or an
+execution context where extension mode returns Undefined, so the `If Error = Undefined Then ...
+FromErrorInfo(...)` recovery is skipped and a structure is formatted as an error; and
+`mol_Helpers.ClearStack(ThisMetadata().Name)` inside `mol_SchemaFactory.CompileServiceSchema` clears the
+*shared* stack, destroying the ambient context an inbound request pushed there through
+`mol_ContextFactory.Handler`.
+
+Evidence: the collapsed key is visible in the emitted module and the canonical shape is pinned in
+extension mode by `mol_AmbientContextTests`. A variant test that pushes a context, compiles a schema, and
+asserts the context survived would fail today; that test does not exist, so the path is proven by reading
+the source and the artifact rather than at run time.
+
+Shape: per-module state must be keyed by something the merge keeps — the pre-merge module name — rather
+than by the metadata of the merged module. Same class as T032 (one surviving `Constructor` for two
+services) and T031 (a strip that took the live branch): each fix teaches the merge a little more about
+identity, and the three should be decided together rather than one at a time.
 
 ## Open decisions
 
