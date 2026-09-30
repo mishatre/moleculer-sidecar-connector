@@ -130,6 +130,11 @@ The old code also shipped six factories with no `name` at all, through a doubled
 "every factory returns a name" is worth asserting rather than assuming. Details in that directory's
 analysis.
 
+Shape verified 2026-09-30: `tests/bsl/canonical/CommonModules/mol_ErrorShapesTests` walks all ten named
+factories and asserts that each returns a numeric code, a name and a type. That acceptance item holds
+today, which narrows this task to the *values*: `ServiceNotFound` satisfies the shape while still
+reporting `SERVICE_NOT_AVAILABLE`, so the defect is the type it reuses rather than what it returns.
+
 ## Acceptance and consumer example
 
 - [ ] Every factory returns `Code` as a number and a `Name` from a documented set.

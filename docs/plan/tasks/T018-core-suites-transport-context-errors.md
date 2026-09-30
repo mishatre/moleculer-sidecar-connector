@@ -114,6 +114,27 @@ outside the `Try`, so it runs on both paths, whereas the broker's push happens a
 answers and is never popped. That contrast is what the acceptance is pointing at, and the broker half is
 T030.
 
+### Error shapes — verified 2026-09-30
+
+`tests/bsl/canonical/CommonModules/mol_ErrorShapesTests`, five tests. Canonical **150/150**.
+
+Source functions exercised: `mol_Errors.ClientError`/`ServerError`/`RetryableError`, the named factory
+family, `RegenerateError` and `ToString`. What is pinned: the seven-field shape every factory funnels
+into; the three classes' names and their default codes; that **every one of the ten named factories
+returns a numeric code, a name and a type** — walked rather than sampled, with the type carried in each
+assertion message so a failure names the offender; that regeneration preserves type, name, code, message
+and data; and that the human-readable form states the message, the type and the code.
+
+The family walk matters for T023, whose acceptance is exactly that claim: it holds today, which narrows
+that task to the *values* rather than the shape. `ServiceNotFound` passes it while still reporting
+`SERVICE_NOT_AVAILABLE`, because its name and code are well formed — the defect is the type it reuses,
+not what it returns.
+
+Still open here: conversion from a platform `ErrorInfo` through `FromErrorInfo`, retention of a remote
+stack through regeneration, and the fallback when a formatted stack cannot be parsed. One test was
+removed rather than kept: `NoExceptionError` is not exported, and the public path to it depends on
+whether another suite left an error on the ambient stack.
+
 ## Optional pilot metrics
 
 Actual models/efforts:
