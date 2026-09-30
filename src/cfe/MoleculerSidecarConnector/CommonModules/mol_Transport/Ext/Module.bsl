@@ -345,10 +345,15 @@ EndFunction
 
 Function RequestHandler(Context)
 		
-	If StrStartsWith(Context.Action, "$internal") Then
-		Handler = mol_Broker.Delete_FindInternalHandler(Context.Action);
-		If Handler <> Undefined Then
-			Context.Locals.Insert("handler", Handler);
+	// The action name, guarded the same way mol_ContextFactory.Handler guards it: an inbound packet that
+	// carries no action at all leaves Context.Action undefined, and reading a name off it would raise where
+	// the original string comparison simply answered false.
+	If Context.Action <> Undefined Then
+		If StrStartsWith(Context.Action.Name, "$internal") Then
+			Handler = mol_Broker.Delete_FindInternalHandler(Context.Action.Name);
+			If Handler <> Undefined Then
+				Context.Locals.Insert("handler", Handler);
+			EndIf;
 		EndIf;
 	EndIf;
 	

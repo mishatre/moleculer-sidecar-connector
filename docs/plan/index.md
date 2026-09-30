@@ -30,7 +30,7 @@ this folder shows only work that is still open. The links below keep working acr
 | T015 | Standalone CFE variant is generated from the canonical sources | verified | T014 | [Task](tasks/history/T015-standalone-builder.md) |
 | T016 | Builder transformation and output shape are guarded by container-only tests | verified | T015 | [Task](tasks/history/T016-builder-transformation-tests.md) |
 | T017 | A BSL suite can run and report in extension and standalone modes | verified | T014 | [Task](tasks/history/T017-test-harness-foundation.md) |
-| T018 | Transport, context factory and errors are covered by executable tests | in_progress | T017 | [Task](tasks/T018-core-suites-transport-context-errors.md) |
+| T018 | Transport, context factory and errors are covered by executable tests | verified | T017 | [Task](tasks/history/T018-core-suites-transport-context-errors.md) |
 | T019 | Broker, schema factory, facade and provider are covered by executable tests | verified | T017 | [Task](tasks/history/T019-core-suites-broker-schema-facade.md) |
 | T020 | Helpers, logger, reuse caching and context cleanup are covered by tests | in_progress | T017 | [Task](tasks/T020-core-suites-helpers-logger-reuse.md) |
 | T021 | The generated standalone CFE loads and works in a database-free infobase | verified | T015, T017 | [Task](tasks/history/T021-standalone-runtime-verification.md) |
@@ -53,8 +53,8 @@ for T024 and T025 live in [refactor-backlog.md](refactor-backlog.md).
 | T030 | The ambient context stack is pushed and popped symmetrically | draft | T020 | [Plan](refactor-backlog.md) |
 | T031 | The standalone variant keeps the live branch of a standalone guard | verified | T015, T016 | [Plan](refactor-backlog.md) |
 | T032 | The connector's own actions work in the standalone variant | draft | T035 (same root cause), T015 | [Plan](refactor-backlog.md) |
-| T033 | Both payload directions agree on the shape of a context's action | draft | T018 | [Plan](refactor-backlog.md) |
-| T034 | A nested call chains to its parent context | draft | T030, T033 | [Plan](refactor-backlog.md) |
+| T033 | Both payload directions agree on the shape of a context's action | verified | T018 | [Plan](refactor-backlog.md) |
+| T034 | A nested call chains to its parent context | withdrawn | T030, T033 | [Plan](refactor-backlog.md) |
 | T035 | The standalone merge keeps service identities apart | draft | T015 | [Plan](refactor-backlog.md) |
 
 ### Service module migration (new, low priority)

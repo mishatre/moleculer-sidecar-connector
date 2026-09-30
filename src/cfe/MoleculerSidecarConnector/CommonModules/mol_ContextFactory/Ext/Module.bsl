@@ -165,12 +165,12 @@ Function FromPayload(Payload) Export
 	Context = Create(mol_Broker);
 	If Payload.Property("action") Then
 		Context.Id        = Payload.Id;      
-		Context.Action    = Payload.Action;
+		Context.Action    = mol_ContextFactory.NewActionReference(Payload.Action);
 		mol_ContextFactory.SetParams(Context, Payload.Params);
 		Context.ParentID  = Payload.ParentID;
 		Context.RequestID = Payload.RequestID;
 		Context.Caller    = Payload.Caller;
-		Context.Meta      = ?(Payload.Meta <> Undefined, Payload.Meta, New Map());
+		Context.Meta      = PayloadMeta(Payload);
 		Context.Locals    = Payload.Locals;
 		Context.Level     = Payload.Level;
 		Context.Tracing   = Payload.Tracing;	
@@ -178,10 +178,10 @@ Function FromPayload(Payload) Export
 		Context = mol_ContextFactory.Create(mol_Broker);
 		Context.Id           = Payload.Id;    
 		mol_ContextFactory.SetParams(Context, Payload.Params);
-		Context.Event        = Payload.Event; 
+		Context.EventName    = Payload.Event; 
 		Context.EventGroups  = Payload.Groups;
 		Context.EventType    = ?(Payload.Broadcast, "broadcast", "emit");
-		Context.Meta         = ?(Payload.Meta <> Undefined, Payload.Meta, New Map());
+		Context.Meta         = PayloadMeta(Payload);
 		Context.Locals       = Payload.Locals;
 		Context.Level        = Payload.Level;
 		Context.Tracing      = Payload.Tracing;
@@ -217,6 +217,7 @@ Function ToPayload(Context) Export
 		Payload.Insert("params"   , Context.Params);
 		Payload.Insert("groups"   , Context.EventGroups);
 		Payload.Insert("broadcast", Context.EventType = "broadcast");
+		Payload.Insert("meta"     , Context.Meta);
 		Payload.Insert("locals"   , Context.Locals);
 		Payload.Insert("level"    , Context.Level);
 		Payload.Insert("tracing"  , Context.Tracing);
@@ -346,6 +347,35 @@ Function NewContext()
 EndFunction
 
 #EndRegion
+
+// An inbound payload's meta, defaulted the way both references default it: Moleculer merges `opts.meta`
+// over the parent's, and this project's sidecar reads `payload.meta || {}`. A payload that carries no meta
+// at all therefore yields an empty map instead of raising, which is what reading the field directly did.
+// The two-step form avoids relying on `И` not evaluating its right operand when the left is false.
+Function PayloadMeta(Payload)
+
+	If mol_Helpers.Has(Payload, "meta") Then
+		If Payload.Meta <> Undefined Then
+			Return Payload.Meta;
+		EndIf;
+	EndIf;
+
+	Return New Map();
+
+EndFunction
+
+// The action as a context carries it, mirrored from Moleculer: `ctx.action` is the action object and the
+// wire carries `ctx.action.name` (transit.js sends `action: ctx.action.name`), so an inbound name becomes
+// an object again rather than staying a string. Both places that build an action use this, so the inbound
+// and outbound directions describe the same shape and a payload survives the round trip.
+Function NewActionReference(Name) Export
+
+	Result = New Structure();
+	Result.Insert("name", Name);
+
+	Return Result;
+
+EndFunction
 
 Function Constructor(Broker)
 	

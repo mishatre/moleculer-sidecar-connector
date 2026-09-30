@@ -259,6 +259,25 @@ before the artifact was read instead. Whatever fixes the compile should also sto
 
 ## T033 — agree on the shape of a context's action
 
+Status: verified 2026-09-30 — settled by mirroring Moleculer rather than by choosing between the two
+candidates proposed here.
+
+What was decided: the wire carries the action **name** and the context carries the action **object**, which
+is what Moleculer does. `transit.js` sends `action: ctx.action.name` and `context.js` sets
+`this.action = endpoint.action`, so the directions are not asymmetric in the library either — they agree
+because each side holds the shape that side needs. `FromPayload` now builds the object through
+`NewActionReference`, `mol_Transport.RequestHandler` reads its name, and `ToPayload(FromPayload(payload))`
+returns the payload it came from, so a received request can be forwarded.
+
+The same reading of the reference found two more differences and both are fixed: an inbound event belongs
+in `eventName`, not in `event` (the sidecar's own `packet.ts` maps `payload.event` to `ctx.eventName`, and
+`ctx.event` is the subscription the receiver matched), and the event payload was missing the `meta` field
+that both Moleculer's `transit.js` and the sidecar's `fromContext` send.
+
+Evidence: `mol_PayloadContractTests` now asserts both round trips — action and event — in place of the
+test that pinned the failure. Canonical 176/176, the inbound transport test 12 passed and 0 failed,
+standalone 25/25.
+
 Outcome: a context can be turned back into a payload, so a received request can be forwarded to another
 node instead of being terminal.
 
@@ -279,22 +298,28 @@ T032, which touches the same comparison.
 
 ## T034 — make a nested call chain to its parent
 
-Outcome: a call made through `mol_ContextFactory` reaches the broker with the parent context the broker
-actually reads, so the call tree is preserved instead of flattened.
+Status: withdrawn 2026-09-30 — the mechanism already works, and the finding was wrong.
 
-Why: `mol_ContextFactory.Call` and `Emit` insert the ambient context into the options as `parentCtx`, and
-nothing in `src/` reads that key. `mol_Broker.Call` builds its nested-call path from `Opts.Context`
-instead, so two mechanisms describe one intent with different keys and only one is honoured — the
-documented one, `parentCtx`, being the one that is not.
+What it claimed: that `mol_ContextFactory.Call` and `Emit` thread the ambient context into the options as
+`parentCtx`, that nothing in `src/` reads that key, and that `mol_Broker.Call` therefore chains through its
+own `Opts.Context` key instead.
 
-Evidence: `tests/bsl/canonical/CommonModules/mol_ContextFieldsTests` pins the threading and the absent
-`Context` key, so making them agree fails that test rather than passing silently. The broker's own
-`Opts.Context` path is covered by `mol_AmbientContextTests`, which asserts the action name is stamped
-into the caller's context.
+Why that was wrong: `mol_ContextFactory.Create` reads `Opts.ParentCtx` and derives requestID, merged meta,
+tracing, `level + 1`, parentID and caller from it — the same derivations as Moleculer's
+`ContextFactory.create` (`context.js`). `mol_Broker.Call` builds its context through `Create`, so it passes
+the options along and the parent **is** honoured. The search behind the finding looked for `parentCtx` and
+missed `ParentCtx`; BSL structure keys are case-insensitive, so that spelling reads the same key.
 
-Shape: either make the broker read `parentCtx`, or make the factory set `Context`. The second is smaller;
-the first keeps the documented name. Whichever is chosen, the option list in `MoleculerClientServer`
-should stop advertising a key nothing consumes.
+What the test pinned: `tests/bsl/canonical/CommonModules/mol_ContextFieldsTests` asserted the threading and
+then that `Opts.Context` was absent, calling the second a mismatch. It is now
+`TheContextFactoryThreadsItsParentIntoTheNewContext` and asserts the derivation instead, so the chain itself
+is covered rather than the absence of a key.
+
+What remains, as a smaller question: `Opts.Context` — reusing a supplied context and re-stamping its action
+— has no counterpart in Moleculer, where a caller passes `parentCtx` and never a context to reuse. It is
+covered by `mol_AmbientContextTests`, so it is a documented extension rather than a defect; whoever next
+touches the broker should decide whether to keep it or fold it into `parentCtx`. The option list in
+`MoleculerClientServer` still advertises both keys.
 
 ## T035 — the standalone merge keeps service identities apart
 

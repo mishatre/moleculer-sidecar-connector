@@ -1,8 +1,8 @@
 # T018 — Core unit suites A: transport, context factory, errors
 
-Status: in_progress — every in-process acceptance item is covered, including the outbound half. Canonical
-175/175, standalone 25/25. Remaining: the context round-trip, which needs T033's decision about the shape
-of `Action`, and nothing else in this task.
+Status: verified — 2026-09-30. Every acceptance item is covered. The last one, the context round-trip, was
+settled by mirroring Moleculer rather than by choosing a shape here: canonical 176/176, standalone 25/25,
+and the inbound transport test 12 passed and 0 failed.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -34,10 +34,10 @@ Next: continue with T019.
 - [x] `mol_Errors`: construction of each error shape; conversion and regeneration
       of a remote error including the retained remote stack; and a tested fallback
       when the formatted stack cannot be parsed.
-- [ ] Contract fixtures: golden packet and context samples are stored as data and
+- [x] Contract fixtures: golden packet and context samples are stored as data and
       round-tripped, so casing and null handling are pinned rather than inferred.
-      (The packet half is done — it round-trips through both body forms. The context
-      half cannot be: it awaits T033, which decides the shape of `Action`.)
+      (Both halves done: the packet round-trips through both body forms, and the
+      action and event payloads round-trip through the context.)
 - [x] Each suite names the source function it exercises.
 
 ## Implementation context
@@ -233,6 +233,39 @@ Fixed as `Part.Data.CloseAndGetBinaryData()`. The platform offers no non-closing
 consumes the caller's stream, whereas the plain `Stream` branch copies it into a temporary first. That
 difference is not observable today, because the transport's own inbound handler closes the stream it was
 given anyway.
+
+### The payload shapes, mirrored from Moleculer — verified 2026-09-30
+
+The context round-trip was the last item, and it was settled by reading the reference rather than by
+choosing a shape here. Moleculer 0.14.35 is vendored under
+`moleculer-sidecar-next/node_modules/.pnpm/moleculer@0.14.35_*/node_modules/moleculer`, and this project's
+own sidecar (`moleculer-sidecar-next/src/packet.ts`) is the peer that has to accept what the connector
+sends, so both were read.
+
+What they say, and what changed:
+
+- **The wire carries the action name; the context carries the action object.** `transit.js` sends
+  `action: ctx.action.name`, and `context.js` sets `this.action = endpoint.action` with `ctx.service` from
+  it. `FromPayload` was storing the name string in `Context.Action`, so `ToPayload` — which reads `.Name` —
+  could not read it back. It now builds the object through `NewActionReference`, the same shape
+  `mol_Broker.Call` builds, and `RequestHandler` reads the name off that object.
+- **An inbound event belongs in `eventName`, not `event`.** Moleculer's packet sends
+  `event: ctx.eventName`, and the sidecar maps `payload.event` to `ctx.eventName`; `ctx.event` is the
+  subscription a receiver matched. `FromPayload` was writing the name into `Context.Event`. Fixed, which
+  also closes the event round trip, because `ToPayload` reads `EventName`.
+- **The event payload carries `meta`.** Both `transit.js` and the sidecar's `fromContext` include it, and
+  the connector omitted it while the suite asserted its absence. Added — that assertion is what found it.
+- **An absent `meta` is an empty object.** Moleculer merges `opts.meta` over the parent's and defaults to
+  `{}`; the sidecar reads `payload.meta || {}`. `FromPayload` compared the field directly, so a payload
+  without one raised instead of defaulting. Both inbound branches now go through `PayloadMeta`.
+
+One deliberate difference, recorded rather than changed: the event payload names its data field `params`,
+which is what the sidecar reads, where core `transit.js` calls it `data`. Renaming it would break the peer,
+which is the integration that matters, so the reference's value is mirrored and not its label.
+
+Also recorded rather than fixed: an inbound payload's `timeout` does not reach `Context.Options.Timeout`,
+so it does not survive the round trip, while Moleculer keeps it on the context. The round-trip test says so
+where it asserts the rest of the payload.
 
 ## Optional pilot metrics
 

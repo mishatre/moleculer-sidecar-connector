@@ -4,11 +4,13 @@
 //   mol_ContextFactory.ToPayload   — context to payload, one shape per direction
 //   mol_ContextFactory.FromPayload — payload to context, including key casing
 //
-// Why this is the first slice of T018: the payload is the boundary every other assertion depends on, and
-// the two directions do not produce the same shape. ToPayload writes `action` from `Context.Action.Name`,
-// so it needs the structure form that mol_Broker.Call builds, while FromPayload assigns the payload's
-// `action` string straight to `Context.Action`. The pair is therefore not symmetric, and that asymmetry is
-// the first thing these tests pin.
+// Why this is the first slice of T018: the payload is the boundary every other assertion depends on. The
+// two directions agree on one shape, and that shape is mirrored from Moleculer 0.14.35 rather than chosen
+// here: the wire carries the action **name** (`transit.js` sends `action: ctx.action.name`) while the
+// context holds the action **object** (`context.js` sets `this.action = endpoint.action`). The connector
+// now does the same, including on the inbound side. An earlier version of this suite pinned the opposite
+// — an inbound string stored where the outbound direction reads an object — and its round-trip test was
+// written to be rewritten when the directions agreed, which is what happened.
 //
 // The golden payload mirrors the one the HTTP integration test sends — the same field names and values —
 // so a failure in either place points at the same contract rather than at two fixtures that drifted.
@@ -26,11 +28,12 @@ Procedure ИсполняемыеСценарии() Export
 	ЮТТесты
 		.ДобавитьТестовыйНабор("Payload contract")
 		.ДобавитьСерверныйТест("ToPayloadEmitsTheActionFieldSet")
-		.ДобавитьСерверныйТест("ToPayloadEmitsTheEventFieldSetWithoutMeta")
+		.ДобавитьСерверныйТест("ToPayloadEmitsTheEventFieldSet")
 		.ДобавитьСерверныйТест("ToPayloadRefusesAContextWithNeitherActionNorEvent")
 		.ДобавитьСерверныйТест("FromPayloadReadsLowerCaseKeys")
 		.ДобавитьСерверныйТест("FromPayloadKeepsEveryFieldOfTheGoldenPayload")
-		.ДобавитьСерверныйТест("AnInboundContextCannotBeSerialisedBackToAPayload");
+		.ДобавитьСерверныйТест("AnInboundContextSurvivesTheRoundTrip")
+		.ДобавитьСерверныйТест("AnInboundEventSurvivesTheRoundTrip");
 
 EndProcedure
 
@@ -50,10 +53,16 @@ Procedure ToPayloadEmitsTheActionFieldSet() Export
 
 EndProcedure
 
-Procedure ToPayloadEmitsTheEventFieldSetWithoutMeta() Export
+Procedure ToPayloadEmitsTheEventFieldSet() Export
 
-	// mol_ContextFactory.ToPayload — the event direction. It has its own field set, and the difference is
-	// the reason the acceptance calls it out: an event payload carries no `meta`.
+	// mol_ContextFactory.ToPayload — the event direction. Its field set mirrors the event packet of
+	// Moleculer 0.14.35 (`transit.js`: id, event, data, groups, broadcast, meta, level, tracing, parentID,
+	// requestID, caller, needAck) and of this project's sidecar (`packet.ts` fromContext, which carries the
+	// same list), with one deliberate difference in naming: the payload calls the data field `params`, which
+	// is what the sidecar reads, where the core library calls it `data`.
+	//
+	// This test used to assert that an event payload carries no `meta`. Both references say it does, so the
+	// assertion was rewritten — and it is what caught the difference.
 	Context = OutboundContext();
 	Context.EventName   = "probe.event";
 	Context.EventGroups = Новый Массив;
@@ -61,14 +70,14 @@ Procedure ToPayloadEmitsTheEventFieldSetWithoutMeta() Export
 
 	Payload = mol_ContextFactory.ToPayload(Context);
 
-	Declared = СтрРазделить("id,event,params,groups,broadcast,locals,level,tracing,parentID,requestID,caller,needAck", ",");
-	ЮТест.ОжидаетЧто(Payload.Количество(), "an event payload carries twelve fields").Равно(Declared.Количество());
+	Declared = СтрРазделить("id,event,params,groups,broadcast,meta,locals,level,tracing,parentID,requestID,caller,needAck", ",");
+	ЮТест.ОжидаетЧто(Payload.Количество(), "an event payload carries thirteen fields").Равно(Declared.Количество());
 
 	For Each Name In Declared Do
 		ЮТест.ОжидаетЧто(Payload.Property(Name), "the event payload declares " + Name).ЭтоИстина();
 	EndDo;
 
-	ЮТест.ОжидаетЧто(Payload.Property("meta"), "an event payload carries no meta").ЭтоЛожь();
+	ЮТест.ОжидаетЧто(Payload.Property("meta"), "an event payload carries meta, like both references").ЭтоИстина();
 	ЮТест.ОжидаетЧто(Payload.event, "the event name is carried").Равно("probe.event");
 
 EndProcedure
@@ -101,7 +110,7 @@ Procedure FromPayloadReadsLowerCaseKeys() Export
 
 	Context = mol_ContextFactory.FromPayload(Payload);
 
-	ЮТест.ОжидаетЧто(Context.Action, "the action name is read from the payload").Равно("probe.caseSensitive");
+	ЮТест.ОжидаетЧто(Context.Action.Name, "the action name is read from the payload").Равно("probe.caseSensitive");
 	ЮТест.ОжидаетЧто(Context.Id, "the identifier is read").Равно("probe-1");
 	ЮТест.ОжидаетЧто(Context.Level, "the level is read").Равно(1);
 
@@ -113,7 +122,7 @@ Procedure FromPayloadKeepsEveryFieldOfTheGoldenPayload() Export
 	// failure there mean the same thing rather than two different descriptions of the wire.
 	Context = mol_ContextFactory.FromPayload(NewActionPayload("probe.notRegistered"));
 
-	ЮТест.ОжидаетЧто(Context.Action, "the action survives").Равно("probe.notRegistered");
+	ЮТест.ОжидаетЧто(Context.Action.Name, "the action survives").Равно("probe.notRegistered");
 	ЮТест.ОжидаетЧто(Context.Id, "the identifier survives").Равно("probe-1");
 	ЮТест.ОжидаетЧто(Context.RequestID, "the request identifier survives").Равно("probe-1");
 	ЮТест.ОжидаетЧто(Context.Caller, "the caller survives").Равно("probe");
@@ -123,30 +132,44 @@ Procedure FromPayloadKeepsEveryFieldOfTheGoldenPayload() Export
 
 EndProcedure
 
-Procedure AnInboundContextCannotBeSerialisedBackToAPayload() Export
+Procedure AnInboundContextSurvivesTheRoundTrip() Export
 
-	// CURRENT BEHAVIOUR, pinned deliberately, and the first finding of this suite.
+	// mol_ContextFactory.FromPayload + ToPayload — the two directions on the shape Moleculer uses: the wire
+	// carries the action name, the context carries the action object, and the outbound direction reads the
+	// name back off that object. This replaces the test that pinned the opposite, as it asked to be. What
+	// depends on it is forwarding a received request to another node.
 	//
-	// FromPayload stores the payload's `action` string in Context.Action, but ToPayload reads
-	// Context.Action.Name, which only the outbound structure form has. So an inbound context cannot be
-	// turned back into a payload: the round-trip raises "field not found (Name)". Forwarding a received
-	// request to another node is exactly what that would be needed for.
-	//
-	// When the two directions agree on one shape this test must be rewritten to assert the round-trip,
-	// not deleted.
-	Context = mol_ContextFactory.FromPayload(NewActionPayload("probe.roundTrip"));
+	// One field is deliberately not asserted: `timeout` does not survive, because FromPayload never reads
+	// the payload's timeout into Context.Options. Moleculer keeps it on the context, so this is a real
+	// difference, recorded rather than smoothed over.
+	Payload = NewActionPayload("probe.roundTrip");
 
-	Raised  = Ложь;
-	Failure = "";
+	Context = mol_ContextFactory.FromPayload(Payload);
+	Back    = mol_ContextFactory.ToPayload(Context);
 
-	Попытка
-		mol_ContextFactory.ToPayload(Context);
-	Исключение
-		Raised  = Истина;
-		Failure = ОписаниеОшибки();
-	КонецПопытки;
+	ЮТест.ОжидаетЧто(Back.action, "the action name survives the round trip").Равно(Payload.action);
+	ЮТест.ОжидаетЧто(Back.id, "the identifier survives").Равно(Payload.id);
+	ЮТест.ОжидаетЧто(Back.requestID, "the request identifier survives").Равно(Payload.requestID);
+	ЮТест.ОжидаетЧто(Back.caller, "the caller survives").Равно(Payload.caller);
+	ЮТест.ОжидаетЧто(Back.level, "the level survives").Равно(Payload.level);
+	ЮТест.ОжидаетЧто(Back.Количество(), "the payload keeps its field count").Равно(Payload.Количество());
 
-	ЮТест.ОжидаетЧто(Raised, "CURRENT BEHAVIOUR: an inbound context cannot be re-serialised: " + Failure).ЭтоИстина();
+EndProcedure
+
+Procedure AnInboundEventSurvivesTheRoundTrip() Export
+
+	// The same pair on the event branch. Moleculer carries the emitted event as `ctx.eventName` (the packet
+	// sends `event: ctx.eventName`), so an inbound name belongs in `eventName` — which is what the outbound
+	// direction reads — and not in `event`, which is the subscription the receiving side matched.
+	Payload = NewEventPayload("probe.event");
+
+	Context = mol_ContextFactory.FromPayload(Payload);
+	Back    = mol_ContextFactory.ToPayload(Context);
+
+	ЮТест.ОжидаетЧто(Back.event, "the event name survives the round trip").Равно("probe.event");
+	ЮТест.ОжидаетЧто(Back.broadcast, "the broadcast flag survives").Равно(Ложь);
+	ЮТест.ОжидаетЧто(Back.Property("groups"), "the groups field survives").ЭтоИстина();
+	ЮТест.ОжидаетЧто(Back.Количество(), "the event payload keeps its field count").Равно(Payload.Количество());
 
 EndProcedure
 
@@ -194,6 +217,29 @@ Function NewActionPayload(ActionName)
 	Payload.Insert("requestID", "probe-1");
 	Payload.Insert("caller"   , "probe");
 	Payload.Insert("stream"   , Ложь);
+
+	Return Payload;
+
+EndFunction
+
+// The event payload as data, matching what the event branch of mol_ContextFactory.ToPayload emits and
+// what the event branch of FromPayload reads back.
+Function NewEventPayload(EventName)
+
+	Payload = Новый Структура;
+	Payload.Insert("id"       , "probe-1");
+	Payload.Insert("event"    , EventName);
+	Payload.Insert("params"   , Новый Структура);
+	Payload.Insert("groups"   , Новый Массив);
+	Payload.Insert("broadcast", Ложь);
+	Payload.Insert("meta"     , Новый Соответствие);
+	Payload.Insert("locals"   , Новый Структура);
+	Payload.Insert("level"    , 1);
+	Payload.Insert("tracing"  , Ложь);
+	Payload.Insert("parentID" , 0);
+	Payload.Insert("requestID", "probe-1");
+	Payload.Insert("caller"   , "probe");
+	Payload.Insert("needAck"  , Ложь);
 
 	Return Payload;
 

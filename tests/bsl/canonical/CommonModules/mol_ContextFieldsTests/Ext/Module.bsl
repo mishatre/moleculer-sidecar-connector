@@ -24,7 +24,7 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("SetEndpointStoresANonStructureWithoutDerivingFromIt")
 		.ДобавитьСерверныйТест("SetParamsCarriesTheParametersThrough")
 		.ДобавитьСерверныйТест("FromPayloadAcceptsItsKeysRegardlessOfCase")
-		.ДобавитьСерверныйТест("TheContextFactoryThreadsAParentThatIsNeverRead");
+		.ДобавитьСерверныйТест("TheContextFactoryThreadsItsParentIntoTheNewContext");
 
 EndProcedure
 
@@ -108,20 +108,21 @@ Procedure FromPayloadAcceptsItsKeysRegardlessOfCase() Export
 
 	Context = mol_ContextFactory.FromPayload(Payload);
 
-	ЮТест.ОжидаетЧто(Context.Action, "a title-case key selects the action branch").Равно("probe.titleCase");
+	ЮТест.ОжидаетЧто(Context.Action.Name, "a title-case key selects the action branch").Равно("probe.titleCase");
 
 EndProcedure
 
-Procedure TheContextFactoryThreadsAParentThatIsNeverRead() Export
+Procedure TheContextFactoryThreadsItsParentIntoTheNewContext() Export
 
-	// mol_ContextFactory.Call — the nested-call mechanism. It threads the ambient context into the options
-	// as `parentCtx` before calling the broker, and that mutation is observable here even though the call
-	// itself cannot complete without a sidecar.
+	// mol_ContextFactory.Call + mol_ContextFactory.Create — the nested-call mechanism, and a correction.
 	//
-	// CURRENT BEHAVIOUR, and a finding: nothing in src/ reads `parentCtx`. mol_Broker.Call honours
-	// `Opts.Context` instead, so a call made through the context factory does not chain to its parent the
-	// way the option is documented to. The last assertion pins that mismatch so that making the two agree
-	// fails this test rather than passing unnoticed.
+	// This test used to assert that nothing reads the `parentCtx` the factory threads in, and to say so in
+	// its name. That was wrong: a case-sensitive search missed `Opts.ParentCtx` in `Create`, and BSL
+	// structure keys do not care about case. `Create` derives requestID, meta, tracing, level + 1, parentID
+	// and caller from the parent exactly as Moleculer's `ContextFactory.create` does (`context.js`), and the
+	// broker builds its context through `Create`, so the chain works.
+	//
+	// The threading half: Call puts the ambient context into the options before handing them to the broker.
 	Sentinel = Новый Структура("id", "parent-sentinel");
 	mol_ContextFactory.SetCurrentContext(Sentinel);
 
@@ -134,8 +135,22 @@ Procedure TheContextFactoryThreadsAParentThatIsNeverRead() Export
 
 	ЮТест.ОжидаетЧто(Opts.Property("parentCtx"), "the ambient context is threaded into the options").ЭтоИстина();
 	ЮТест.ОжидаетЧто(Opts.parentCtx.id, "and it is the ambient one").Равно("parent-sentinel");
-	ЮТест.ОжидаетЧто(Opts.Property("Context"),
-		"CURRENT BEHAVIOUR: the key the broker actually reads is not set").ЭтоЛожь();
+
+	// The derivation half. Create is what the broker calls, so this is the observable end of the chain.
+	Parent = Новый Структура;
+	Parent.Insert("id"       , "parent-1");
+	Parent.Insert("requestID", "trace-1");
+	Parent.Insert("tracing"  , Истина);
+	Parent.Insert("level"    , 3);
+	Parent.Insert("meta"     , Новый Соответствие("tenant", "acme"));
+
+	Derived = mol_ContextFactory.Create(mol_Broker, Новый Структура, Новый Структура("parentCtx", Parent));
+
+	ЮТест.ОжидаетЧто(Derived.Level, "the child sits one level deeper").Равно(4);
+	ЮТест.ОжидаетЧто(Derived.RequestID, "the request identifier is inherited").Равно("trace-1");
+	ЮТест.ОжидаетЧто(Derived.Tracing, "the tracing flag is inherited").ЭтоИстина();
+	ЮТест.ОжидаетЧто(Derived.ParentID, "the parent identifier is the parent's own").Равно("parent-1");
+	ЮТест.ОжидаетЧто(Derived.Meta.Получить("tenant"), "the parent's meta is merged").Равно("acme");
 
 EndProcedure
 

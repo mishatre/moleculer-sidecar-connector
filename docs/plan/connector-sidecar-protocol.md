@@ -11,7 +11,7 @@ The transport envelope is `{ sender, meta, data, stream }`. `data` is a context 
 | Direction | Payload fields | Result |
 | --- | --- | --- |
 | 1C → sidecar action | `id`, `action`, `params`, `meta`, `timeout`, `locals`, `level`, `tracing`, `parentID`, `requestID`, `caller`, `stream` | response packet data or structured error |
-| 1C → sidecar event | `id`, `event`, `params`, `groups`, `broadcast`, `locals`, `level`, `tracing`, `parentID`, `requestID`, `caller`, `needAck`; unlike actions, event payload construction currently omits `meta` | currently no meaningful acknowledged event result |
+| 1C → sidecar event | `id`, `event`, `params`, `groups`, `broadcast`, `meta`, `locals`, `level`, `tracing`, `parentID`, `requestID`, `caller`, `needAck`; `meta` was missing until 2026-09-30, when the sidecar's own `fromContext` and Moleculer's `transit.js` were read to settle the field | currently no meaningful acknowledged event result |
 | sidecar → 1C proxy | Moleculer context serialized by gateway; `locals.handler` is transmitted | CFE resolves/executes handler, serializes data/error |
 
 The sidecar’s generated action/event handlers initially replace `ctx.locals` with `{ handler, connection }`. `ApiGateway.send` consumes and deletes `connection` before packet serialization, so credentials/endpoint selection are not intentionally transmitted in `locals`; `handler` remains remote-controlled and needs strict validation/allowlisting. Handler resolution lives in [ContextFactory.Handler](../../src/cfe/MoleculerSidecarConnector/CommonModules/mol_ContextFactory/Ext/Module.bsl).

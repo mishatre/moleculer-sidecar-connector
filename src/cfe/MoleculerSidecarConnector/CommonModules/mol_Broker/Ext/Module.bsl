@@ -31,12 +31,10 @@ Function Call(ActionName, Val Params = Undefined, Opts = Undefined) Export
 	Context = Undefined;
 	If Opts.Property("Context") And Opts.Context <> Undefined Then		
 		Context = Opts.Context;
-		Context.Action = New Structure();
-		Context.Action.Insert("name", ActionName);
+		Context.Action = mol_ContextFactory.NewActionReference(ActionName);
 	Else              
 		Context = mol_ContextFactory.Create(mol_Broker, Params, Opts);
-		Context.Action = New Structure();
-		Context.Action.Insert("name", ActionName);		
+		Context.Action = mol_ContextFactory.NewActionReference(ActionName);		
 	EndIf;  
 	
 	If False Then // For future
