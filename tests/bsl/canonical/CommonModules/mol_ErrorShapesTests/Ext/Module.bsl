@@ -86,7 +86,22 @@ Procedure EveryNamedFactoryCarriesANumberCodeAndAName() Export
 	Errors.Add(mol_Errors.ServiceSchemaError("probe"));
 	Errors.Add(mol_Errors.InvalidPacketData("probe"));
 
-	ЮТест.ОжидаетЧто(Errors.Количество(), "the family under test is the ten named factories").Равно(10);
+	// T023 gave these the codes they were missing, so they belong in the walk now: leaving them out is
+	// what let ten factories return the base factory's default 500 without anything noticing.
+	Errors.Add(mol_Errors.NotFoundError("probe"));
+	Errors.Add(mol_Errors.InvalidArgumentError("probe"));
+	Errors.Add(mol_Errors.InvalidObjectNameError("probe"));
+	Errors.Add(mol_Errors.InvalidPrefixError("probe"));
+	Errors.Add(mol_Errors.AnonymousRequestError("probe"));
+	Errors.Add(mol_Errors.InvalidEndpointError("probe"));
+	Errors.Add(mol_Errors.InvalidBucketNameError("probe"));
+	Errors.Add(mol_Errors.AccessKeyRequiredError("probe"));
+	Errors.Add(mol_Errors.SecretKeyRequiredError("probe"));
+	Errors.Add(mol_Errors.InvalidXMLError("probe"));
+	Errors.Add(mol_Errors.ExpiresParamError("probe"));
+
+	ЮТест.ОжидаетЧто(Errors.Количество(), "the family under test is every factory the module exports")
+		.Равно(21);
 
 	For Each Error In Errors Do
 		ЮТест.ОжидаетЧто(TypeOf(Error.code) = Type("Number"),

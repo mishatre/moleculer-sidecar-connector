@@ -175,9 +175,10 @@ What changed in `mol_Errors`:
   that pinned the silent downgrade is now `CustomErrorRefusesAnUnknownType`.
 - `ServiceNotFound` reports `SERVICE_NOT_FOUND` instead of sharing `SERVICE_NOT_AVAILABLE` with
   `ServiceNotAvailable`.
-- `FromErrorInfo`'s network branch becomes `RetryableError("NETWORK_ERROR", 503, …)` instead of an error
-  whose `Code` was `Undefined` and whose `Name` said "NetworkError"; and `FromErrorInfo` no longer routes the
-  platform's own category names through the caller dispatcher, which is not what that table is for.
+- `FromErrorInfo`'s network branch returns a retryable 503 carrying the platform's own type name, instead of
+  the base factory's default 500 with the literal `"NetworkError"` as its `Name`; and `FromErrorInfo` no
+  longer routes the platform's own category names through the caller dispatcher, which is not what that table
+  is for.
 - Eleven signing and argument factories returned the base factory's default code by leaving the argument
   empty, which is **500**, not Undefined: an argument problem and a server failure were indistinguishable.
   They now carry 400, 401 and 403. This is wire-visible — `mol_Transport.SendError` uses `Error.Code` as the
@@ -194,17 +195,17 @@ Still open, and the reason this task is not verified:
 - The end-to-end half of the third and fourth acceptance items is not done: only the inbound boundary has a
   real-boundary suite (`tests/bsl/http/test-inbound-transport.sh`), and the transport-failure origin cannot
   be observed today because an unreachable sidecar hangs instead of failing (see the note above).
-- `mol_ErrorShapesTests` still walks ten of the twenty-one factories, so the six whose codes changed and the
-  network branch are outside it. `TheTaxonomyCarriesItsHeadlineValues` covers the headline values; the walk
-  is what would cover the rest.
 - The five guard sites still pass `"Error"`; it is a documented row now, and retyping them to
   `InvalidArgument` is a follow-up rather than a change to make blind.
 - `Moleculer.RaiseCustomError` passes a computed name through the dispatcher, and nothing tests that path.
-- `FromErrorInfo`'s platform vocabulary (`UNKNOWN`, `CONNECTION_ERROR`, `EMPTY_RESPONSE`) is documented as a
-  second vocabulary, and its overlap with `NETWORK_ERROR` is recorded rather than resolved.
 - `CustomError` is an exported, documented entry point that used to answer with a structure for any name and
   now raises for an unknown one. No in-tree path breaks — every literal site is a row and `FromErrorInfo` no
   longer uses the dispatcher — but the contract is worth naming.
+
+Closed after the review: `mol_ErrorShapesTests` now walks all twenty-one factories instead of ten, so the
+codes that changed are covered by a suite rather than by reading; and the network branch no longer invents
+`NETWORK_ERROR` for an origin the platform already names, which was the duplication the review flagged as the
+same kind of defect the task exists to remove.
 
 ## Independent review
 

@@ -251,7 +251,7 @@ Function FromErrorInfo(ErrorInfo) Export
 	Data        = ErrorInfo.AdditionalInformation;
 	
 	If Category = ErrorCategory.NetworkError Then
-		Return RetryableError("NETWORK_ERROR", 503, Description, Data, ErrorInfo);	
+		Return RetryableError(Type, 503, Description, Data, ErrorInfo);	
 	ElsIf Category = ErrorCategory.ExceptionRaisedFromScript Then
 		Name = "ExceptionRaisedFromScript";
 	ElsIf Category = ErrorCategory.AccessViolation Then       

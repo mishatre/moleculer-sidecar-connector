@@ -117,8 +117,8 @@ The rules that come with the table:
 - **Platform-derived names are a second vocabulary**, not part of this table: `FromErrorInfo` builds its
   errors from the platform's own category and reports `UNKNOWN`, `CONNECTION_ERROR` and `EMPTY_RESPONSE`
   among others. One overlap is recorded rather than resolved: `CONNECTION_ERROR` and the retryable
-  `NETWORK_ERROR` above name the same origin from the two directions, which is the kind of duplication this
-  table exists to remove.
+  the network branch above name the same origin from the two directions; the branch now uses the platform's
+  own type, so the duplication is gone.
 - `ServiceNotFound` and `ServiceNotAvailable` carry different types and codes. They shared
   `SERVICE_NOT_AVAILABLE`, which is the confusion the taxonomy exists to remove, and no test pinned it
   until the review asked for one.
@@ -126,8 +126,9 @@ The rules that come with the table:
   one meaning instead of two branches that differ only in spelling.
 - A **platform error** converted by `FromErrorInfo` is not a caller type: it is built from the platform's own
   category and name, so it does not pass through the dispatcher at all. A transport failure
-  (`ErrorCategory.NetworkError`) becomes a retryable `NETWORK_ERROR` 503, which is what lets a caller tell a
-  failed exchange from a business rejection returned by an end node. It used to omit `Code` entirely.
+  (`ErrorCategory.NetworkError`) becomes a retryable 503 carrying the platform's own type name, which is what
+  lets a caller tell a failed exchange from a business rejection returned by an end node. It used to return
+  the base factory's default 500 with the literal `"NetworkError"` as its `Name`.
 - Every factory returns a numeric `Code` and a filled `Name`. The eleven signing and argument factories used
   to leave the code argument empty, so a caller compared `Undefined`.
 - `ServiceNotFound` and `ServiceNotAvailable` carry different codes: they shared `SERVICE_NOT_AVAILABLE`,
