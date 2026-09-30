@@ -237,6 +237,25 @@ wraps the string in a structure. The first keeps inbound contexts as they are, w
 `mol_Transport.RequestHandler` compares `Context.Action` against the `$internal` prefix as a string — see
 T032, which touches the same comparison.
 
+## T034 — make a nested call chain to its parent
+
+Outcome: a call made through `mol_ContextFactory` reaches the broker with the parent context the broker
+actually reads, so the call tree is preserved instead of flattened.
+
+Why: `mol_ContextFactory.Call` and `Emit` insert the ambient context into the options as `parentCtx`, and
+nothing in `src/` reads that key. `mol_Broker.Call` builds its nested-call path from `Opts.Context`
+instead, so two mechanisms describe one intent with different keys and only one is honoured — the
+documented one, `parentCtx`, being the one that is not.
+
+Evidence: `tests/bsl/canonical/CommonModules/mol_ContextFieldsTests` pins the threading and the absent
+`Context` key, so making them agree fails that test rather than passing silently. The broker's own
+`Opts.Context` path is covered by `mol_AmbientContextTests`, which asserts the action name is stamped
+into the caller's context.
+
+Shape: either make the broker read `parentCtx`, or make the factory set `Context`. The second is smaller;
+the first keeps the documented name. Whichever is chosen, the option list in `MoleculerClientServer`
+should stop advertising a key nothing consumes.
+
 ## Open decisions
 
 1. Delivery target for this cycle: smaller/simpler, or more testable? The two pull

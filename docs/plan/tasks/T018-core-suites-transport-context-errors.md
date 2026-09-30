@@ -163,7 +163,29 @@ reader can tell it from a local one — but **nothing calls it**, so a converted
 from a locally raised one. The test asserts the marker's absence, so wiring the helper up will fail it
 rather than pass unnoticed. Recorded in T023.
 
-Still open: the context factory's field-casing and nested-call handling, and the outbound half.
+### Context fields, and a threading that goes nowhere — verified 2026-09-30
+
+`tests/bsl/canonical/CommonModules/mol_ContextFieldsTests`, six tests. Canonical **161/161**.
+
+Source functions exercised: `mol_ContextFactory.SetEndpoint`, `SetParams`, `FromPayload` and `Call`.
+Pinned: an action endpoint resolves the node, the action and the service taken from it while clearing
+any event, and an event endpoint does the mirror of that; an endpoint that is not a structure stores
+itself and derives nothing; `SetParams` carries the parameters and an absent argument leaves them alone
+rather than clearing them; and the conversion accepts its keys regardless of case, which is what keeps a
+hand-built BSL fixture and a deserialised packet interchangeable.
+
+The nested-call test produced a finding. `mol_ContextFactory.Call` threads the ambient context into the
+options as `parentCtx`, which the test can observe because the mutation happens before the transport —
+but **nothing in `src/` reads that key**. `mol_Broker.Call` honours `Opts.Context` instead, so a call
+made through the context factory does not chain to its parent the way the option is documented to. The
+test pins the mismatch, so making the two agree will fail it rather than pass silently. Raised as T034.
+
+That is the second written-but-unread mechanism found in this task, after `mol_Errors.WrapExternalStack`.
+Both are recorded rather than fixed, because each is a decision about which mechanism survives.
+
+With this, every acceptance item that can be reached in-process is covered. What remains for this task is
+the outbound half, which needs the sidecar seam, and the encode/decode round-trip, which needs T033's
+decision about the shape of `Action`.
 
 ## Optional pilot metrics
 

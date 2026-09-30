@@ -49,6 +49,7 @@ for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
 | T031 | The standalone variant keeps the live branch of a standalone guard | verified | T015, T016 | [Plan](refactor-backlog.md) |
 | T032 | The connector's own actions are reachable over HTTP | draft | owner decision on exposure | [Plan](refactor-backlog.md) |
 | T033 | Both payload directions agree on the shape of a context's action | draft | T018 | [Plan](refactor-backlog.md) |
+| T034 | A nested call chains to its parent context | draft | T030, T033 | [Plan](refactor-backlog.md) |
 
 ### Service module migration (new, low priority)
 
