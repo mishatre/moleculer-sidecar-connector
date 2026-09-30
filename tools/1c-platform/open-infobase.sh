@@ -53,6 +53,42 @@ fi
 echo "Infobase: $INFOBASE"
 echo "If the platform asks for a licence, activate it from the dialog; it is stored under ~/.1cv8/1C/."
 
+# Every mode here opens a window. Without a usable display the platform answers
+# "Unable to initialize GTK+ or connect to the windowing system", which reads as a
+# broken platform rather than a missing X server, so say which one it is.
+require_display() {
+    if [ -z "${DISPLAY:-}" ]; then
+        cat >&2 <<'MSG'
+DISPLAY is not set and every mode of this script opens a window.
+Start the container through tools/orca/container.sh up (or reopen the folder in
+the dev container); it sets DISPLAY=host.docker.internal:0 for the macOS host.
+MSG
+        exit 1
+    fi
+
+    if ! command -v xdpyinfo >/dev/null 2>&1; then
+        echo "xdpyinfo is unavailable, so the display is not checked." >&2
+        return 0
+    fi
+
+    if ! xdpyinfo -display "$DISPLAY" >/dev/null 2>&1; then
+        cat >&2 <<MSG
+Cannot open the display at $DISPLAY. XQuartz must be running on the macOS host
+with "Allow connections from network clients", and it must authorize this
+container. On the host, once per X server start:
+
+    xhost +127.0.0.1
+
+See "Display" in docs/plan/environment.md.
+MSG
+        exit 1
+    fi
+
+    echo "Display: $DISPLAY"
+}
+
+require_display
+
 case "$MODE" in
     client)
         exec "$PLATFORM_DIR/1cv8c" "/F$INFOBASE"

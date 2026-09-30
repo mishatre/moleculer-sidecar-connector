@@ -10,10 +10,20 @@
 		"ghcr.io/devcontainers-extra/features/uv:1": {}
 	},
 
+	// The display variables the 1C client needs live in docker-compose.yml, which
+	// both this file and tools/orca/container.sh start, so there is one place to
+	// read them.
 	"containerEnv": {
 		"DEVCONTAINER": "TRUE",
 		"DOCKER_DEFAULT_PLATFORM": "linux/amd64",
 		"UV_TOOL_BIN_DIR": "/usr/local/bin"
+	},
+
+	// VS Code does not inherit the shell environment, so the token the container's
+	// `gh` uses is taken from the VS Code process: `export GH_TOKEN=$(gh auth token)`
+	// before "Reopen in Container". tools/orca/container.sh resolves it itself.
+	"remoteEnv": {
+		"GH_TOKEN": "${localEnv:GH_TOKEN}"
 	},
 
 	"remoteUser": "root",
@@ -38,9 +48,12 @@
 	"mounts": [
 		"source=msc-codex-home,target=/root/.codex,type=volume",
 		"source=msc-bsl-language-server,target=/root/.bsl-language-server,type=volume"
+		// The 1C licence volume lives in docker-compose.yml, because
+		// tools/orca/container.sh starts the container without the Dev Containers
+		// CLI and would otherwise miss it.
 	],
 
-	"postCreateCommand": "command -v serena >/dev/null || uv tool install -p 3.13 serena-agent && oscript --version && opm --version",
+	"postCreateCommand": "command -v uv >/dev/null && (command -v serena >/dev/null || uv tool install -p 3.13 serena-agent); oscript --version && opm --version && gh --version",
 
 	"shutdownAction": "stopCompose"
 }
