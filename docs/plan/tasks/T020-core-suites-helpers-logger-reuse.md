@@ -202,6 +202,11 @@ mapping, and the one assertion that would have caught it was skipped here for an
 type of `LogLevel`. Both mappings are now pinned in `StandaloneRuntimeTests`, written to be rewritten
 when the builder is fixed rather than deleted. The fix is T031.
 
+Fixed the same day, as T031: the builder keeps the surviving `Else`, so the variant's mapping is present
+after all. The two tests that pinned its absence now assert the mapping instead — `EventLogLevel` values
+for the levels, the declared fields for an auth type — and a third asserts that an absent auth type is
+refused exactly as extension mode refuses it. That closes this item, including the fallback half of it.
+
 ## Optional pilot metrics
 
 Actual models/efforts:

@@ -181,6 +181,20 @@ that branch's body at the original indentation, and keep deleting it outright wh
 The existing verification step should also assert that a live branch survives, since today it only
 checks that dead ones do not.
 
+Fixed 2026-09-30: `strip_dead_standalone_branches` now splits the statement into its branches, drops the
+dead ones and emits what remains — promoting a surviving `ElsIf` to `If`, inlining a bare `Else` body and
+dedenting it to the statement level so the generated module stays readable. `LogLevels()` and
+`AuthTypes()` carry their mappings in the variant again, which is proven by the two tests that used to
+pin their absence: the variant now answers `EventLogLevel` values, dispatches a declared auth type to its
+own fields, and refuses an absent one exactly as extension mode does.
+
+The guard was placed in `tests/standalone-builder/test_standalone_strip.py` rather than in
+`validate_merged`, because what needs checking is the transformation's behaviour on shapes rather than
+the final text: seven container-only cases cover the surviving `Else`, the promoted `ElsIf`, the nested
+`If`, the dropped dead `ElsIf` and the preprocessor case that must not be treated as a branch. The
+verification step still only checks that dead branches do not survive, which is now the weaker half of
+the pair rather than the only half.
+
 ## Open decisions
 
 1. Delivery target for this cycle: smaller/simpler, or more testable? The two pull

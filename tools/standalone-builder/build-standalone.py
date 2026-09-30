@@ -233,6 +233,104 @@ BRANCH_START = re.compile(r"^([ \t]*)(If|ElsIf)\b(.*)$", re.IGNORECASE)
 BRANCH_END = re.compile(r"^([ \t]*)(ElsIf|Else|EndIf)\b", re.IGNORECASE)
 IS_IF = re.compile(r"^[ \t]*If\b", re.IGNORECASE)
 IS_ENDIF = re.compile(r"^[ \t]*EndIf\b", re.IGNORECASE)
+BRANCH_HEADER = re.compile(r"^([ \t]*)(If|ElsIf|Else)\b(.*)$", re.IGNORECASE)
+
+
+def if_statement_layout(
+    lines: list[str], start: int
+) -> tuple[int, list[tuple[str, int, int, int]]]:
+    """Describe the `If` statement that begins at `start`.
+
+    Returns `(end_index, branches)`, where `end_index` is the matching `EndIf` and each branch is
+    `(keyword, header_index, body_start, body_end)` at the statement's own level. Nesting is tracked
+    by counting `If` and `EndIf` rather than by indentation, so unindented BSL is handled too.
+    """
+    branches: list[tuple[str, int, int, int]] = []
+    depth = 0
+    header_index = start
+    keyword = "if"
+    position = start
+
+    while position < len(lines):
+        current = lines[position]
+
+        # Preprocessor directives (`#If`, `#EndIf`) are not branches.
+        if current.lstrip().startswith("#"):
+            position += 1
+            continue
+
+        if IS_IF.match(current):
+            depth += 1
+            if depth == 1:
+                header_index, keyword = position, "if"
+            position += 1
+            continue
+
+        if IS_ENDIF.match(current):
+            depth -= 1
+            if depth == 0:
+                branches.append((keyword, header_index, header_index + 1, position))
+                return position, branches
+            position += 1
+            continue
+
+        header = BRANCH_HEADER.match(current)
+        if header and depth == 1 and header.group(2).lower() in ("elsif", "else"):
+            branches.append((keyword, header_index, header_index + 1, position))
+            header_index = position
+            keyword = header.group(2).lower()
+
+        position += 1
+
+    raise ValueError("unterminated If statement")
+
+
+def dedent_body(lines: list[str], body_start: int, body_end: int, indent: str) -> list[str]:
+    """Remove one statement level from a body that is emitted without its own header.
+
+    A branch that becomes the statement's `If` keeps its indentation, because the header stays at the
+    same level. A bare `Else` body does not: it becomes statement-level code, so the level the removed
+    `If` gave it has to go, or the generated module reads as if it were still nested.
+    """
+    body = lines[body_start:body_end]
+    first = next((line for line in body if line.strip()), "")
+    prefix = first[: len(first) - len(first.lstrip())]
+
+    if not prefix.startswith(indent):
+        return list(body)
+
+    extra = prefix[len(indent) :]
+    return [line[len(extra) :] if line.startswith(extra) else line for line in body]
+
+
+def render_surviving_branches(
+    lines: list[str], indent: str, live: list[tuple[str, int, int, int]]
+) -> list[str]:
+    """Emit the branches of a stripped `If` statement that are still reachable.
+
+    The first survivor becomes the statement's `If`, so an `ElsIf` that outlives a dead `If` is
+    promoted, and a bare `Else` needs no statement around it at all.
+    """
+    keyword, header_index, body_start, body_end = live[0]
+
+    if keyword == "else":
+        return dedent_body(lines, body_start, body_end, indent)
+
+    emitted = []
+    header = BRANCH_HEADER.match(lines[header_index])
+    emitted.append(f"{header.group(1)}If{header.group(3)}")
+    emitted.extend(lines[body_start:body_end])
+
+    for keyword, header_index, body_start, body_end in live[1:]:
+        if keyword == "else":
+            emitted.append(f"{indent}Else")
+        else:
+            header = BRANCH_HEADER.match(lines[header_index])
+            emitted.append(f"{header.group(1)}ElsIf{header.group(3)}")
+        emitted.extend(lines[body_start:body_end])
+
+    emitted.append(f"{indent}EndIf")
+    return emitted
 
 
 def dead_branch_lines(text: str) -> list[str]:
@@ -279,18 +377,25 @@ def strip_dead_standalone_branches(text: str) -> tuple[str, int]:
             indent = match.group(1)
 
             if keyword == "if":
-                depth = 0
-                while index < len(lines):
-                    current = lines[index]
-                    if not current.lstrip().startswith("#"):
-                        if IS_IF.match(current):
-                            depth += 1
-                        elif IS_ENDIF.match(current):
-                            depth -= 1
-                            if depth == 0:
-                                index += 1
-                                break
-                    index += 1
+                # Only the dead branch goes. A statement whose `Else` or `ElsIf` is still reachable
+                # keeps those branches, because they are what the variant actually runs: dropping the
+                # whole statement is what silently emptied LogLevels() and AuthTypes().
+                end_index, branches = if_statement_layout(lines, index)
+                live = []
+
+                for branch in branches:
+                    branch_keyword, header_index = branch[0], branch[1]
+                    if branch_keyword != "else":
+                        branch_header = BRANCH_HEADER.match(lines[header_index])
+                        condition = branch_header.group(3) if branch_header else ""
+                        if DEAD_CONDITION.search(condition):
+                            continue
+                    live.append(branch)
+
+                if live:
+                    kept.extend(render_surviving_branches(lines, indent, live))
+
+                index = end_index + 1
                 removed += 1
                 continue
 
