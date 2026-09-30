@@ -1,13 +1,11 @@
-# Refactoring cycle — backlog and evidence (draft, 2026-09-29)
+# Refactoring cycle — rationale and task index
 
-Status: draft for the next planning cycle. Nothing here is authorised for
-implementation yet; this document exists so the cycle starts from evidence rather
-than from impressions. Every item below was observed while building the test
-harness, so each one has a reproduction.
+Status: 2026-09-30. The cycle is authorised and every task now lives in its own file, so a delegated worker
+can be pointed at a single packet. This page keeps the evidence and the reasoning that produced those tasks;
+it does not define any of them.
 
-Scope: simplify and reorder the connector, not change what it does. The tests
-written in T018 are the safety net for the parts already covered; the biggest
-refactoring target is also the part with no safety net.
+Scope: simplify and reorder the connector, not change what it does. The T018 suites are the safety net for
+the parts already covered; the biggest refactoring target is also the part with no safety net.
 
 ## Evidence
 
@@ -24,413 +22,53 @@ refactoring target is also the part with no safety net.
 
 ## Classification
 
-Needed for the next cycle:
+Needed for the cycle:
 
-- 1 — delete the YAML modules. The size win is large and the risk is low: the
-  code is unreachable, so removing it cannot change behaviour. Confirm with a
-  build and the suites, then delete.
-- 2 — cover the inbound transport by integration test. It is the boundary the
-  sidecar actually talks to, and it is the only way to observe the error mapping.
+- 1 — delete the YAML modules. The size win is large and the risk is low: the code is unreachable, so
+  removing it cannot change behaviour. Landed as T024.
+- 2 — cover the inbound transport by integration test. It is the boundary the sidecar actually talks to, and
+  it is the only way to observe the error mapping. Landed as T025.
 
 Later, once the two above land:
 
-- 3 and 5 — error taxonomy and its dispatch table; T023 already exists.
-- 4 — number handling.
-- 6 and 7 — module surface and naming.
+- 3 and 5 — error taxonomy and its dispatch table; T023 already exists as a task file.
+- 4 — number handling; folded into T026.
+- 6 and 7 — module surface and naming; T026.
 
 Undecided, needs the owner:
 
-- 8 — the form layer. "Recreate almost every form" is a different size of job
-  from the rest and may belong in its own cycle.
-
-## Proposed dependency-ordered tasks
-
-| ID | Outcome | Status | Depends on |
-|---|---|---|---|
-| T024 | All four YAML modules are deleted | verified | none |
-| T025 | The inbound transport boundary is covered by an integration test | draft | none |
-| T026 | Module surface and naming are consistent | draft | T023, T025 |
-| T027 | The form layer is rebuilt | draft | owner decision |
-| T028 | Service definitions parse locally instead of through the sidecar | draft | owner decision on safe mode; T025 |
-
-T024 is elaborated below. The rest stay outlines until the cycle is authorised.
-
-## T024 — delete the YAML modules
-
-Outcome: ~3,500 lines of unreachable parser code leave the extension, and the
-configuration stops declaring four modules nobody calls.
-
-Why first: it is the cheapest item here. The code cannot run, so there is no
-behaviour to preserve and the suites are enough to prove it.
-
-Evidence: `mol_SchemaFactory.ParseServiceDefinition` returns the sidecar call
-first, so `Return YAML.ToObject(Text)` is unreachable; the owner confirms YAML is
-validated and converted on the Node side on purpose.
-
-Shape, to confirm during refinement:
-
-- delete `CommonModules/YAML`, `YAML1`, `YAML2`, `YAML3` and their descriptors;
-- drop the four `<CommonModule>` entries from `Configuration.xml` and the items
-  from `Subsystems/Moleculer.xml`;
-- decide what to do with the dead lines after the `Return` rather than leaving
-  them in place;
-- `ConfigDumpInfo.xml` carries version entries for the removed modules; it is a
-  regenerable cache, so confirm whether it should be refreshed or dropped.
-
-Acceptance: `vrunner cfe compile` still builds the canonical extension, the
-canonical suites stay green, and `tools/bsl-checks/find-procedure-as-function.py`
-stays clean.
-
-## T025 — integration test for the inbound transport
-
-Outcome: a test sends a sidecar packet to the connector's HTTP service over real
-HTTP and asserts the response, covering body parsing, context building, handler
-dispatch and the error mapping.
-
-Route, discovered this cycle: the stand-alone server serves the service natively,
-so no Apache is needed.
-
-```bash
-/opt/1cv8/current/ibsrv --config=/workspace/build/ibsrv/publication.yaml --data=/workspace/build/ibsrv
-curl -s -o /tmp/resp.txt -w '%{http_code}' -X POST \
-  -H 'Content-Type: application/json' --data-binary @packet.json \
-  http://localhost:8314/ib/hs/moleculer/sidecar
-```
-
-The publication already exists in `build/ibsrv/publication.yaml`: `build/ib` on
-`localhost:8314`, base `/ib`, HTTP services published by default. The service is
-`mol_Moleculer`, root URL `moleculer`, template `/sidecar`, POST.
-
-Known blocker: the request reaches the service, but the server answers 503 with
-`Недопустимое значение аргумента функции / sessionId != kUUIDNull`
-(`ibsrv - src/ib-server-worker/src/serverImpl.cpp(262)`). That is the stand-alone
-server failing to establish a session, not the connector. Solving it is part of
-this task; stop and record if it needs a publication or authentication change
-that affects anything shared.
-
-Note the server holds a lock on `build/ib`, so stop it before any harness run
-that recreates that base.
-
-## T028 — parse service definitions locally
-
-Outcome: a service constructor written in YAML compiles with **no sidecar node connected**, so the
-capability stops depending on connectivity.
-
-Why: `mol_SchemaFactory.ParseServiceDefinition` sends anything that is not JSON to
-`$sidecar.utils.parseYAML`. A YAML constructor therefore works only while a sidecar happens to be up,
-and a dynamic-service constructor stored in `Catalog.mol_Services.ServiceConstructor` cannot use YAML
-for anything at all — not even to convert it. The component's own speed is not the obstacle: parsing
-costs ~0.07 ms against ~2.5 ms for connecting it.
-
-What it involves:
-
-- a local parser behind the seams this project already has (`providerModule:
-  MoleculerOverridable` at runtime, profile `patches` at build time), reading
-  `vendor/YamlParserNative/`;
-- connecting the component once and holding the instance. That also removes the per-call reconnect,
-  and it is the same change that clears the safe-mode constraint: `CompileServiceSchema` wraps the
-  service constructor in `SetSafeMode(True)`, and the platform forbids connecting an external
-  component while safe mode is on;
-- the conversions the requirement names, not just parsing: YAML to object, YAML to JSON, object to
-  YAML;
-- a bounded YAML subset — mappings, sequences and scalars. Anchors, tags, multiple documents and
-  complex keys are needed by nothing in `src/`.
-
-Full assessment and measurements: [yaml-native-parser-viability.md](yaml-native-parser-viability.md).
-
-Low priority: nothing in `src/` reads YAML today, so this restores a capability rather than
-unblocking existing code.
-
-## T030 — make the ambient context stack balanced
-
-Outcome: every push onto the ambient stack is matched by a pop, so the stack stops growing for the
-process lifetime and a finished operation stops being the current context.
-
-Why: `mol_ContextFactory.Handler` pushes the incoming context and pops it again, so the inbound path is
-balanced. `mol_Broker.Call`, `Emit` and `Broadcast` call `SetCurrentContext`, which pushes onto the same
-stack, and nothing pops it. `mol_Errors` does the same with a raised error. Two consequences: the stack
-grows once per call, and `GetCurrentContext` and `GetCurrentError` keep returning a value after the
-operation that produced it has ended.
-
-Evidence: `tests/bsl/canonical/CommonModules/mol_AmbientContextTests` pins the reachable half — an
-ambient error survives an unrelated successful operation — and its header names all four sites. The
-broker's push happens after the transport answers, so reaching it needs a sidecar, and that gap is now
-closed rather than described: `tests/bsl/canonical/CommonModules/LiveSidecarCallTests` calls the service
-over HTTP and asserts the ambient context left behind is the call's own. The push-without-pop is
-therefore pinned as observed behaviour in the suite that actually reaches it, and the fix below still has
-to change that assertion rather than merely add one.
-
-Shape, to confirm during refinement: either a pop around the transport call in the three broker methods,
-or a scoped helper on `mol_ContextFactory` that pushes and pops around a passed block. The second is
-harder in BSL, which has no closures, so the first is the likely answer.
-
-## T031 — keep the live branch when stripping a standalone guard
-
-Outcome: the generated variant contains the surviving branch of every
-`If Not IsStandalone() … Else … EndIf`, instead of losing the mapping that branch holds.
-
-Why: `strip_dead_standalone_branches` walks from a dead `If` to its matching `EndIf` and deletes the
-whole statement. That is correct when there is no `Else`: `GetConfig`'s constant block is dead in the
-variant and should go. When a live `Else` is present it is the branch the variant depends on, and it is
-discarded together with the dead half. Two mappings are lost that way — `LogLevels()` and `AuthTypes()`
-— leaving every key `Undefined`.
-
-Evidence: the generated `Moleculer` shows both functions with an empty gap where the `If` was, and
-`tests/bsl/standalone/CommonModules/StandaloneRuntimeTests` pins the consequences: the log level can no
-longer select a branch, a declared auth type is refused, and an absent one is answered with token auth.
-
-Shape, to confirm during refinement: keep the statement when a live `Else` or `ElsIf` survives, emitting
-that branch's body at the original indentation, and keep deleting it outright when every branch is dead.
-The existing verification step should also assert that a live branch survives, since today it only
-checks that dead ones do not.
-
-Fixed 2026-09-30: `strip_dead_standalone_branches` now splits the statement into its branches, drops the
-dead ones and emits what remains — promoting a surviving `ElsIf` to `If`, inlining a bare `Else` body and
-dedenting it to the statement level so the generated module stays readable. `LogLevels()` and
-`AuthTypes()` carry their mappings in the variant again, which is proven by the two tests that used to
-pin their absence: the variant now answers `EventLogLevel` values, dispatches a declared auth type to its
-own fields, and refuses an absent one exactly as extension mode does.
-
-The guard was placed in `tests/standalone-builder/test_standalone_strip.py` rather than in
-`validate_merged`, because what needs checking is the transformation's behaviour on shapes rather than
-the final text: seven container-only cases cover the surviving `Else`, the promoted `ElsIf`, the nested
-`If`, the dropped dead `ElsIf` and the preprocessor case that must not be treated as a branch. The
-verification step still only checks that dead branches do not survive, which is now the weaker half of
-the pair rather than the only half.
-
-## T032 — make the connector's own actions reachable over HTTP
-
-Outcome: a packet addressed to one of the connector's `$internal` actions either runs its handler and
-returns the result, or is refused for a documented reason rather than because two name tests disagree.
-
-Why: `mol_Transport.RequestHandler` tries the local resolver only when the action begins with
-`"$internal"`, but `mol_Broker.Delete_FindInternalHandler` matches names qualified by the compiled
-schema's `fullName`, which begins with the module name. The two conditions cannot both hold, so the
-resolver is never consulted for a name it could match, and every such request answers 503
-`Handler is not provided`. The same path is what `mol_Internal`'s actions — `ping`, `health`, `services`,
-`actions`, `events`, `metrics`, `options`, `wellknown`, `list` — were written for.
-
-Evidence: `tests/bsl/http/test-inbound-transport.sh` sends a complete payload to `$internal.ping` and
-records the 503 as a gap, in both modes. The payload itself is accepted, which the test proves separately
-by sending the same shape to an unregistered action and getting the envelope rather than a platform page.
-
-Owner decision required: the prefix check may be deliberate exposure control rather than a naming
-mistake. Enabling the resolver for every action would make `services`, `actions` and `metrics` answer any
-caller that can reach the service, so the fix is either to widen the guard to the qualified prefix the
-resolver actually matches, or to keep the restriction and rename the actions to match it — and to say
-which in the documentation.
-
-RESOLVED 2026-09-30, with the cause proven rather than read: the two paragraphs above are wrong twice
-over. `CompileServiceSchema("mol_Internal")` yields `$internal` — the constructor's declared name — and
-`Delete_FindInternalHandler("$internal.ping")` returns the `PingAction` handler in extension mode, both
-pinned by `mol_BrokerTests`. The HTTP test confirms it end to end: in extension mode the request runs the
-handler and returns `pong`, which is why the canonical run reports twelve passes.
-
-SETTLED 2026-09-30, from the artifact: the paragraph above is wrong as well, and for a different reason.
-The variant does not fail to find a module. The profile already carries a patch for exactly this call
-(`tools/standalone-builder/profiles/default.json`, described as "the internal service is a service of the
-merged module, not a separate module"), rewriting it to `CompileServiceSchema(Moleculer)` — and the
-emitted module proves the patch ran: `build/standalone/default/CommonModules/Moleculer/Ext/Module.bsl:4119`.
-
-The compile therefore succeeds, and that is the defect. `CompileServiceSchema` dispatches on the literal
-name `"Constructor"` (`Moleculer/Ext/Module.bsl:4354-4365`), and the merged module has exactly one such
-entry point (`:4764`) — the outer service's. `mol_Internal`'s own constructor
-(`mol_Internal/Ext/Module.bsl:11`) is gone, because a module can hold only one procedure of that name and
-the profile's rename map for `mol_Internal` renames `this`/`thismetadata` but not `constructor`. The
-internal schema can no longer be built in the variant, `Delete_FindInternalHandler` returns Undefined,
-and the request answers 503.
-
-Both possible outcomes end the same way: either the surviving constructor builds the outer service, so
-the loop over `Schema.FullName + "." + Key` finds only `moleculer.*` and never `$internal.ping`, or it
-raises on the argument it was handed. Which one happens does not change the conclusion — the internal
-service is uncompilable in the variant and compilable in extension mode, and the HTTP test now asserts
-the two modes separately for that reason.
-
-SHARPENED 2026-09-30, from the same artifact: the surviving constructor is the internal service's own —
-`build/standalone/default/CommonModules/Moleculer/Ext/Module.bsl:4764` sets `Schema.Name = "$internal"` at
-`:4768` — so the patch is not selecting the wrong service. The lookup fails because the compile **raises**
-and its `Except` branch returns Undefined. The rename map makes that possible and is worth naming: it
-renames `constructor` for `mol_ContextFactory` (`profiles/default.json:78`) and for `mol_SchemaFactory`
-(`:88`) but not for `mol_Internal`, so the internal constructor competes for one name and the merge keeps
-one definition.
-
-Which statement raises is not established, and that is itself the finding: `CompileServiceSchema` builds
-an error message and calls `LoggerError` before returning Undefined, and no log line survives from the
-standalone run, so the reason has to be observed rather than inferred. A resolver that answers `Undefined`
-for both "no such action" and "compiling it threw" is what made this task take three wrong readings
-before the artifact was read instead. Whatever fixes the compile should also stop hiding its reason.
-
-## T033 — agree on the shape of a context's action
-
-Status: verified 2026-09-30 — settled by mirroring Moleculer rather than by choosing between the two
-candidates proposed here.
-
-What was decided: the wire carries the action **name** and the context carries the action **object**, which
-is what Moleculer does. `transit.js` sends `action: ctx.action.name` and `context.js` sets
-`this.action = endpoint.action`, so the directions are not asymmetric in the library either — they agree
-because each side holds the shape that side needs. `FromPayload` now builds the object through
-`NewActionReference`, `mol_Transport.RequestHandler` reads its name, and `ToPayload(FromPayload(payload))`
-returns the payload it came from, so a received request can be forwarded.
-
-The same reading of the reference found two more differences and both are fixed: an inbound event belongs
-in `eventName`, not in `event` (the sidecar's own `packet.ts` maps `payload.event` to `ctx.eventName`, and
-`ctx.event` is the subscription the receiver matched), and the event payload was missing the `meta` field
-that both Moleculer's `transit.js` and the sidecar's `fromContext` send.
-
-Evidence: `mol_PayloadContractTests` now asserts both round trips — action and event — in place of the
-test that pinned the failure. Canonical 176/176, the inbound transport test 12 passed and 0 failed,
-standalone 25/25.
-
-Outcome: a context can be turned back into a payload, so a received request can be forwarded to another
-node instead of being terminal.
-
-Why: `mol_ContextFactory.FromPayload` stores the payload's `action` string in `Context.Action`, while
-`ToPayload` reads `Context.Action.Name`, which only the structure form that `mol_Broker.Call` builds has.
-The two directions never meet today — outbound contexts are built locally, inbound ones arrive from the
-wire — so nothing breaks, but the asymmetry is why `ToPayload(FromPayload(payload))` raises
-`Поле объекта не обнаружено (Name)`.
-
-Evidence: `tests/bsl/canonical/CommonModules/mol_PayloadContractTests` pins the failure as current
-behaviour, in a test written to be rewritten rather than deleted. Two other tests in the same suite pin
-the field sets each direction emits, which is the contract a fix has to preserve.
-
-Shape: either `ToPayload` accepts both forms and reads the name from whichever it finds, or `FromPayload`
-wraps the string in a structure. The first keeps inbound contexts as they are, which matters because
-`mol_Transport.RequestHandler` compares `Context.Action` against the `$internal` prefix as a string — see
-T032, which touches the same comparison.
-
-## T034 — make a nested call chain to its parent
-
-Status: withdrawn 2026-09-30 — the mechanism already works, and the finding was wrong.
-
-What it claimed: that `mol_ContextFactory.Call` and `Emit` thread the ambient context into the options as
-`parentCtx`, that nothing in `src/` reads that key, and that `mol_Broker.Call` therefore chains through its
-own `Opts.Context` key instead.
-
-Why that was wrong: `mol_ContextFactory.Create` reads `Opts.ParentCtx` and derives requestID, merged meta,
-tracing, `level + 1`, parentID and caller from it — the same derivations as Moleculer's
-`ContextFactory.create` (`context.js`). `mol_Broker.Call` builds its context through `Create`, so it passes
-the options along and the parent **is** honoured. The search behind the finding looked for `parentCtx` and
-missed `ParentCtx`; BSL structure keys are case-insensitive, so that spelling reads the same key.
-
-What the test pinned: `tests/bsl/canonical/CommonModules/mol_ContextFieldsTests` asserted the threading and
-then that `Opts.Context` was absent, calling the second a mismatch. It is now
-`TheContextFactoryThreadsItsParentIntoTheNewContext` and asserts the derivation instead, so the chain itself
-is covered rather than the absence of a key.
-
-What remains, as a smaller question: `Opts.Context` — reusing a supplied context and re-stamping its action
-— has no counterpart in Moleculer, where a caller passes `parentCtx` and never a context to reuse. It is
-covered by `mol_AmbientContextTests`, so it is a documented extension rather than a defect; whoever next
-touches the broker should decide whether to keep it or fold it into `parentCtx`. The option list in
-`MoleculerClientServer` still advertises both keys.
-
-## T035 — the standalone merge keeps service identities apart
-
-Status: verified 2026-09-30, implemented through a new profile capability.
-
-How it was fixed: `plan.modulePatches` — optional, `{module: [{description, pattern, replacement}]}` —
-applies replacements to one module's own text while the modules are still separate and before anything is
-renamed. The plan replaces `ThisMetadata().Name` inside `mol_Errors`, `mol_ContextFactory` and
-`mol_SchemaFactory` with that module's own name: twelve sites, which is the identity the merge would
-otherwise erase. The three private stacks keep three keys, so a raised error can no longer land on the
-stack an ambient context was pushed to, and `ClearStack` in the schema factory can no longer clear the
-context stack.
-
-Why a new capability rather than a patch: the global `patches` list runs on the merged text, where that
-expression is identical in all three modules, so one pattern cannot give three modules three answers. This
-step runs before the renames, so its patterns describe the canonical sources. The first attempt did not:
-it matched the tail of the renamed `ErrorsThisMetadata` and emitted
-`PushToStack(Errors"mol_Errors", Error)`, which the builder suite caught. A module patch that stops matching
-fails the build, the same guard the global patches have.
-
-Evidence: `StandaloneRuntimeTests.TheErrorStackDoesNotDisplaceTheContextStack` pushes a context, raises
-through `RaiseError`, and asserts the context is still current. It was **seeded and reverted**: with the
-capability disabled it fails on its own message, `провалено 1`, and the harness exits 1, so it proves the fix
-rather than merely passing. The builder suite asserts that no bare `ThisMetadata().Name` survives the merge
-and that all three modules name their own stack. Builder 54 tests, standalone 26/26, canonical 176/176
-unchanged — this fix touched no canonical source.
-
-Still open, recorded rather than fixed: `ThisMetadata().FullName()` still answers the merged module's full
-name, so the stack-trace offset in `mol_Errors`/`mol_Logger` skips every frame of the merged module. That is
-diagnostic-only — the trace keeps the caller's frame — and the same mechanism would fix it if the traces
-came to matter more than they seem to.
-
-Outcome: in the standalone variant, code that tells two modules apart by name still tells them apart once
-they are merged, so error handling, context stacks and schema compilation stop seeing each other's state.
-
-Why: the builder rewrites every `Metadata.CommonModules.mol_X` reference to
-`Metadata.CommonModules.Moleculer` (step 4 of `tools/standalone-builder/build-standalone.py`). That is
-right for a reference to the module object and wrong for a key derived from a module's own metadata.
-`mol_ReuseCalls.GetCacheStack()` is keyed by `ThisMetadata().Name`, and three modules use it as their own
-private stack: `mol_Errors` (`mol_Errors/Ext/Module.bsl:195`, `:292`), `mol_ContextFactory`
-(`mol_ContextFactory/Ext/Module.bsl:239`, `:265`) and `mol_SchemaFactory`
-(`mol_SchemaFactory/Ext/Module.bsl:161`, `:189`, `:386`). In the variant all three keys are the string
-`"Moleculer"` — `ErrorsThisMetadata()` is emitted as `Return Metadata.CommonModules.Moleculer`
-(`build/standalone/default/CommonModules/Moleculer/Ext/Module.bsl:842-843`), and twelve references
-collapse the same way — so three private stacks become one shared stack.
-
-What that breaks, in the variant only: `mol_Errors.GetCurrentError()` can return a build context or an
-execution context where extension mode returns Undefined, so the `If Error = Undefined Then ...
-FromErrorInfo(...)` recovery is skipped and a structure is formatted as an error; and
-`mol_Helpers.ClearStack(ThisMetadata().Name)` inside `mol_SchemaFactory.CompileServiceSchema` clears the
-*shared* stack, destroying the ambient context an inbound request pushed there through
-`mol_ContextFactory.Handler`.
-
-Evidence: the collapsed key is visible in the emitted module and the canonical shape is pinned in
-extension mode by `mol_AmbientContextTests`. A variant test that pushes a context, compiles a schema, and
-asserts the context survived would fail today; that test does not exist, so the path is proven by reading
-the source and the artifact rather than at run time.
-
-Shape: per-module state must be keyed by something the merge keeps — the pre-merge module name — rather
-than by the metadata of the merged module. Same class as T032 (one surviving `Constructor` for two
-services) and T031 (a strip that took the live branch): each fix teaches the merge a little more about
-identity, and the three should be decided together rather than one at a time.
-
-## T036 — the admin panel form calls a method that does not exist
-
-Outcome: `mol_AdminPanel`'s `ServiceItemForm` works when it is opened, or the call is removed.
-
-Why: `UpdateServiceRegistrationAtServer` calls `mol_Broker.GetActivePublications()` and `mol_Broker`
-declares no such method — its publication surface is `RegisterPublications`, `RegisterPublication`,
-`UnregisterPublications`, `UnregisterPublication` and `GetPublicationValidationCode`. The facade's
-`Moleculer.GetPublications(ForceUpdate)` is what returns the publication list, and the form then reads
-`Publication.Info.Id` and `Publication.Connection`, which is that shape.
-
-Evidence: `tools/bsl-checks/bsl-language-server.py` reports `MissingCommonModuleMethod` at
-`DataProcessors/mol_AdminPanel/Forms/ServiceItemForm/Ext/Form/Module.bsl:60`. Nothing else catches it —
-`vrunner cfe compile` and the designer's `/CheckModules` load metadata without compiling form bodies, so
-the extension loads and every test passes while the call is broken. It surfaces only when the form runs.
-
-Shape, to confirm during refinement: decide whether the form should call the facade
-(`Moleculer.GetPublications()`) or a broker method that does not exist yet, then either implement the
-missing method or repoint the call. The matching entry in `tools/bsl-checks/bsl-ls-baseline.json` is
-deleted in the same change.
-
-## T037 — the connector calls platform members newer than its compatibility mode
-
-Outcome: the code and the declared compatibility mode agree, so no call the connector makes is
-unavailable in the mode the extension declares.
-
-Why: `Configuration.xml` declares `ConfigurationExtensionCompatibilityMode` = `Version8_3_21`, while
-`mol_Errors` calls `ОшибкаРаботыСРечью` and `ОшибкаТабличногоПространстваБазыДанных`, both of which exist
-from 8.3.23. The platform installed here is 8.3.24, so the members exist on the image but are hidden from
-code running under the lower declared mode.
-
-Evidence: two `UnavailableMemberCall` findings — `mol_Errors/Ext/Module.bsl:255` and `:263` — from
-`tools/bsl-checks/bsl-language-server.py`, against the manifest line
-`src/cfe/MoleculerSidecarConnector/Configuration.xml:47`. Both sit inside error-message construction,
-taken only while an error is being reported, which is why they have survived.
-
-Shape, to confirm during refinement: either raise the declared compatibility mode — a consumer-visible
-decision, since the extension would then require a newer platform — or stop using the two members on
-those paths. That choice belongs with the platform-support decision, not with the error module. One piece
-of evidence already points at alignment: the generated standalone variant declares `Version8_3_24`
-(`build/standalone/default/INSTALL.md`, "Сборка создана для режима совместимости"), so the two halves of
-the product disagree about the platform they require, and the code the variant shares already assumes the
-newer one.
+- 8 — the form layer; T027.
+
+## Tasks
+
+| ID | Outcome | Status | Depends on | File |
+|---|---|---|---|---|
+| T024 | All four YAML modules are deleted | verified | none | [Task](tasks/history/T024-drop-yaml-modules.md) |
+| T025 | The inbound transport boundary is covered by an integration test | verified | none | [Task](tasks/history/T025-integration-test-inbound-transport.md) |
+| T026 | Module surface and naming are consistent | draft | T023, T025 | [Task](tasks/T026-module-surface-and-naming.md) |
+| T027 | The form layer is rebuilt | draft | owner decision | [Task](tasks/T027-rebuild-the-form-layer.md) |
+| T028 | Service definitions parse locally instead of through the sidecar | draft | owner decision on safe mode; T025 | [Task](tasks/T028-parse-service-definitions-locally.md) |
+| T029 | Service modules migrate from the removed registration API to the constructor shape | draft | constructor contract; T028 for YAML output | [Task](tasks/T029-migrate-service-modules.md) |
+| T030 | The ambient context stack is pushed and popped symmetrically | draft | T020 | [Task](tasks/T030-balance-the-ambient-context-stack.md) |
+| T031 | The standalone variant keeps the live branch of a standalone guard | verified | T015, T016 | [Task](tasks/history/T031-keep-the-live-branch-when-stripping.md) |
+| T032 | The connector's own actions work in the standalone variant | draft | T035, T015 | [Task](tasks/T032-connector-actions-over-http.md) |
+| T033 | Both payload directions agree on the shape of a context's action | verified | T018 | [Task](tasks/history/T033-agree-on-the-shape-of-an-action.md) |
+| T034 | A nested call chains to its parent context | withdrawn | T030, T033 | [Task](tasks/T034-nested-call-parent-context.md) |
+| T035 | The standalone merge keeps service identities apart | verified | T015 | [Task](tasks/history/T035-standalone-merge-identities.md) |
+| T036 | The admin panel form stops calling a method that does not exist | verified | none | [Task](tasks/history/T036-admin-panel-form-method.md) |
+| T037 | The connector stops calling platform members newer than its compatibility mode | draft | platform-support decision | [Task](tasks/T037-compatibility-mode-versus-members.md) |
+
+T036 and T037 were found by the static gate built in T022, after this cycle's list was written.
 
 ## Open decisions
 
-1. Delivery target for this cycle: smaller/simpler, or more testable? The two pull
-   in different orders and 1 versus 2 above should be sequenced accordingly.
+1. Delivery target for this cycle: smaller/simpler, or more testable? The two pull in different orders and
+   1 versus 2 above should be sequenced accordingly.
 2. Whether the form layer belongs in this cycle or its own.
+
+## Related
+
+- [yaml-native-parser-viability.md](yaml-native-parser-viability.md) — the study behind T028.
+- [connector-architecture-audit.md](connector-architecture-audit.md) — the earlier reading of the same code.
+- [T023](tasks/T023-error-taxonomy.md) — the error taxonomy, which this cycle's evidence table feeds.
+- [tasks/history/README.md](tasks/history/README.md) — where completed task files go, and the rule for when.

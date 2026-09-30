@@ -14,7 +14,6 @@
     "AllFunctionPathMustHaveReturn": 6,
     "IfElseDuplicatedCodeBlock": 3,
     "UnavailableMemberCall": 2,
-    "MissingCommonModuleMethod": 1,
     "UnreachableCode": 1,
     "QueryToMissingMetadata": 1,
     "FunctionReturnsSamePrimitive": 1,

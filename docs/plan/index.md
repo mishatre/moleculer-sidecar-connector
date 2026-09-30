@@ -40,37 +40,36 @@ this folder shows only work that is still open. The links below keep working acr
 
 ### Next cycle — refactoring
 
-Outlines only, collected from evidence gathered while building the harness. Task
-files are written once the cycle is authorised; the reasoning and the acceptance
-for T024 and T025 live in [refactor-backlog.md](refactor-backlog.md).
+Every task of this cycle has its own file, so a delegated worker is pointed at one packet. The evidence and
+the reasoning that produced them stay in [refactor-backlog.md](refactor-backlog.md), which no longer defines
+any task.
 
-| ID | Outcome | Status | Depends on | Where |
+| ID | Outcome | Status | Depends on | File |
 |---|---|---|---|---|
 | T024 | All four YAML modules are deleted | verified | none | [Task](tasks/history/T024-drop-yaml-modules.md) |
-| T025 | The inbound transport boundary is covered by an integration test | verified | none | [Plan](refactor-backlog.md) |
-| T026 | Module surface and naming are consistent | draft | T023, T025 | [Plan](refactor-backlog.md) |
-| T027 | The form layer is rebuilt | draft | owner decision | [Plan](refactor-backlog.md) |
-| T028 | Service definitions parse locally instead of through the sidecar | draft | owner decision on safe mode; T025 | [Plan](refactor-backlog.md) |
-| T030 | The ambient context stack is pushed and popped symmetrically | draft | T020 | [Plan](refactor-backlog.md) |
-| T031 | The standalone variant keeps the live branch of a standalone guard | verified | T015, T016 | [Plan](refactor-backlog.md) |
-| T032 | The connector's own actions work in the standalone variant | draft | T035 (same root cause), T015 | [Plan](refactor-backlog.md) |
-| T033 | Both payload directions agree on the shape of a context's action | verified | T018 | [Plan](refactor-backlog.md) |
-| T034 | A nested call chains to its parent context | withdrawn | T030, T033 | [Plan](refactor-backlog.md) |
-| T035 | The standalone merge keeps service identities apart | verified | T015 | [Plan](refactor-backlog.md) |
-| T036 | The admin panel form stops calling a method that does not exist | draft | none | [Plan](refactor-backlog.md) |
-| T037 | The connector stops calling platform members newer than its compatibility mode | draft | platform-support decision | [Plan](refactor-backlog.md) |
+| T025 | The inbound transport boundary is covered by an integration test | verified | none | [Task](tasks/history/T025-integration-test-inbound-transport.md) |
+| T026 | Module surface and naming are consistent | draft | T023, T025 | [Task](tasks/T026-module-surface-and-naming.md) |
+| T027 | The form layer is rebuilt | draft | owner decision | [Task](tasks/T027-rebuild-the-form-layer.md) |
+| T028 | Service definitions parse locally instead of through the sidecar | draft | owner decision on safe mode; T025 | [Task](tasks/T028-parse-service-definitions-locally.md) |
+| T030 | The ambient context stack is pushed and popped symmetrically | draft | T020 | [Task](tasks/T030-balance-the-ambient-context-stack.md) |
+| T031 | The standalone variant keeps the live branch of a standalone guard | verified | T015, T016 | [Task](tasks/history/T031-keep-the-live-branch-when-stripping.md) |
+| T032 | The connector's own actions work in the standalone variant | draft | T035 (same root cause), T015 | [Task](tasks/T032-connector-actions-over-http.md) |
+| T033 | Both payload directions agree on the shape of a context's action | verified | T018 | [Task](tasks/history/T033-agree-on-the-shape-of-an-action.md) |
+| T034 | A nested call chains to its parent context | withdrawn | T030, T033 | [Task](tasks/T034-nested-call-parent-context.md) |
+| T035 | The standalone merge keeps service identities apart | verified | T015 | [Task](tasks/history/T035-standalone-merge-identities.md) |
+| T036 | The admin panel form stops calling a method that does not exist | verified | none | [Task](tasks/history/T036-admin-panel-form-method.md) |
+| T037 | The connector stops calling platform members newer than its compatibility mode | draft | platform-support decision | [Task](tasks/T037-compatibility-mode-versus-members.md) |
 
 ### Service module migration (new, low priority)
 
 Consumer service modules written against the removed registration API
 (`Moleculer.SchemaAddAction`, `Context.RegisterSchema`) no longer compile against this
-connector. The fixtures are the three real modules in `docs/service-migration/`; the
-decisions, the verification approach and the open questions are in
-[service-migration-tool.md](service-migration-tool.md).
+connector. The fixtures are the three real modules in `docs/service-migration/`; the task,
+its decisions and its open questions are in the file below.
 
-| ID | Outcome | Status | Depends on | Where |
+| ID | Outcome | Status | Depends on | File |
 |---|---|---|---|---|
-| T029 | Service modules migrate from the removed registration API to the constructor shape | draft | constructor contract; T028 for YAML output | [Plan](service-migration-tool.md) |
+| T029 | Service modules migrate from the removed registration API to the constructor shape | draft | constructor contract; T028 for YAML output | [Task](tasks/T029-migrate-service-modules.md) |
 
 ### Research notes
 

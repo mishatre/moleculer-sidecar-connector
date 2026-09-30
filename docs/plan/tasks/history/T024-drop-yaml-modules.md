@@ -1,11 +1,14 @@
 # T024 — Delete the four dead YAML modules
 
 Status: verified 2026-09-30 — the four modules are gone. This line said `ready` while both the index and
-[refactor-backlog.md](../refactor-backlog.md) already said `verified`; the tree settles it. `src/**` matches
+[refactor-backlog.md](../../refactor-backlog.md) already said `verified`; the tree settles it. `src/**` matches
 no `*yaml*` file, and the connector's `CommonModules` lists none of `YAML`, `YAML1`, `YAML2`, `YAML3`. The
 acceptance holds as of the T022 entry-point run: the canonical extension compiles and its suites are green
 (`tools/check.sh --layers bsl-canonical`, 179/179), and `tools/bsl-checks/find-procedure-as-function.py`
 reports no candidates. The file is moved to history now that the disagreement is resolved.
+Depends on: none
+Recipe: simple
+Coordinator: Sol Medium
 Worker: Terra Medium
 Reviewer: Sol Medium
 
@@ -20,7 +23,7 @@ Included: the four module directories and their descriptors, their four
 `mol_SchemaFactory`.
 
 Deferred: everything else in the refactoring cycle
-([refactor-backlog.md](../refactor-backlog.md)).
+([refactor-backlog.md](../../refactor-backlog.md)).
 
 Success: the canonical extension still builds, both suites stay green, and no
 reference to the removed modules remains.

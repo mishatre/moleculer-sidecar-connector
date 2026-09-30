@@ -74,10 +74,14 @@ The per-rule table is the audit trail, and that limitation is the reason the lis
 
 Three entries are not debt in the ordinary sense:
 
-* **`MissingCommonModuleMethod`** — a real defect. `mol_AdminPanel`'s `ServiceItemForm` calls
-  `mol_Broker.GetActivePublications()` (line 60) and no such method exists; the live one is the facade's
-  `Moleculer.GetPublications()`. It loads because the platform reads metadata without compiling form
-  bodies, so this surfaces only when that form is opened. Tracked as T036.
+* **`MissingCommonModuleMethod`** — was a real defect, fixed under T036. `mol_AdminPanel`'s
+  `ServiceItemForm` called `mol_Broker.GetActivePublications()`, which never existed, and read
+  `Publication.Info.Id` from a structure whose field is `Id`. The facade's `Moleculer.GetPublications()`
+  returns exactly the flat structure the sibling paths in `mol_Broker` already use, and the sidecar's
+  `updateService` expects the `publicationID` and `service` the form sends, so the payload was right and
+  only the call and the field name were wrong. It loaded because the platform reads metadata without
+  compiling form bodies, so it surfaced only when that form was opened. The baseline entry is deleted, and
+  that deletion is the proof: the rule can no longer fire anywhere in the tree.
 * **`UnavailableMemberCall`** — a real defect, twice. `mol_Errors` uses `ОшибкаРаботыСРечью` and
   `ОшибкаТабличногоПространстваБазыДанных`, which exist from 8.3.23, while the extension declares
   `ConfigurationExtensionCompatibilityMode` = `Version8_3_21`. The platform is 8.3.24, so the code cannot

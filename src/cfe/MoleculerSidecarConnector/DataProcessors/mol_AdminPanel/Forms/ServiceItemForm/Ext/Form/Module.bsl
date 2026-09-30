@@ -57,12 +57,12 @@ EndProcedure
 &AtServer
 Procedure UpdateServiceRegistrationAtServer()
 	
-	Publications = mol_Broker.GetActivePublications();
+	Publications = Moleculer.GetPublications();
 	
 	For Each Publication In Publications Do
 		
 		Params = New Structure();       
-		Params.Insert("publicationID", Publication.Info.Id);
+		Params.Insert("publicationID", Publication.Id);
 		Params.Insert("service"      , FullName);
 
 		Opts = New Structure();
