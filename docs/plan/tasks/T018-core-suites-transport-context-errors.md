@@ -1,9 +1,9 @@
 # T018 — Core unit suites A: transport, context factory, errors
 
-Status: in_progress — the payload contract is covered and canonical is 140/140. Remaining, in the
-acceptance's own terms: the packet encode/decode round-trip, the outbound header set with its signed
-subset, the multipart stream form, the bare non-2xx error object, and restoration of safe mode on the
-failure path. The context factory's handler resolution and its inbound push/pop cleanup are next.
+Status: in_progress — the payload contract and the inbound dispatch path are covered and canonical is
+145/145. Remaining: the packet encode/decode round-trip (unreachable as written; the shape decision is
+T033), the context factory's field casing and nested-call handling, `mol_Errors`' construction,
+conversion and stack-parsing fallback, and the outbound transport half, which needs the sidecar seam.
 Depends on: T017
 Recipe: normal
 Coordinator: Sol Medium
@@ -95,6 +95,24 @@ Per this task's stop condition: the outbound paths — the header set, the multi
 non-2xx error object, and safe-mode restoration on the failure path — cannot be exercised without a live
 sidecar, and no seam exists to inject one. That is recorded as the missing seam rather than worked
 around, because the coordinator owns that decision.
+
+### Inbound dispatch — verified 2026-09-30
+
+`tests/bsl/canonical/CommonModules/mol_InboundDispatchTests`, five tests. Canonical **145/145**.
+
+Source function exercised: `mol_ContextFactory.Handler`, the inbound counterpart of the broker's
+outbound entry points and the only place in the connector that pushes an ambient context and pops it
+again. What is pinned: a resolvable handler runs and its result comes back — `mol_Internal.PingAction`,
+a real exported handler rather than a fixture written for the test; an unlisted handler is **reported as
+an error response, not raised**, because the raise happens inside the function's own `Try`; a context
+naming neither an action nor an event is reported the same way and says why; and the stack is **balanced
+after both outcomes**, verified by putting a sentinel on the stack and finding it current again
+afterwards.
+
+Why the balance can be asserted here and not for the broker: this pop sits in the function's tail,
+outside the `Try`, so it runs on both paths, whereas the broker's push happens after the transport
+answers and is never popped. That contrast is what the acceptance is pointing at, and the broker half is
+T030.
 
 ## Optional pilot metrics
 
