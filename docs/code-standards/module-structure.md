@@ -75,7 +75,7 @@ adaptations.
   exported routine in it carries the `// @internal` marker, described in
   [procedure and function description § 5.9](procedure-and-function-description.md#59-marking-the-internal-api).
   Some modules in this repository still name the region `Protected`; the two names
-  mean the same thing here, and [T040](../plan/tasks/style/T040-refactor-protected-region.md)
+  mean the same thing here, and [T040](https://github.com/mishatre/moleculer-sidecar-connector/issues/3)
   renames them.
 - **Private** — the internal implementation of the common module. When a common
   module is part of a functional subsystem with several metadata objects, this

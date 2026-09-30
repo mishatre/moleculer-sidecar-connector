@@ -4,7 +4,13 @@
 
 Repository root: current checkout; container root `/workspace`.
 Container: Compose service `dev`, platform `linux/amd64`, remote user `root`.
-Base image: `local/vrunner2:8.3.24.1667` (configured, not runtime-verified).
+Base image: `local/vrunner:8.3.24.1667`, a local build of the
+`pravets/onec-images` runner (the Dockerfile used to name `local/vrunner2`; the
+tag is unchanged and the shorter name is the one that exists).
+Start it from the host with `tools/orca/container.sh up` — the setup hook Orca
+runs for a worktree — or with VS Code's "Reopen in Container". Both use
+`.devcontainer/docker-compose.yml` and the same project name,
+`<worktree>_devcontainer`, so one worktree has one container.
 Platform path in debugger config: `/opt/1C/v8.3/x86_64` (unverified).
 Configured post-create check: `oscript --version && opm --version`.
 Codex extension requested: `openai.chatgpt`.
@@ -43,7 +49,13 @@ Disposable test infobase: `/workspace/build/ib`.
 The user authorizes install, update, removal, and reset of this infobase only for
 implementation tasks whose acceptance checks require those mutations.
 Runtime/integration test: unknown.
-GitHub CLI/authenticated release tooling: unavailable in the current container.
+GitHub CLI inside the container: `gh` 2.45 is installed from Ubuntu noble.
+It authenticates from `GH_TOKEN`, which `docker-compose.yml` passes through from
+the host environment; `tools/orca/container.sh up` resolves it from the host's
+`gh auth token` when it is not exported. For VS Code,
+`devcontainer.json`'s `remoteEnv` supplies it instead, because VS Code does not
+inherit the shell. Verify with `gh auth status`; an empty token is an honest
+unauthenticated state, not a broken container.
 T005 produces a local draft-release directory; creating/publishing a GitHub
 release remains a separate delivery action.
 
@@ -81,7 +93,7 @@ loading of model defaults and model routing remain unverified. Configuration
 requests two concurrent threads; session tools expose three total slots.
 Graft/Serena tools are not exposed. No tools were installed or reconfigured.
 
-Detailed acceptance evidence: [T000](tasks/workflow/history/T000-verify-workflow.md).
+Detailed acceptance evidence: [T000](https://github.com/mishatre/moleculer-sidecar-connector/issues/43).
 The direct runner command shapes and disposable target are identified. Exact
 per-task commands, compilation success, runtime behavior, and deployment remain
 unverified until the applicable implementation task.
@@ -92,7 +104,9 @@ unverified until the applicable implementation task.
 - Connector asset: `MoleculerSidecarConnector-v{semver}.cfe`
 - Installer asset: `MoleculerSidecarConnectorInstaller-v{semver}.epf`
 - Checksums: `SHA256SUMS.txt`
-- GitHub repository: `mishatre/moleculer-ones`
+- GitHub repository: `mishatre/moleculer-sidecar-connector` (renamed from
+  `moleculer-ones`, which GitHub still redirects; the task tracker and the
+  pull requests live there).
 - The installer bundles the exact CFE released beside it.
 - The CFE is **not** byte-reproducible, measured 2026-09-30: two builds of the same tree with the same
   profile produced `sha256 c5a5312c65cb…` and `sha256 9d40771201ec…`. The inputs are reproducible —
@@ -105,7 +119,7 @@ unverified until the applicable implementation task.
 ## Verified toolchain — 2026-09-29
 
 Verified in the dev container from `/workspace`. Full evidence in
-[T014](tasks/tooling/history/T014-verify-toolchain-and-test-runner.md).
+[T014](https://github.com/mishatre/moleculer-sidecar-connector/issues/38).
 
 ### Versions and commands
 
@@ -183,9 +197,50 @@ for example `tools/1c-platform/open-infobase.sh client ib`. Direct equivalents:
 /opt/1cv8/current/1cv8                                   # launcher
 ```
 
-Note: launching needs a display (the container exposes `DISPLAY`), and the licence
-is stored inside the container, so it does not survive a container rebuild unless
-`/root/.1cv8` is mounted as a volume.
+### Display
+
+Every mode above opens a window, and the container has no screen: the client draws on the
+macOS host's XQuartz server over TCP. `docker-compose.yml` sets
+`DISPLAY=host.docker.internal:0`, plus `GDK_BACKEND=x11`, `LIBGL_ALWAYS_INDIRECT=1` and
+`WEBKIT_DISABLE_COMPOSITING_MODE=1`, because remote X11 has no direct rendering and
+WebKitGTK has no compositing path over it.
+
+Verified 2026-09-30 in a container started by `tools/orca/container.sh up`:
+
+| Check | Observed |
+|---|---|
+| `xdpyinfo -display "$DISPLAY"` in the container | reaches XQuartz 2.8.6 (`vendor release number: 12101023`) |
+| XQuartz listener on the host | `TCP *:6000`, so "Allow connections from network clients" is on |
+| Source address XQuartz sees for container traffic | `127.0.0.1`, so one `xhost +127.0.0.1` covers every worktree |
+| `/tmp/.X11-unix` bind mount | mounts, but `connect()` answers `ECONNREFUSED`; TCP is the only route on macOS |
+| `1cv8c` with no DISPLAY | `Unable to initialize GTK+ or connect to the windowing system` |
+| `1cv8c` with DISPLAY and no `xhost` entry | `Authorization required, but no authorization protocol specified` |
+| `1cv8c` with DISPLAY and the entry | starts and stays up; the licence check is what stops it next |
+
+The host step, once per X server start — `xhost` entries do not survive a restart of the X
+server:
+
+```bash
+xhost +127.0.0.1
+```
+
+Keep it to `127.0.0.1` rather than a bare `xhost +`, which would open the display to
+everything reachable. `tools/1c-platform/open-infobase.sh` runs `xdpyinfo` before starting
+a client and prints exactly that command when the display is unreachable, so a missing X
+server no longer reads as a broken platform.
+
+Not verified: an actual 1C window rendering over XQuartz. It needs an activated licence,
+which is interactive. XQuartz disables indirect GLX by default
+(`defaults read org.xquartz.X11 enable_iglx` is `0`); if the client draws a black or empty
+window, the community workaround is `defaults write org.xquartz.X11 enable_iglx -bool true`
+before starting XQuartz, and the in-client hardware-acceleration option rather than a
+command-line switch — this 8.3.24 build has no `-DisableHWA`. A browser-visible fallback
+(Xvfb + x11vnc + noVNC in the container) is the dependable alternative when remote X11 is
+too slow or GLX fails; it is not configured here.
+
+The licence lives in root's home, which is the `msc-1cv8-home` volume declared in
+`docker-compose.yml` and mounted at `/root/.1cv8`, so it survives a container rebuild.
+
 
 Until then, still blocked: `vrunner run enterprise`,
 `vrunner validate syntax-check`, and every `vrunner test yaxunit|xunit|vanessa` run.

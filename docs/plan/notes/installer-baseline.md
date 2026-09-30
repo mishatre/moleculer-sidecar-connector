@@ -33,7 +33,7 @@ The target installer should continue to be a guided interactive tool unless a se
 
 ## Existing roadmap (preserved)
 
-The authoritative task sequence remains [T001](../tasks/installer/history/T001-refine-sidecar-connector-installer.md) and [the task index](../README.md):
+The authoritative task sequence remains [T001](https://github.com/mishatre/moleculer-sidecar-connector/issues/37) and [the INST milestone](https://github.com/mishatre/moleculer-sidecar-connector/issues?q=is%3Aissue+milestone%3AINST):
 
 1. T002 refactors the form module without behavior change.
 2. T005 reproducibly builds and bundles a traceable connector CFE artifact.

@@ -2,7 +2,8 @@
 
 Status: existing project. The architecture baseline is documented, the connector and the
 standalone variant build, and the BSL suites run in both modes. Where the work stands is in the
-domain indexes under [tasks/](tasks/); this page describes the project, not the task list.
+domain cards under [tasks/](tasks/), which route to the GitHub issues; this page describes the
+project, not the task list.
 
 ## Known purpose
 
@@ -42,11 +43,18 @@ standalone path, and sidecar-to-connector end-to-end integration.
 ## Current repository facts
 
 - The dev service mounts this repository at `/workspace`, targets `linux/amd64`, and builds from
-  `local/vrunner2:8.3.24.1667`.
+  `local/vrunner:8.3.24.1667`.
+- Each Orca worktree starts its own container through `orca.yaml` →
+  `tools/orca/container.sh up`; VS Code's "Reopen in Container" reaches the same container for the
+  same worktree. The container carries `DISPLAY=host.docker.internal:0`, so the 1C client draws on
+  the host's XQuartz server, and `gh` authenticated from the host token.
 - Extension source: `src/cfe/MoleculerSidecarConnector/`. Configuration source: `src/cf/`.
   External processor source: `src/epf/`.
 - Generated artifacts and disposable infobases live under `build/`; OneScript dependencies under
   `oscript_modules/`.
+- The tasks are GitHub issues in `mishatre/moleculer-sidecar-connector`: one milestone per domain,
+  `domain:`/`status:`/`recipe:` labels, one pull request per task.
+- The remote still answers to the old repository name `moleculer-ones`, which GitHub redirects.
 - `docs/` is tracked by git, including `docs/plan/`. (An earlier revision of this page said it
   was ignored; that was wrong.)
 - The root `README.md` still contains bootstrap-template instructions that do not match the

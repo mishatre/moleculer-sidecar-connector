@@ -1,26 +1,16 @@
-# DOC — project documentation
+# DOC — documentation for readers
 
-Scope: documentation written for readers — everything under `docs/` except `docs/code-standards/`
-(that is [STYLE](../style/index.md)) and `docs/plan/` (that is [FLOW](../workflow/index.md)) —
-plus feature documentation delivered by another domain as the last step of its task.
-Next free ID: `DOC-001`
+Scope: documentation written for readers — everything under `docs/` except `docs/code-standards/` and `docs/plan/`, plus feature documentation delivered by other domains.
+Next free ID: allocate inside this domain, per [tasks.md](../../conventions/tasks.md)
+Roadmap: [open](https://github.com/mishatre/moleculer-sidecar-connector/issues?q=is%3Aissue+milestone%3ADOC+is%3Aopen) · [closed](https://github.com/mishatre/moleculer-sidecar-connector/issues?q=is%3Aissue+milestone%3ADOC+is%3Aclosed) · [all](https://github.com/mishatre/moleculer-sidecar-connector/issues?q=is%3Aissue+milestone%3ADOC)
 Rules: [tasks](../../conventions/tasks.md) · [domains](../../conventions/domains.md) · [commits](../../conventions/commits.md)
 
-Next recommended task: none. The domain's first task, DOC-001, recorded the ITS captures the code
-standards restate. New work appears here when a deliverable is text a reader uses and no source
-file changes.
+The tasks of this domain are GitHub issues in the `DOC` milestone; this card only routes to
+them. Nothing is listed here, so two conversations never edit the same file.
 
-A task lands here when its whole deliverable is text a reader uses — a guide, a page describing
-current behaviour, a README — and no source file changes. When a code task must also update the
-page describing it, the page update stays in that code task; it is part of finishing it.
+```bash
+gh issue list --milestone DOC --state open
+gh issue list --milestone DOC --state all
+```
 
-## Open
-
-| ID | Outcome | Status | Depends on | File |
-|---|---|---|---|---|
-
-## Closed
-
-| ID | Outcome | Closed | File |
-|---|---|---|---|
-| DOC-001 | The two ITS pages the code standards restate are kept as captures | verified | [Task](DOC-001-its-standard-captures.md) |
+Pick the next one with `status:ready`. A finished issue closes with its pull request.

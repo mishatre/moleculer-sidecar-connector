@@ -15,7 +15,7 @@ Container-only: they never launch the 1C platform.  Run with:
 
 The BSL-facing half is exercised elsewhere: the extension harness runs in both
 modes and the artifact is loaded into a database-free infobase, both recorded in
-docs/plan/tasks/standalone/history/T021-standalone-runtime-verification.md.
+issue #21 (T021).
 """
 
 from __future__ import annotations
