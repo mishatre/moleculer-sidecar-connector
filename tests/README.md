@@ -266,11 +266,12 @@ YAML (`$sidecar.utils.parseYAML` со `string: "probe: ok"`), успешный �
   модуль уходит исключением наружу, а содержится только фаза конструирования. Эта
   асимметрия зафиксирована тестами `CompileServiceSchemaRaisesForAnUnknownModule` и
   `CompileServiceSchemaRaisesForANonModuleValue`.
-- Одиннадцать из тридцати вызовов `RaiseCustomError` передают ключ, которого нет в
-  диспетчере `CustomError`, и деградируют до общей ошибки: четыре из них — `ServiceSchema`
-  из `mol_SchemaFactory` при существующем `ServiceSchemaError`. Полный перечень — в
-  [T023](../docs/plan/tasks/T023-error-taxonomy.md); текущая классификация закреплена тестом
-  `SchemaFailuresUseATypeTheFactoriesDoNotProduce`.
+- Шестнадцать из двадцати восьми вызовов `RaiseCustomError` передавали ключ, которого нет в
+  диспетчере `CustomError`, и деградировали до общей ошибки: четыре из них — `ServiceSchema`
+  из `mol_SchemaFactory` при существующем `ServiceSchemaError`. Исправлено в T023: таблица
+  разбора дополнена, `ServiceSchema` нормализуется до `ServiceSchemaError`, а неизвестное имя
+  теперь отвергается с ошибкой, в тексте которой есть само имя. Перечень строк — в
+  [connector-sidecar-protocol.md](plan/connector-sidecar-protocol.md).
 
 ### Раскладка, которую платформа не читала
 

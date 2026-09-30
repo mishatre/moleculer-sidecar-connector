@@ -19,6 +19,7 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("RequestTimeoutCarriesCode504")
 		.ДобавитьСерверныйТест("CustomErrorDispatchesToTheNamedFactory")
 		.ДобавитьСерверныйТест("CustomErrorRefusesAnUnknownType")
+		.ДобавитьСерверныйТест("TheTaxonomyCarriesItsHeadlineValues")
 		.ДобавитьСерверныйТест("RaiseCustomErrorRecordsANumericCode")
 		.ДобавитьСерверныйТест("MessageIsPreserved")
 		.ДобавитьСерверныйТест("RegenerateErrorPreservesTheErrorShape")
@@ -71,11 +72,9 @@ Procedure CustomErrorDispatchesToTheNamedFactory() Export
 
 EndProcedure
 
-// An unknown type name must still produce a usable error carrying that type.
-//
-// The fallback used to call the base factory as Error(Type, "Error", , Message, ...), which
-// put the literal "Error" in the Code position. RaiseError renders the code as Type:Code, so
-// such an error read "Error: Error". Code and Name now come from the factory defaults.
+// T023: a name that is not a row in the dispatcher is refused, and the refusal names it. Before the
+// taxonomy landed the fallback answered with the caller's raw type and the base factory's default code,
+// which is how sixteen call sites went unnoticed.
 Procedure CustomErrorRefusesAnUnknownType() Export
 
 	// This test pinned the opposite until T023: an unknown type silently degraded to a generic
@@ -95,6 +94,29 @@ Procedure CustomErrorRefusesAnUnknownType() Export
 	ЮТест.ОжидаетЧто(Thrown <> Неопределено, "an unknown type must be refused, not degraded").ЭтоИстина();
 	ЮТест.ОжидаетЧто(СтрНайти(Thrown.Message, "SomethingElse") > 0,
 		"the refusal names the offending type").ЭтоИстина();
+
+EndProcedure
+
+// T023 pinned the values that carry the taxonomy's whole point. An independent review found that reverting
+// ServiceNotFound to the shared SERVICE_NOT_AVAILABLE left the suite green, which made the defect this task
+// exists for able to return unnoticed. These are the headline values, and the codes matter beyond shape:
+// mol_Transport.SendError uses Code as the HTTP status a remote node sees.
+Procedure TheTaxonomyCarriesItsHeadlineValues() Export
+
+	ЮТест.ОжидаетЧто(mol_Errors.ServiceNotFound("probe").Type,
+		"a missing service is not reported as an unavailable one").Равно("SERVICE_NOT_FOUND");
+	ЮТест.ОжидаетЧто(mol_Errors.ServiceNotAvailable("probe").Type,
+		"an unavailable service keeps its own name").Равно("SERVICE_NOT_AVAILABLE");
+	ЮТест.ОжидаетЧто(mol_Errors.CustomError("ServiceSchema", "probe").Type,
+		"the short schema spelling reaches the same row").Равно("SERVICE_SCHEMA_ERROR");
+	ЮТест.ОжидаетЧто(mol_Errors.CustomError("Error", "probe").Type,
+		"the documented generic row, not the caller's raw name").Равно("GENERIC_ERROR");
+	ЮТест.ОжидаетЧто(mol_Errors.CustomError("AccessKeyRequired", "probe").Code,
+		"a missing signing key is not a server failure").Равно(401);
+	ЮТест.ОжидаетЧто(mol_Errors.CustomError("ExpiresParam", "probe").Code,
+		"an expired request is refused, not failed").Равно(403);
+	ЮТест.ОжидаетЧто(mol_Errors.CustomError("InvalidArgument", "probe").Code,
+		"and an argument problem is a client error").Равно(400);
 
 EndProcedure
 

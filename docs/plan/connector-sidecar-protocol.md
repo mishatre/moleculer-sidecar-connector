@@ -106,8 +106,22 @@ in the message, because a silent downgrade is what hid sixteen undispatched call
 The rules that come with the table:
 
 - A **type a caller names** has to be a row. The connector's own guards still pass `"Error"`, which is a
-  documented row for "the connector refuses this call" and keeps the shape those sites already produced;
-  retyping them to `InvalidArgument` is a recorded follow-up rather than a change to make blind.
+  documented row for "the connector refuses this call". It does *not* keep the shape those sites used to
+  produce: the old fallback put the caller's raw name in `Type`, so `"Error"` travelled as `Error`. It now
+  travels as `GENERIC_ERROR`, which is consistent with the rest of the table but is a wire-visible change.
+  Retyping those five sites to `InvalidArgument` is a recorded follow-up.
+- Every factory returns a numeric `Code`, but the code matters beyond shape: `mol_Transport.SendError` uses
+  it as the HTTP status, so a code is what a remote node sees. Ten signing and argument factories used to
+  leave the argument empty and therefore returned the base factory's default **500**; they now return 400,
+  401 and 403, and an argument problem is no longer reported as a server failure.
+- **Platform-derived names are a second vocabulary**, not part of this table: `FromErrorInfo` builds its
+  errors from the platform's own category and reports `UNKNOWN`, `CONNECTION_ERROR` and `EMPTY_RESPONSE`
+  among others. One overlap is recorded rather than resolved: `CONNECTION_ERROR` and the retryable
+  `NETWORK_ERROR` above name the same origin from the two directions, which is the kind of duplication this
+  table exists to remove.
+- `ServiceNotFound` and `ServiceNotAvailable` carry different types and codes. They shared
+  `SERVICE_NOT_AVAILABLE`, which is the confusion the taxonomy exists to remove, and no test pinned it
+  until the review asked for one.
 - `ServiceSchema` and `ServiceSchemaError` are normalised to one row *before* the chain, so one concept has
   one meaning instead of two branches that differ only in spelling.
 - A **platform error** converted by `FromErrorInfo` is not a caller type: it is built from the platform's own

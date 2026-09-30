@@ -178,7 +178,11 @@ What changed in `mol_Errors`:
 - `FromErrorInfo`'s network branch becomes `RetryableError("NETWORK_ERROR", 503, …)` instead of an error
   whose `Code` was `Undefined` and whose `Name` said "NetworkError"; and `FromErrorInfo` no longer routes the
   platform's own category names through the caller dispatcher, which is not what that table is for.
-- Eleven signing and argument factories now return a numeric code.
+- Eleven signing and argument factories returned the base factory's default code by leaving the argument
+  empty, which is **500**, not Undefined: an argument problem and a server failure were indistinguishable.
+  They now carry 400, 401 and 403. This is wire-visible — `mol_Transport.SendError` uses `Error.Code` as the
+  HTTP status and serialises the error for a remote node — so it is a deliberate change, reviewed on
+  2026-09-30, not a cosmetic one. (The count is ten; the network branch was the eleventh removed line.)
 - The documented set is the table in [connector-sidecar-protocol.md](../connector-sidecar-protocol.md).
 
 The inventory this task was written from had drifted: re-derived on 2026-09-30 it is **16 of 28** call sites
@@ -187,14 +191,34 @@ not "eleven of thirty".
 
 Still open, and the reason this task is not verified:
 
-- `mol_SchemaFactoryTests.SchemaFailuresUseATypeTheFactoriesDoNotProduce` was rewritten to
-  `SchemaFailuresUseTheDispatchedType` and asserts the fixed classification; the end-to-end half — a suite
-  observing each origin through a real boundary — is not done. The inbound boundary is covered by
-  `tests/bsl/http/test-inbound-transport.sh`; the transport-failure origin cannot be observed today because
-  an unreachable sidecar hangs instead of failing (see the note above), so it stays a recorded gap.
-- The five guard sites still passing `"Error"` should be retyped to `InvalidArgument`; they are documented as
-  a follow-up rather than changed blind, because their shape is pinned by existing suites.
-- Independent review of this diff has not happened yet.
+- The end-to-end half of the third and fourth acceptance items is not done: only the inbound boundary has a
+  real-boundary suite (`tests/bsl/http/test-inbound-transport.sh`), and the transport-failure origin cannot
+  be observed today because an unreachable sidecar hangs instead of failing (see the note above).
+- `mol_ErrorShapesTests` still walks ten of the twenty-one factories, so the six whose codes changed and the
+  network branch are outside it. `TheTaxonomyCarriesItsHeadlineValues` covers the headline values; the walk
+  is what would cover the rest.
+- The five guard sites still pass `"Error"`; it is a documented row now, and retyping them to
+  `InvalidArgument` is a follow-up rather than a change to make blind.
+- `Moleculer.RaiseCustomError` passes a computed name through the dispatcher, and nothing tests that path.
+- `FromErrorInfo`'s platform vocabulary (`UNKNOWN`, `CONNECTION_ERROR`, `EMPTY_RESPONSE`) is documented as a
+  second vocabulary, and its overlap with `NETWORK_ERROR` is recorded rather than resolved.
+- `CustomError` is an exported, documented entry point that used to answer with a structure for any name and
+  now raises for an unknown one. No in-tree path breaks — every literal site is a row and `FromErrorInfo` no
+  longer uses the dispatcher — but the contract is worth naming.
+
+## Independent review
+
+Reviewed 2026-09-30 at `229f520` by a read-only reviewer: verdict "sound with findings". It re-derived the
+inventory independently (28 sites; no literal name left undispatched) and judged the two rewritten tests
+non-vacuous. Six findings, all acted on:
+
+1. The recorded rationale for the code changes was wrong — `Error()` defaults `Code = 500`, so those
+   factories never returned Undefined. Corrected here, in the protocol document and in the commit rationale.
+2. The document claimed the `"Error"` row kept the shape its call sites produced; it does not.
+3. Nothing pinned the headline values, so the central defect could regress silently. Now pinned.
+4. The refused-type change alters an exported contract; recorded above.
+5. The platform vocabulary the table does not cover; documented as a second vocabulary.
+6. Stale notes in `tests/README.md` and above the rewritten test, plus mixed indentation in the new blocks.
 
 ## Acceptance and consumer example
 
