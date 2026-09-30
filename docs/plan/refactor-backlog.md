@@ -195,6 +195,28 @@ the final text: seven container-only cases cover the surviving `Else`, the promo
 verification step still only checks that dead branches do not survive, which is now the weaker half of
 the pair rather than the only half.
 
+## T032 — make the connector's own actions reachable over HTTP
+
+Outcome: a packet addressed to one of the connector's `$internal` actions either runs its handler and
+returns the result, or is refused for a documented reason rather than because two name tests disagree.
+
+Why: `mol_Transport.RequestHandler` tries the local resolver only when the action begins with
+`"$internal"`, but `mol_Broker.Delete_FindInternalHandler` matches names qualified by the compiled
+schema's `fullName`, which begins with the module name. The two conditions cannot both hold, so the
+resolver is never consulted for a name it could match, and every such request answers 503
+`Handler is not provided`. The same path is what `mol_Internal`'s actions — `ping`, `health`, `services`,
+`actions`, `events`, `metrics`, `options`, `wellknown`, `list` — were written for.
+
+Evidence: `tests/bsl/http/test-inbound-transport.sh` sends a complete payload to `$internal.ping` and
+records the 503 as a gap, in both modes. The payload itself is accepted, which the test proves separately
+by sending the same shape to an unregistered action and getting the envelope rather than a platform page.
+
+Owner decision required: the prefix check may be deliberate exposure control rather than a naming
+mistake. Enabling the resolver for every action would make `services`, `actions` and `metrics` answer any
+caller that can reach the service, so the fix is either to widen the guard to the qualified prefix the
+resolver actually matches, or to keep the restriction and rename the actions to match it — and to say
+which in the documentation.
+
 ## Open decisions
 
 1. Delivery target for this cycle: smaller/simpler, or more testable? The two pull

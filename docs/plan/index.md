@@ -47,6 +47,7 @@ for T024 and T025 live in [refactor-backlog.md](../refactor-backlog.md).
 | T028 | Service definitions parse locally instead of through the sidecar | draft | owner decision on safe mode; T025 | [Plan](refactor-backlog.md) |
 | T030 | The ambient context stack is pushed and popped symmetrically | draft | T020 | [Plan](refactor-backlog.md) |
 | T031 | The standalone variant keeps the live branch of a standalone guard | verified | T015, T016 | [Plan](refactor-backlog.md) |
+| T032 | The connector's own actions are reachable over HTTP | draft | owner decision on exposure | [Plan](refactor-backlog.md) |
 
 ### Service module migration (new, low priority)
 

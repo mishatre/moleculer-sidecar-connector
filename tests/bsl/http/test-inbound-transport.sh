@@ -22,13 +22,22 @@
 # starts the server, asserts, and stops the server again. The base file is therefore free
 # afterwards, which is what the YAxUnit harness needs.
 #
-# Two findings from the platform are encoded here, because both are easy to get wrong:
+# Four findings are encoded here, because all of them are easy to get wrong:
 #
 #  1. The stand-alone server does not publish an extension's HTTP service just because
 #     `publish-by-default` / `publish-extensions-by-default` are set. The service has to
 #     be listed by metadata name. An unlisted service answers 503 for every path.
 #  2. No infobase user is required. An infobase with an empty user list runs every
 #     connection with full rights, so the request reaches the service unauthenticated.
+#  3. The inbound payload is the field set mol_ContextFactory.ToPayload emits, and it is read
+#     unconditionally. A payload missing `parentID` raises a platform error page rather than
+#     reaching the envelope, so only a complete fixture separates "the payload was rejected"
+#     from "the action has no handler".
+#  4. The connector's own `$internal` actions cannot be reached over HTTP: RequestHandler tries
+#     the local resolver only for names beginning with `$internal`, while the resolver matches
+#     names qualified by the compiled schema's fullName, which begins with the module name. The
+#     two conditions cannot agree. Recorded as a gap rather than fixed, because the prefix check
+#     may be deliberate exposure control rather than a naming mistake.
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
@@ -106,7 +115,14 @@ esac
 # A packet shaped like mol_Transport.NewPacket produces. No handler is registered for an
 # empty action, so the connector answers with its own envelope instead of running a job.
 PROBE_PACKET='{"sender":"probe","meta":{},"data":{},"stream":false}'
+# The same packet with a complete payload, which is the field set mol_ContextFactory.ToPayload emits for
+# an action: id, action, params, meta, timeout, locals, level, tracing, parentID, requestID, caller,
+# stream. Sending a complete one separates "the payload was rejected" from "the action has no handler".
+ACTION_PACKET='{"meta":{},"stream":false,"data":{"id":"probe-1","action":"probe.notRegistered","params":{},"meta":{},"timeout":0,"locals":{},"level":1,"tracing":false,"parentID":0,"requestID":"probe-1","caller":"probe","stream":false}}'
 
+# The same payload addressed to one of mol_Internal's real actions, which is what the local resolver
+# should find.
+INTERNAL_PACKET='{"meta":{},"stream":false,"data":{"id":"probe-2","action":"$internal.ping","params":{},"meta":{},"timeout":0,"locals":{},"level":1,"tracing":false,"parentID":0,"requestID":"probe-2","caller":"probe","stream":false}}'
 SERVER_PID=""
 
 # ---------------------------------------------------------------------------- reporting
@@ -346,6 +362,32 @@ if [ "$STATUS" = "405" ]; then
 	pass "only POST is mapped, so GET answers 405"
 else
 	fail "GET answers $STATUS, expected 405"
+fi
+
+echo "==> checking a complete action payload"
+# The payload is accepted, so the refusal that follows is about the handler rather than the shape. This
+# matters because an incomplete payload does not reach the envelope at all: it raised a platform error
+# page while this was being written, which is the same input-validation gap recorded below.
+request POST "$SERVICE_URL" "application/json" "$ACTION_PACKET"
+if [ "$STATUS" = "503" ]; then
+	pass "a complete payload for an unregistered action answers 503"
+else
+	fail "a complete payload answers $STATUS, expected 503"
+fi
+assert_contains "$(body_json)" '"message":"Handler is not provided"' "the refusal is about the handler, not the payload"
+
+echo "==> checking the connector's own actions"
+# Known defect, tracked rather than fixed here because the guard may be deliberate. RequestHandler only
+# tries the local resolver when the action starts with "$internal", but the resolver matches names
+# qualified by the compiled schema's fullName, which begins with the module name. The two tests cannot
+# agree, so the connector's own actions are unreachable over HTTP.
+request POST "$SERVICE_URL" "application/json" "$INTERNAL_PACKET"
+if [ "$STATUS" = "200" ] && printf '%s' "$(body_json)" | grep -qF '"data":"pong"'; then
+	pass "the connector's own action runs and returns its handler's result"
+elif [ "$STATUS" = "503" ]; then
+	gap "the connector's own action answers $STATUS without reaching its handler; expected 200 and the result"
+else
+	fail "the connector's own action answers $STATUS with an unexpected body"
 fi
 
 echo "==> checking input validation"
