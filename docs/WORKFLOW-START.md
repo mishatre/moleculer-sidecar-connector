@@ -16,7 +16,7 @@ llm-manager repository inside the container.
 5. Send this exact first request:
 
 ```text
-Read /workspace/AGENTS.md and docs/plan/tasks/history/T000-verify-workflow.md.
+Read /workspace/AGENTS.md and docs/plan/tasks/workflow/history/T000-verify-workflow.md.
 Implement T000 only. Verify the workspace, instructions, tools and model/agent
 configuration without changing application source or building/updating an
 infobase. Save results in the task. Ask ordinary untimed questions if needed.
@@ -27,10 +27,14 @@ After T000, use these ordinary chat requests:
 ```text
 Plan this project. Here is my full description: ...
 Create a task for [feature or problem]. Do not implement it yet.
-Refine task T001 for implementation later.
-Implement task T001.
+Refine task CORE-001 for implementation later.
+Implement task CORE-001.
 Review [feature or task] and create follow-up tasks.
+Commit this work.
 ```
+
+Implementation ends with a commit on its own — you do not need to ask for that in every
+conversation. “Commit this work” exists for committing something that is already finished.
 
 Use “Create a task” for a new feature or fix; use “Plan this project” for the
 overall roadmap. Creation saves a draft; refinement prepares it for implementation.
@@ -47,7 +51,9 @@ agreed files may need a normal-mode turn. Implementation uses normal mode.
 | Project instruction entry point | `/workspace/AGENTS.md` |
 | Pipeline | `/workspace/docs/workflow.md` |
 | Operation prompts | `/workspace/docs/workflow-prompts/` |
-| Plan and tasks | `/workspace/docs/plan/` |
+| Plan, domains and task indexes | `/workspace/docs/plan/README.md` |
+| The rules for task files and commits | `/workspace/docs/plan/conventions/` |
+| Code standards for BSL | `/workspace/docs/code-standards/README.md` |
 | Agent configuration | `/workspace/.codex/` |
 
 `docs/workflow.md` means “start at the project root and open docs/workflow.md.”

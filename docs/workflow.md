@@ -20,8 +20,9 @@ Use normal execution mode for a ready task. Goal mode is optional for a bounded 
 
 Use “Create a task for…” to capture a new feature or fix in an existing project.
 The coordinator follows `docs/workflow-prompts/05-create-task.md`, checks existing
-tasks for duplicates, assigns the next unused ID, saves a draft and updates the
-index. Keep acceptance examples, relevant code locations and unknowns in the task.
+tasks for duplicates, picks the domain, assigns the next unused ID in that domain's
+folder, saves a draft and updates that domain's index. Keep acceptance examples,
+relevant code locations and unknowns in the task.
 Do not elaborate the whole roadmap or implement source changes for this request.
 
 Use “Refine task T001” to settle implementation details later. “Create and refine
@@ -33,12 +34,20 @@ file identifiers, not the required execution order.
 
 - `AGENTS.md`: durable readability, scope and workflow rules; small enough to read routinely.
 - `docs/plan/project.md`: purpose, current need, architectural boundaries and future direction.
-- `docs/plan/index.md`: task IDs, status, dependencies and the next recommended task.
-- `docs/plan/tasks/T001-short-name.md`: task card, implementation context and completion evidence in one file.
-- `docs/plan/tasks/history/<TASK>.md`: a completed task file that has been moved out of the active folder.
-  A task moves here once its acceptance items are evidenced, so that the active folder answers "what is
-  still open" and this one answers "what was done and how was it proven". The index keeps linking these.
+- `docs/plan/README.md`: routes to the domains and to the global documents. It lists domains, never
+  tasks, so it stays out of a task's way.
+- `docs/plan/tasks/<domain>/index.md`: the tasks of one domain — IDs, status, dependencies and the next
+  recommended task. This is the only index a task edits.
+- `docs/plan/tasks/<domain>/<ID>-<short-name>.md`: task card, implementation context and completion
+  evidence in one file. `<domain>` is one of the eight in `docs/plan/conventions/domains.md`.
+- `docs/plan/tasks/<domain>/history/<TASK>.md`: a completed task file that has been moved out of the
+  active folder. A task moves here once its acceptance items are evidenced, so that the active folder
+  answers "what is still open" and this one answers "what was done and how it was proven". The domain
+  index keeps linking these.
+- `docs/plan/conventions/`: `domains.md` (which folder a change belongs to), `tasks.md` (task file,
+  IDs, statuses) and `commits.md` (the commit that finishes a task).
 - `docs/plan/environment.md`: working directories, relevant commands and actual validation/deployment capabilities.
+- `docs/plan/notes/`: long-form architecture, research and history. Read-only for routine task work.
 - Existing README or feature docs: current behavior and how to use it, updated alongside delivery.
 
 Use the task file as the single source of truth for scope and evidence. Do not duplicate it into OBJECTIVE, STATUS, HANDOFF and agent-log files. Link important decisions from the project brief; add a dedicated decision document only when it needs a durable explanation.
@@ -119,6 +128,15 @@ For 1C, use the repository's established export/build tools and format. Record a
 A change touching stock, transactions or inter-system messages gets checks for the relevant duplicate/retry/partial-failure behavior even if the project is generally tolerant of small bugs.
 
 Define delivery in the task: local artifact, consumer integration, package publish, deployment, or manual import. Choose the shortest established route that reaches the real consumer. Public npm publishing is not automatically required for an internal urgent fix. Prepare and verify the concrete artifact; execute publishing/deployment when authorized by the task and allowed by the environment. Otherwise mark it awaiting that action, with exact instructions. Routine in-scope work does not require repeated permission.
+
+## Commits
+
+Finishing a task means committing it. Nobody has to ask: the commit is the last step of
+implementation, and its absence is an unfinished task. The subject is `<ID>: <outcome>`, with
+`Task:` and `Verified:` trailers, one commit per task, and the task file's status and evidence
+travel in the same commit. `docs/plan/conventions/commits.md` holds the format and the reasons.
+Never mix two domains in one commit, never commit generated artifacts, and keep unrelated churn
+out.
 
 ## Pauses and measurement
 

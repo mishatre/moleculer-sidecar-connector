@@ -1,4 +1,4 @@
-# T001 — [One demonstrable outcome]
+# <ID> — [One demonstrable outcome]
 
 Status: draft
 Depends on: none
@@ -58,6 +58,7 @@ Build:
 Runtime/consumer check:
 Review findings and dispositions:
 Delivered artifact/deployment:
+Commit:
 Unverified work:
 Next action:
 

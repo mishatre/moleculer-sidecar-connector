@@ -81,7 +81,7 @@ loading of model defaults and model routing remain unverified. Configuration
 requests two concurrent threads; session tools expose three total slots.
 Graft/Serena tools are not exposed. No tools were installed or reconfigured.
 
-Detailed acceptance evidence: [T000](tasks/history/T000-verify-workflow.md).
+Detailed acceptance evidence: [T000](tasks/workflow/history/T000-verify-workflow.md).
 The direct runner command shapes and disposable target are identified. Exact
 per-task commands, compilation success, runtime behavior, and deployment remain
 unverified until the applicable implementation task.
@@ -105,7 +105,7 @@ unverified until the applicable implementation task.
 ## Verified toolchain — 2026-09-29
 
 Verified in the dev container from `/workspace`. Full evidence in
-[T014](tasks/history/T014-verify-toolchain-and-test-runner.md).
+[T014](tasks/tooling/history/T014-verify-toolchain-and-test-runner.md).
 
 ### Versions and commands
 
@@ -201,7 +201,7 @@ the image does not have". That is wrong — `/usr/bin/java` is OpenJDK 21.0.12 a
 `tools/bsl-checks/bsl-language-server.py` wraps it: with the default rule set the
 connector's 38 modules report 780 findings (35 Error, 133 Warning, 143 Information,
 469 Hint), and with the rule set selected in `.bsl-language-server.json`, 63. See
-[toolkit research](toolkit-research.md) for the original notes.
+[toolkit research](notes/toolkit-research.md) for the original notes.
 
 ### Verified headless commands (use these)
 

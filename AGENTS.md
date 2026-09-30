@@ -16,18 +16,39 @@ not installed slash commands. Explicit user instructions take precedence.
 |---|---|
 | Plan this project | `docs/workflow-prompts/01-plan-project.md` |
 | Create a task for… | `docs/workflow-prompts/05-create-task.md` |
-| Refine task T001 | `docs/workflow-prompts/02-refine-task.md` |
-| Implement task T001 | `docs/workflow-prompts/03-implement-task.md` |
+| Refine task CORE-001 | `docs/workflow-prompts/02-refine-task.md` |
+| Implement task CORE-001 | `docs/workflow-prompts/03-implement-task.md` |
 | Review this feature/task | `docs/workflow-prompts/04-review.md` |
+| Commit this work | `docs/workflow-prompts/06-commit-work.md` |
 
 Read `docs/workflow.md` when applying the workflow. Project state is in
-`docs/plan/project.md`, `docs/plan/index.md`, `docs/plan/environment.md` and
-`docs/plan/tasks/`. Reusable document templates live in `docs/plan/templates/`.
-Do not read every task or prompt for one operation. A delegated agent reads its
-assigned packet and applicable project rules; it does not invoke this router.
+`docs/plan/project.md`, `docs/plan/environment.md` and the domain folders under
+`docs/plan/tasks/`; `docs/plan/README.md` routes to them. Reusable document templates
+live in `docs/plan/templates/`, and the rules for task files, domains and commits in
+`docs/plan/conventions/`. Do not read every task or prompt for one operation. A
+delegated agent reads its assigned packet and applicable project rules; it does not
+invoke this router.
 
-For onboarding, read `docs/WORKFLOW-START.md`. For T000, use the task's read-only
+For onboarding, read `docs/WORKFLOW-START.md`. For T000, now filed at
+`docs/plan/tasks/workflow/history/T000-verify-workflow.md`, use the task's read-only
 setup verification recipe rather than the normal implementation team.
+
+## Tasks, domains and commits
+
+A task belongs to one domain and lives in that domain's folder:
+`docs/plan/tasks/<domain>/<ID>-<slug>.md`, with finished work moved to `history/` beside
+it. The eight domains, the ID scheme and the rules of a lane are in
+`docs/plan/conventions/domains.md` and `docs/plan/conventions/tasks.md`. `T000`–`T040`
+are the retired global series and keep their names.
+
+Work in one domain per conversation and edit only that domain's files: its task files,
+its `index.md` and its `history/`. The routers, the conventions, the templates,
+`AGENTS.md` and `docs/workflow-prompts/` are read by everyone and change only under a
+`FLOW` task. A `Depends on` line blocks that one task, never another domain.
+
+Finish every task with a commit — `<ID>: <outcome>`, with `Task:` and `Verified:`
+trailers, one commit per task, exactly as `docs/plan/conventions/commits.md`
+specifies. Committing is the last step of the task, not a separate request.
 
 ## This project's current boundaries
 
@@ -52,11 +73,13 @@ Keep visible planning/status concise; save detail in docs/plan. Show outcome, sc
 
 ## Scope
 
-Use docs/workflow.md for the five operations: project planning, task creation, refinement, implementation and review. A project plan authorizes documentation, not application implementation. Implement the selected ready task only. Future ideas go to the task index. Preserve simple boundaries for growth without building unused hooks/adapters/frameworks. Favor one demonstrable outcome and the actual consumer integration.
+Use docs/workflow.md for the six operations: project planning, task creation, refinement, implementation, review and commit. A project plan authorizes documentation, not application implementation. Implement the selected ready task only. Future ideas go to that domain's index. Preserve simple boundaries for growth without building unused hooks/adapters/frameworks. Favor one demonstrable outcome and the actual consumer integration.
 
 ## Readability
 
 Use descriptive names and explicit control flow. In brace-based languages, always use braces for if/else/for/while bodies. Separate logical steps with blank lines. Avoid compressed one-liners, nested ternaries and unnecessarily clever chains. In BSL use idiomatic explicit blocks and the project's naming language. Keep related behavior together; extract operations by responsibility rather than arbitrary size. Follow existing good examples identified in the task; do not preserve unreadable compression merely because it exists nearby. No unrelated reformatting.
+
+BSL also follows the 1C standards collected in [docs/code-standards](docs/code-standards/README.md): the #std455 module-section and region order, and the #std453 comment above a procedure or function. In short: one handler per event, each calling a named operation rather than each other; no empty regions; a short module header; a same-line comment for every module variable; document the program interface and the overridable connectors, and do not restate a routine's own name in its comment; a blank line between routines; and a comment above a compilation directive, not below it.
 
 BSL is aligned in columns on purpose. Match the surrounding module's aligned `=` and trailing-comment columns instead of letting a formatter left-align them, and treat the leading spaces after `|` in a multi-line string literal as message text rather than layout. Keep formatter output out of a commit that carries a change, and treat a repo-wide reformat as its own decision.
 

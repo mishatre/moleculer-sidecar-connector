@@ -8,6 +8,8 @@ Only the top-level coordinator runs the pipeline; children do not orchestrate it
 
 Two failed fixes for the same issue trigger diagnosis and a revised bounded approach or one specialist, not a repeating team loop. Never waive failed acceptance checks. Record future improvements without doing them. Review readability as well as correctness. Do not perform unrelated cleanup.
 
-Complete the task's authorized delivery steps. Distinguish code/source checks, build, runtime tests and deployment. If an environment or approval blocks a required action, save the precise blocker and the next step. Update task/index status honestly. Do not proceed into the next roadmap task.
+Complete the task's authorized delivery steps. Distinguish code/source checks, build, runtime tests and deployment. If an environment or approval blocks a required action, save the precise blocker and the next step. Update the task file and its domain's index honestly. Do not proceed into the next roadmap task.
+
+Then commit the task, without being asked: `<ID>: <outcome>` with `Task:` and `Verified:` trailers, exactly as docs/plan/conventions/commits.md specifies. One commit per task. Stage this task's files and its own domain's files only — unrelated pre-existing working-tree changes stay where they are. Move the task file to that domain's history/ folder and record the commit hash in its completion evidence, in the same commit. If the work cannot honestly be closed by one commit, leave the task in_progress and report the split instead of committing something else.
 
 Return: outcome, evidence, entry point/main flow, remaining limitation or next action. Link detail rather than pasting logs.

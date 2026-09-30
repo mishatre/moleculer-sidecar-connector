@@ -4,22 +4,27 @@ Create a task for [FEATURE / PROBLEM / REQUEST]. Use Sol Medium. This request
 authorizes task documentation, not application implementation or deployment.
 Follow the project AGENTS.md; all paths below are relative to this project root.
 
-Read docs/plan/index.md, the relevant project context and
-docs/plan/templates/task.md. Inspect only the source needed to understand the
-request and name useful entry points. Check the index and task filenames for
-related work and used IDs. If an existing task already covers the same outcome,
+Read docs/plan/README.md, the target domain's index, the relevant project context
+and docs/plan/templates/task.md. Inspect only the source needed to understand the
+request and name useful entry points. Check that domain's index and task filenames
+for related work and used IDs; a number from the retired T-series may still be open
+in the folder. If an existing task already covers the same outcome,
 update or link it instead of creating a duplicate; preserve its existing scope
 and evidence, and report what you did.
 
 Identify the immediate useful outcome. Separate required-now behavior from
 future ideas. Create one small, demonstrable task; if the request spans several
-independent outcomes, create a small set of linked draft tasks and recommend
-which comes first. Do not create a full project roadmap for one feature.
+independent outcomes, create a small set of linked draft tasks — one per domain —
+and recommend which comes first. Do not create a full project roadmap for one
+feature.
 
-Assign the next unused T-number, checking both index and task files, without
-renumbering existing tasks. Save docs/plan/tasks/TNNN-short-name.md using the
-local template and update docs/plan/index.md. Create missing document directories
-when needed. Do not overwrite existing tasks. Record a short decision card,
+Pick the domain first, following docs/plan/conventions/domains.md, and save the
+task as docs/plan/tasks/<domain>/<PREFIX>-NNN-short-name.md using the local
+template. Allocate <NNN> by reading that one folder — the highest number used
+there, plus one. Never renumber an existing task, never reuse a number, and
+never add a prefix to a T-number. Then update that domain's index.md and nothing
+else. Create missing document directories when needed. Do not overwrite existing
+tasks. Record a short decision card,
 initial acceptance examples, in/out scope, relevant files, dependencies, delivery
 target and known unknowns. Keep unverified commands explicitly unverified.
 

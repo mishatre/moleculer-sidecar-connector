@@ -4,7 +4,7 @@ Use Sol Medium as coordinator. This is planning/documentation work, not authoriz
 
 Read the applicable AGENTS.md and existing docs/plan before creating new documents. Interview me using ordinary untimed chat, one decision at a time. I will provide a full project description; preserve all ideas, but classify them as needed now, later, or undecided. First establish the immediate real-world outcome and delivery target.
 
-Save the project brief, dependency-ordered task index and first task drafts under docs/plan. Describe architecture, current interfaces, unknowns, alternatives and future extension directions. Elaborate the next one or two tasks only; keep distant tasks as useful outlines. Split by the smallest demonstrable outcomes, not by arbitrary functions/files. Include discovery tasks only for uncertainties that block a real decision. Do not turn every possible risk into a requirement.
+Save the project brief under docs/plan, and each domain's index with its first task drafts under docs/plan/tasks/<domain>/. Describe architecture, current interfaces, unknowns, alternatives and future extension directions. Elaborate the next one or two tasks only; keep distant tasks as useful outlines. Split by the smallest demonstrable outcomes, not by arbitrary functions/files. Include discovery tasks only for uncertainties that block a real decision. Do not turn every possible risk into a requirement.
 
 If a concrete uncertainty needs independent exploration, delegate one bounded read-only investigation to Terra Medium alongside useful local planning work. Use a Sol Medium scope review for a substantial initial plan. Reserve Astra Medium for an unresolved architecture decision. Do not create a management team to write documents.
 
