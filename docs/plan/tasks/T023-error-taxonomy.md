@@ -141,6 +141,12 @@ carries `Code` as `Undefined`. The named factories all pass the family walk; thi
 the same doubled-comma omission the old code shipped six times, which suggests checking the remaining
 `Error(` call sites for it while this task is open.
 
+A related finding from the same pass: `mol_Errors.WrapExternalStack` wraps a foreign stack in
+`----EXTERNAL_STACK----` markers so a reader can tell it from a local one, and **nothing calls it**. A
+converted error therefore carries a stack that says nothing about where it came from, which is exactly
+the distinction this task exists to make visible. `mol_ErrorShapesTests` pins the absence, so wiring the
+helper up will fail that test rather than pass silently.
+
 ## Acceptance and consumer example
 
 - [ ] Every factory returns `Code` as a number and a `Name` from a documented set.

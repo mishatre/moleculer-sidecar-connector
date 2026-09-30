@@ -26,7 +26,9 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("ToStringStatesTheMessageTheTypeAndTheCode")
 		.ДобавитьСерверныйТест("FromErrorInfoConvertsACaughtPlatformError")
 		.ДобавитьСерверныйТест("FromErrorInfoRefusesSomethingThatIsNotAnErrorInfo")
-		.ДобавитьСерверныйТест("ARemoteStackIsRetainedThroughRegeneration");
+		.ДобавитьСерверныйТест("ARemoteStackIsRetainedThroughRegeneration")
+		.ДобавитьСерверныйТест("AnOrdinaryFailureFallsBackToTheUnknownType")
+		.ДобавитьСерверныйТест("AConvertedErrorCarriesAStackButNoForeignMarker");
 
 EndProcedure
 
@@ -180,6 +182,49 @@ Procedure ARemoteStackIsRetainedThroughRegeneration() Export
 
 	ЮТест.ОжидаетЧто(Original.stack, "the fixture's stack is a string").Равно(RemoteStack);
 	ЮТест.ОжидаетЧто(Regenerated.stack, "the remote stack survives regeneration").Равно(RemoteStack);
+
+EndProcedure
+
+Procedure AnOrdinaryFailureFallsBackToTheUnknownType() Export
+
+	// mol_Errors.FromErrorInfo through GetErrorTypeFromErrorInfo — the type is derived from the platform's
+	// brief description, and a failure matching none of the known network messages has to fall back to a
+	// named default rather than to an empty string. This is the fallback path the acceptance asks for,
+	// reached the only way a caller can reach it: through the conversion.
+	Caught = Undefined;
+	Попытка
+		ВызватьИсключение "probe fallback";
+	Исключение
+		Caught = ИнформацияОбОшибке();
+	КонецПопытки;
+
+	Converted = mol_Errors.FromErrorInfo(Caught);
+
+	ЮТест.ОжидаетЧто(Converted.type, "an unrecognised failure falls back to a named type").Равно("UNKNOWN");
+
+EndProcedure
+
+Procedure AConvertedErrorCarriesAStackButNoForeignMarker() Export
+
+	// mol_Errors.AppendErrorInfo through GenerateErrorStack — an error converted from a platform ErrorInfo
+	// gets a stack generated from it, and for a trivial exception that is its description.
+	//
+	// CURRENT BEHAVIOUR, and a finding: mol_Errors.WrapExternalStack exists to wrap a foreign stack in
+	// `----EXTERNAL_STACK----` so a reader can tell it from a local one, but nothing calls it. A converted
+	// error is therefore indistinguishable from a locally raised one. The absence is pinned so that wiring
+	// the helper up fails this test rather than passing unnoticed.
+	Caught = Undefined;
+	Попытка
+		ВызватьИсключение "probe stack";
+	Исключение
+		Caught = ИнформацияОбОшибке();
+	КонецПопытки;
+
+	Converted = mol_Errors.FromErrorInfo(Caught);
+
+	ЮТест.ОжидаетЧто(Не ПустаяСтрока(Строка(Converted.stack)), "a converted error carries a stack").ЭтоИстина();
+	ЮТест.ОжидаетЧто(СтрНайти(Строка(Converted.stack), "EXTERNAL_STACK") = 0,
+		"CURRENT BEHAVIOUR: no foreign marker is produced: " + Строка(Converted.stack)).ЭтоИстина();
 
 EndProcedure
 

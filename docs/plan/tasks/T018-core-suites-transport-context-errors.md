@@ -150,8 +150,20 @@ One test was removed rather than kept: `WrapExternalStack` is not exported eithe
 private function to catch me. Both are now in the repository's convention notes, together with the
 `grep` that answers the question before a run is spent.
 
-Still open: the fallback when a formatted stack cannot be parsed, and the context factory's field-casing
-and nested-call handling.
+### The parse fallback, and a dead helper — verified 2026-09-30
+
+`AnOrdinaryFailureFallsBackToTheUnknownType` pins the fallback the acceptance asks for: the type is
+derived from the platform's brief description, and a failure matching none of the known network messages
+gets the named default `UNKNOWN` rather than an empty string. It is reached through the conversion,
+because the function that derives it is private.
+
+`AConvertedErrorCarriesAStackButNoForeignMarker` pins what actually happens, and turned out to be a
+finding. `mol_Errors.WrapExternalStack` exists to wrap a foreign stack in `----EXTERNAL_STACK----` so a
+reader can tell it from a local one — but **nothing calls it**, so a converted error is indistinguishable
+from a locally raised one. The test asserts the marker's absence, so wiring the helper up will fail it
+rather than pass unnoticed. Recorded in T023.
+
+Still open: the context factory's field-casing and nested-call handling, and the outbound half.
 
 ## Optional pilot metrics
 
