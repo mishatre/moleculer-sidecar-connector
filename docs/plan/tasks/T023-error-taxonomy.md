@@ -147,6 +147,19 @@ converted error therefore carries a stack that says nothing about where it came 
 the distinction this task exists to make visible. `mol_ErrorShapesTests` pins the absence, so wiring the
 helper up will fail that test rather than pass silently.
 
+An observation from the live-suite work, which belongs to the third acceptance item (2026-09-30): pointing
+the live suite at a *closed* port did not produce a failure. The canonical run that contains it takes about
+70 s when the sidecar is reachable; with the connection fixture's port changed to a closed one, the client
+was still inside the test phase after 22 minutes, and the run had to be terminated. That left no `YAxUnit:`
+summary and no failure line at all — the harness exited 143 on the signal. Restoring the fixture turned the
+same suite green again (179/179), so the base was not the cause.
+
+So an unreachable sidecar currently produces neither a distinguishable error nor any error: it produces a
+hang. The cheap explanation — a platform dialog waiting for a click in a headless run — has not been ruled
+out, and that distinction decides the fix, so diagnosing it is the natural first step here. The transport
+does set a timeout (120 s by default, from `Packet.Data.Timeout` in milliseconds) and `mol_Broker.Call`
+contains no retry loop, so neither accounts for 22 minutes on its own.
+
 ## Acceptance and consumer example
 
 - [ ] Every factory returns `Code` as a number and a `Name` from a documented set.

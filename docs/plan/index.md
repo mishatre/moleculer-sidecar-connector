@@ -3,9 +3,11 @@
 Two workstreams share this index: the installer roadmap (T001–T013, unchanged)
 and the standalone-builder/test workstream (T014–T022).
 
-Next: **the suite workstream (T014–T021) is finished, so T022 is unblocked and is the next task to pick
-up.** T032 is the remaining merge defect: the variant cannot build its internal service and the reason is
-swallowed, so it needs that exception observed before a fix is chosen.
+Next: **T022 is the active task and has one item left — an `INSTALL.md` rehearsal against a real host
+configuration.** Its static layer and single entry point are landed and verified. Then T032, the remaining
+merge defect: the variant cannot build its internal service and the reason is swallowed, so it needs that
+exception observed before a fix is chosen. T036 and T037 are new, both found by the T022 gate, and both are
+small source changes.
 
 Files for completed tasks are moved to `tasks/history/` — see [its README](tasks/history/README.md) — so
 this folder shows only work that is still open. The links below keep working across that move.

@@ -1,8 +1,8 @@
 # T022 — Static quality gate and standalone delivery documentation
 
-Status: in_progress — the static layer is landed: the rule set is selected and justified, the gate runs and
-is verified in both directions. Remaining: the `vrunner validate syntax-check` command with its exception
-file, the single entry point over every layer, and the `INSTALL.md` rehearsal.
+Status: in_progress — the static layer and the single entry point are landed and verified; the syntax-check
+command is recorded. One acceptance item is still open: `INSTALL.md` has been checked against the emitted
+tree but the manual-migration route has not been rehearsed against a real host configuration.
 Depends on: T018, T019, T020, T021
 Recipe: normal
 Coordinator: Sol Medium
@@ -100,11 +100,50 @@ outside this task's deliverable:
 * `UnavailableMemberCall` — `mol_Errors` uses two members added in 8.3.23 while the extension declares
   `Version8_3_21` compatibility.
 
-### Still to do in this task
+### The single entry point, verified end to end
 
-This gate is one of the layers the single entry point has to run. Remaining: the
-`vrunner validate syntax-check` command and its exception file, the combined entry point over the
-OneScript suites, the BSL suites in both modes and this gate, and the `INSTALL.md` rehearsal.
+`tools/check.sh` runs five layers and was exercised with all of them selected:
+
+| Layer | Result in the recorded run |
+|---|---|
+| `static` | 63 diagnostics in 12 recorded rules, no rule above its baseline |
+| `builder` | `Ran 54 tests` / `OK` |
+| `bsl-canonical` | `YAxUnit: всего 179, успешно 179, провалено 0, ошибок 0, пропущено 0`, and no skip notice, so the live suite ran |
+| `bsl-standalone` | `YAxUnit: всего 26, успешно 26, провалено 0, ошибок 0, пропущено 0` |
+| `syntax-check` | `Проверка конфигурации завершена за 3с`, `Ошибок не обнаружено`, JUnit report written |
+
+Exit code 0 for that run; per-layer logs in `build/test/reports/check/`. The failure path was verified
+separately, by lowering one baseline count on purpose: the `static` layer failed, the summary printed
+`FAIL: at least one layer did not pass`, and the entry point returned 1. The baseline was then restored
+and the tree was left clean.
+
+The same rule set was pointed at the generated tree (`--source build/standalone/default`), the second half
+of the first acceptance item: 29 findings in 7 rules — `UnusedLocalVariable` 9, `FunctionShouldHaveReturn`
+8, `AllFunctionPathMustHaveReturn` 5, `EmptyCodeBlock` 3, `IfElseDuplicatedCodeBlock` 2,
+`DeletingCollectionItem` 1, `UnreachableCode` 1. The generated tree is not in the gate's default baseline:
+it is machine-written, so it would need its own recorded counts and would move with every builder change.
+
+### The syntax check, and why the two layers do not overlap
+
+`vrunner validate syntax-check --mode ExtendedModulesCheck` over an infobase that already carries the
+extension answers zero errors in 3 s and writes `build/test/reports/syntax-check.xml`. vrunner looks for
+`tools/syntax-check-excludes.txt` by default and only warns when it is missing, so the entry point names it
+explicitly; the file is empty because the check reports nothing. The recorded command is in
+`docs/plan/environment.md`.
+
+The platform's checks do not compile module bodies, so this layer cannot see T036: a call to a method that
+does not exist loads and passes here exactly as it passes `vrunner cfe compile`. That is why the static
+layer is not redundant with it, and `tests/README.md` says so where it lists the layers.
+
+### Not done in this task
+
+`INSTALL.md` was read and checked against the emitted tree: the two merged modules, the two reuse modules
+kept separate, the HTTP service `mol_Moleculer`, the absence of constants, dictionaries and forms, and the
+compatibility-mode statement are all present and match what the builder emits. It was **not** rehearsed as
+a real migration into a host configuration, which is what the success criterion asks for. That needs a base
+built from a consumer's configuration with the connector's dependencies; the container's `src/cf` is the
+product's own, not a consumer's. The install-as-an-extension route is already proven by T021. The rehearsal
+is the remaining work in this task.
 
 ## Optional pilot metrics
 
