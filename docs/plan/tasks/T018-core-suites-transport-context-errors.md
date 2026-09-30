@@ -135,6 +135,24 @@ stack through regeneration, and the fallback when a formatted stack cannot be pa
 removed rather than kept: `NoExceptionError` is not exported, and the public path to it depends on
 whether another suite left an error on the ambient stack.
 
+Extended the same day with the conversion and the remote stack:
+
+- `FromErrorInfoConvertsACaughtPlatformError` — a real caught platform error converts with its
+description preserved, a name chosen from the category set, a derived type and the `ErrorInfo` retained.
+  This also answers a question left open by `mol_Reuse.BSPVersion` reporting no subsystem version: the
+  platform's error-processing module the conversion relies on **is** available in this base.
+- `FromErrorInfoRefusesSomethingThatIsNotAnErrorInfo` — the argument's type is enforced, and the refusal
+  names the argument.
+- `ARemoteStackIsRetainedThroughRegeneration` — an error carrying a foreign stack as a marked string
+  keeps it through `RegenerateError`, which is the only diagnostic the receiver has for the far side.
+
+One test was removed rather than kept: `WrapExternalStack` is not exported either, making it the second
+private function to catch me. Both are now in the repository's convention notes, together with the
+`grep` that answers the question before a run is spent.
+
+Still open: the fallback when a formatted stack cannot be parsed, and the context factory's field-casing
+and nested-call handling.
+
 ## Optional pilot metrics
 
 Actual models/efforts:

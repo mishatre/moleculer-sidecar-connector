@@ -135,6 +135,12 @@ factories and asserts that each returns a numeric code, a name and a type. That 
 today, which narrows this task to the *values*: `ServiceNotFound` satisfies the shape while still
 reporting `SERVICE_NOT_AVAILABLE`, so the defect is the type it reuses rather than what it returns.
 
+A second exception to that claim, found by reading rather than by test: `FromErrorInfo`'s `NetworkError`
+branch calls `Error(Type, , "NetworkError", …)` with the code argument omitted, so a network error
+carries `Code` as `Undefined`. The named factories all pass the family walk; this path does not. It is
+the same doubled-comma omission the old code shipped six times, which suggests checking the remaining
+`Error(` call sites for it while this task is open.
+
 ## Acceptance and consumer example
 
 - [ ] Every factory returns `Code` as a number and a `Name` from a documented set.

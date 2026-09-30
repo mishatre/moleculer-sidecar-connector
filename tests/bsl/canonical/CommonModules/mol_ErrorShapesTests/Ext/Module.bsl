@@ -23,7 +23,10 @@ Procedure ИсполняемыеСценарии() Export
 		.ДобавитьСерверныйТест("TheThreeClassesCarryTheirNamesAndCodes")
 		.ДобавитьСерверныйТест("EveryNamedFactoryCarriesANumberCodeAndAName")
 		.ДобавитьСерверныйТест("RegeneratingAnErrorPreservesItsFields")
-		.ДобавитьСерверныйТест("ToStringStatesTheMessageTheTypeAndTheCode");
+		.ДобавитьСерверныйТест("ToStringStatesTheMessageTheTypeAndTheCode")
+		.ДобавитьСерверныйТест("FromErrorInfoConvertsACaughtPlatformError")
+		.ДобавитьСерверныйТест("FromErrorInfoRefusesSomethingThatIsNotAnErrorInfo")
+		.ДобавитьСерверныйТест("ARemoteStackIsRetainedThroughRegeneration");
 
 EndProcedure
 
@@ -120,6 +123,63 @@ Procedure ToStringStatesTheMessageTheTypeAndTheCode() Export
 	ЮТест.ОжидаетЧто(СтрНайти(Text, "probe message") > 0, "the message is stated: " + Text).ЭтоИстина();
 	ЮТест.ОжидаетЧто(СтрНайти(Text, "PROBE_TYPE") > 0, "the type is stated: " + Text).ЭтоИстина();
 	ЮТест.ОжидаетЧто(СтрНайти(Text, "503") > 0, "the code is stated: " + Text).ЭтоИстина();
+
+EndProcedure
+
+Procedure FromErrorInfoConvertsACaughtPlatformError() Export
+
+	// mol_Errors.FromErrorInfo — the conversion every catch block goes through, so it has to carry the
+	// description, a name from the documented category set, a type and the ErrorInfo itself.
+	Caught = Undefined;
+	Попытка
+		ВызватьИсключение "probe conversion";
+	Исключение
+		Caught = ИнформацияОбОшибке();
+	КонецПопытки;
+
+	ЮТест.ОжидаетЧто(Caught <> Неопределено, "the fixture needs a real platform error").ЭтоИстина();
+
+	Converted = mol_Errors.FromErrorInfo(Caught);
+
+	ЮТест.ОжидаетЧто(СтрНайти(Converted.message, "probe conversion") > 0,
+		"the description survives: " + Строка(Converted.message)).ЭтоИстина();
+	ЮТест.ОжидаетЧто(Не ПустаяСтрока(Converted.name), "a category name is chosen").ЭтоИстина();
+	ЮТест.ОжидаетЧто(Не ПустаяСтрока(Converted.type), "a type is derived").ЭтоИстина();
+	ЮТест.ОжидаетЧто(Converted.errorInfo <> Неопределено, "the platform error is retained").ЭтоИстина();
+
+EndProcedure
+
+Procedure FromErrorInfoRefusesSomethingThatIsNotAnErrorInfo() Export
+
+	// mol_Errors.FromErrorInfo — the conversion is reachable from catch blocks only, and a caller that
+	// passes something else should be told rather than get a converted structure out of nothing.
+	Raised  = Ложь;
+	Failure = "";
+
+	Попытка
+		mol_Errors.FromErrorInfo("not an error info");
+	Исключение
+		Raised  = Истина;
+		Failure = ОписаниеОшибки();
+	КонецПопытки;
+
+	ЮТест.ОжидаетЧто(Raised, "a non-ErrorInfo value is refused").ЭтоИстина();
+	ЮТест.ОжидаетЧто(СтрНайти(Failure, "ErrorInfo") > 0, "the refusal names the argument: " + Failure).ЭтоИстина();
+
+EndProcedure
+
+Procedure ARemoteStackIsRetainedThroughRegeneration() Export
+
+	// mol_Errors.RegenerateError with mol_Errors.AppendErrorInfo — an error that crossed a boundary
+	// carries the sender's stack as a string, and rebuilding the error locally must not drop it: it is the
+	// only diagnostic the receiver has for the far side.
+	RemoteStack = "----EXTERNAL_STACK----" + Символы.ПС + "remote frame" + Символы.ПС + "----EXTERNAL_STACK----";
+
+	Original    = mol_Errors.ServerError("PROBE_REMOTE", 500, "remote failure", Неопределено, RemoteStack);
+	Regenerated = mol_Errors.RegenerateError(Original);
+
+	ЮТест.ОжидаетЧто(Original.stack, "the fixture's stack is a string").Равно(RemoteStack);
+	ЮТест.ОжидаетЧто(Regenerated.stack, "the remote stack survives regeneration").Равно(RemoteStack);
 
 EndProcedure
 
