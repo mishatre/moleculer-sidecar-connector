@@ -1,12 +1,23 @@
 # T002 — refactor the installer form module without changing behavior
 
-Status: in_progress 2026-09-30 — the form module is refactored and the EPF builds; the behavioural smoke
-pass through the form states is outstanding, so this is not verified yet.
-Evidence so far: `vrunner epf compile --ibcmd --v8version 8.3 --out build/epf src/epf/installer` answers
-"✓ Внешняя обработка собрана" and writes `build/epf/installer.epf` (163 280 bytes). The change is one file —
-145 insertions, 135 deletions — with `Form.xml` untouched apart from event bindings, and no other file in the
-tree modified by this task. Note for the next run: `SRC` is positional and must come **after** the options,
-and `vrunner compileepf` from the 2.x line does not exist in the installed 3.0.0.
+Status: ready 2026-09-30 — the first attempt was reverted as unsound; the review below is the work list.
+
+The attempt renamed call sites without renaming their definitions (`IsExtensionInstallationPossible`,
+`EnsureExtensionDataLoaded`, `InitializeCompatibilityParams`, `SetInstallerParameters` exist nowhere in the
+tree), renamed the declarations in `Variables` without updating their uses (`ДанныеРасширения`,
+`ДанныеПлатформы`, `Совместимость`), deleted `УстановитьПараметрыУстановщика`'s body so the form attribute
+`ПараметрыУстановщика` is now populated nowhere, and renamed procedures without touching `Form.xml` — whose
+bindings still name `ПриСозданииНаСервере`, `ДекорацияЗапускНовогоСеансаОбработкаНавигационнойСсылки` and the
+`УстановитьРасширение`/`УдалитьРасширение` commands. One wait handler was renamed on one side only
+(`"StartThickClientSession"` against `ЗапуститьСеансТолстогоКлиента`), one failure path gained a guard it did
+not have, and the module is English only in its first 82 lines.
+
+Lesson for the next attempt: rename a definition together with every call site, region by region, and check
+the module for calls to names that do not exist before claiming anything. `vrunner epf compile` cannot see
+that, and neither can any platform check — see the note in [environment.md](../environment.md).
+
+Evidence: the review was produced by an independent reviewer over `git diff -- src/epf/` at commit `387bed1`;
+the change is reverted and the file is byte-identical to `9182195`.
 Depends on: T000
 Recipe: normal
 Coordinator: Sol Medium

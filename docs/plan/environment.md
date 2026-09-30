@@ -240,6 +240,16 @@ explicitly. And it does not compile module bodies, so it does not see a call to 
 method that does not exist; that is the BSL Language Server layer's job, and the
 division is why both exist.
 
+**`vrunner epf compile` is not a compile check either.** It packs the XML tree into an
+`.epf` and never loads the module, so an external processing whose form module calls
+procedures that do not exist packs successfully. Measured 2026-09-30: a refactor that
+renamed call sites without their definitions passed this command and produced a
+163 280-byte artifact, while the reviewer's grep showed four calls to names defined
+nowhere. `vrunner cfe compile`, the designer's `/CheckModules` and `syntax-check` share
+the blind spot, which is why `tools/bsl-checks/bsl-language-server.py` is the only layer
+that resolves a call to a name that is not there — and why a form module needs that
+layer, or a careful name inventory, before anything is claimed about it.
+
 ### Test bases
 
 `build/ib` remains the extension-mode disposable base. Standalone-mode tests need
