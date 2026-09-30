@@ -217,6 +217,26 @@ caller that can reach the service, so the fix is either to widen the guard to th
 resolver actually matches, or to keep the restriction and rename the actions to match it — and to say
 which in the documentation.
 
+## T033 — agree on the shape of a context's action
+
+Outcome: a context can be turned back into a payload, so a received request can be forwarded to another
+node instead of being terminal.
+
+Why: `mol_ContextFactory.FromPayload` stores the payload's `action` string in `Context.Action`, while
+`ToPayload` reads `Context.Action.Name`, which only the structure form that `mol_Broker.Call` builds has.
+The two directions never meet today — outbound contexts are built locally, inbound ones arrive from the
+wire — so nothing breaks, but the asymmetry is why `ToPayload(FromPayload(payload))` raises
+`Поле объекта не обнаружено (Name)`.
+
+Evidence: `tests/bsl/canonical/CommonModules/mol_PayloadContractTests` pins the failure as current
+behaviour, in a test written to be rewritten rather than deleted. Two other tests in the same suite pin
+the field sets each direction emits, which is the contract a fix has to preserve.
+
+Shape: either `ToPayload` accepts both forms and reads the name from whichever it finds, or `FromPayload`
+wraps the string in a structure. The first keeps inbound contexts as they are, which matters because
+`mol_Transport.RequestHandler` compares `Context.Action` against the `$internal` prefix as a string — see
+T032, which touches the same comparison.
+
 ## Open decisions
 
 1. Delivery target for this cycle: smaller/simpler, or more testable? The two pull
